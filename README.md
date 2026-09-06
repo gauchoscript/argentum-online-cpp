@@ -90,7 +90,9 @@ cmake --build build --config Release
 # .\build\Release\client_poc.exe
 ```
 *Salida esperada:*
-`Client skeleton OK`
+Abre una ventana SFML 3.0.2 de 800x600 ("AO Migration - Render POC") con una forma geométrica renderizada en el centro. Al cerrar con la **X** o la tecla **Escape**, imprime en consola:
+`Window closed cleanly`
+
 
 ---
 
