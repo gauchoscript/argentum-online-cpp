@@ -31,9 +31,15 @@ APIs (Winsock, DirectX, flat files) and are not subject to the "preserve
 legacy structure" rule — only the game logic's own organization is.
 
 ## Testing Policy
-All unit tests across this entire project use **doctest** as the single testing 
-framework. It was chosen specifically for its minimal compile-time overhead 
-given the large number of modules being ported.
+- All unit tests across this entire project use **doctest** as the single testing 
+  framework. It was chosen specifically for its minimal compile-time overhead 
+  given the large number of modules being ported.
+- **Classic / Detroit School Approach**: Tests must be state-based and exercise real 
+  objects/logic, avoiding mocks wherever possible.
+- **Value-Driven Testing**: Do not write tests for the sake of writing tests or 
+  chasing superficial coverage numbers. Focus testing effort where it brings 
+  genuine confidence (e.g. byte-exact file persistence roundtrips, binary socket packet 
+  serialization, complex combat/magic algorithms, and critical state invariants).
 
 ## Known necessary exception
 Networking/concurrency: the legacy server already supports multiple 

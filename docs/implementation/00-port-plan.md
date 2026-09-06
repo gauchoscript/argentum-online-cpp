@@ -91,13 +91,14 @@ Para cada módulo se aplica estrictamente la política de nombres definida en `d
 
 ### Capa 0: Utilidades Autónomas y Clases Base (Sin Dependencias)
 
-#### 1. `Matematicas`
+#### 1. `Matematicas` (COMPLETADO)
 - **Archivos Legacy**: `legacy/server/Codigo/Matematicas.bas`
 - **Propósito**: Funciones matemáticas puras, generación de números aleatorios (`RandomNumber`), cálculo de distancia entre coordenadas (`Distance`) y límites min/max.
 - **Archivo C++ Propuesto**: `src/server/Matematicas.hpp` / `src/server/Matematicas.cpp`
+- **Estado**: **Completado** (Documentación en [`01-matematicas.md`](01-matematicas.md)).
 - **Dependencias**: *Ninguna*.
 - **Estimación**: **Chico** (~80 líneas).
-- **Estrategia de Verificación**: Pruebas unitarias en C++ con **doctest** y validación de integración con cliente VB6.
+- **Estrategia de Verificación**: Pruebas unitarias en C++ con **doctest** (4/4 test cases pasados).
 
 #### 2. `clsIniReader`
 - **Archivos Legacy**: `legacy/server/Codigo/clsIniReader.cls`
@@ -165,14 +166,15 @@ Para cada módulo se aplica estrictamente la política de nombres definida en `d
 
 ### Capa 2: Declaraciones de Estructuras y Estado Global
 
-#### 9. `Declares`
+#### 9. `Declares` (COMPLETADO - Reubicado a Capa 0)
 - **Archivos Legacy**: `legacy/server/Codigo/Declares.bas`
 - **Propósito**: Cabecera maestra que define todos los tipos globales (`User`, `UserStats`, `WorldPos`, `tCabecera`, `OBJDAT`, `NPCs`, `MapData`), arrays globales (`UserList`, `NpcList`, `MapData`) y constantes del mundo (`MaxUsers`, `MAXMAPS`).
 - **Archivo C++ Propuesto**: `src/server/Declares.hpp` / `src/server/Declares.cpp`
-- **Dependencias**: `Matematicas`, `clsIniReader`.
-- **Estimación**: **Mediano - Grande** (~1.594 líneas).
-- **Estrategia de Verificación**: Validación de compilación y pruebas de integración con el cliente real VB6.
-- **Nota de Auditoría / Migración (`cGarbage` / `TrashCollector`)**: Acordate de incluir la declaración de la colección global `TrashCollector` (para encolar objetos temporales del mapa como fogatas), según lo especificado en [`docs/implementation/01a-clsdicc-cgarbage.md`](01a-clsdicc-cgarbage.md) y [`docs/audit/01a-clsdicc-cgarbage.md`](../audit/01a-clsdicc-cgarbage.md).
+- **Estado**: **Completado** (Documentación en [`02-declares.md`](02-declares.md)).
+- **Dependencias**: *Ninguna* (Al confirmarse que no posee código ejecutable `Sub`/`Function`, se clasificó como módulo declarativo base).
+- **Estimación**: **Grande** (~1.594 líneas).
+- **Estrategia de Verificación**: Compilación limpia en C++ (`server_core`).
+- **Nota de Auditoría / Migración (`cGarbage` / `TrashCollector`)**: Se incluyó la declaración de la colección global `TrashCollector` (para encolar objetos temporales del mapa como fogatas), según lo especificado en [`docs/implementation/01a-clsdicc-cgarbage.md`](01a-clsdicc-cgarbage.md) y [`docs/audit/01a-clsdicc-cgarbage.md`](../audit/01a-clsdicc-cgarbage.md).
 
 ---
 
@@ -491,7 +493,7 @@ Para cada módulo se aplica estrictamente la política de nombres definida en `d
 
 | Capa | Módulo Legacy | Archivo C++ Propuesto | Estimación | Categoría Crítica / Requisito | Estrategia de Verificación |
 | :---: | :--- | :--- | :---: | :--- | :--- |
-| **0** | `Matematicas.bas` | `src/server/Matematicas.hpp` | Chico | Base | Pruebas Unitarias doctest |
+| **0** | `Matematicas.bas` | `src/server/Matematicas.hpp` | Chico | Base (Completado) | Pruebas Unitarias doctest |
 | **0** | `clsIniReader.cls` | `src/server/clsIniReader.hpp` | Chico | Base | Pruebas Unitarias doctest |
 | **0** | `clsdicc.cls` | `src/server/clsdicc.hpp` | Chico | Adaptador `std::map` (Audit. Pendiente) | Pruebas Unitarias doctest |
 | **0** | `ModCola`, `Queue`, `cColaArray` | `src/server/ModCola.hpp` | Chico | Queues internas | Pruebas Unitarias doctest |
@@ -499,7 +501,7 @@ Para cada módulo se aplica estrictamente la política de nombres definida en `d
 | **0** | `modHexaStrings.bas` | `src/server/modHexaStrings.hpp` | Chico | Hex / Strings | Pruebas Unitarias doctest |
 | **0** | `cSolicitud.cls` | `src/server/cSolicitud.hpp` | Chico | Solicitudes Clan | doctest + Fixtures `.sol` |
 | **1** | `clsByteQueue.cls` | `src/server/clsByteQueue.hpp` | Mediano | 🚨 **CRÍTICO 2: Red Binaria** | doctest + Socket VB6 |
-| **2** | `Declares.bas` | `src/server/Declares.hpp` | Grande | Estado Global | Compilación + Cliente VB6 |
+| **0** | `Declares.bas` | `src/server/Declares.hpp` | Grande | Estado Global (Completado) | Compilación C++ (`server_core`) |
 | **3** | `FileIO.bas` | `src/server/FileIO.hpp` | Grande | 🚨 **CRÍTICO 1: Persistencia** | **doctest + Fixtures Byte-Exact `charfile/`** |
 | **3** | `clsClan.cls` / `modGuilds.bas` | `src/server/modGuilds.hpp` | Grande | 🚨 **CRÍTICO 1: Clanes** | **doctest + Fixtures Byte-Exact `guilds/`** |
 | **4** | `SecurityIp.bas` | `src/server/SecurityIp.hpp` | Mediano | Security / Flood | doctest + Multicliente VB6 |

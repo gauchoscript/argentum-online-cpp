@@ -8,17 +8,25 @@ if(WIN32)
     add_compile_definitions(_WIN32_WINNT=0x0601)
 endif()
 
-
 # Find dependencies provided by vcpkg
 find_package(asio CONFIG REQUIRED)
+find_package(doctest CONFIG REQUIRED)
 find_package(SFML CONFIG REQUIRED COMPONENTS Graphics Window System Network Audio)
+
+# Server core static library
+add_library(server_core STATIC
+    src/server/Matematicas.cpp
+    src/server/Declares.cpp
+)
+target_include_directories(server_core PUBLIC src)
+target_link_libraries(server_core PUBLIC asio::asio)
+if(WIN32)
+    target_link_libraries(server_core PUBLIC ws2_32 mswsock)
+endif()
 
 # Server executable target
 add_executable(server_poc src/server/main.cpp)
-target_link_libraries(server_poc PRIVATE asio::asio)
-if(WIN32)
-    target_link_libraries(server_poc PRIVATE ws2_32 mswsock)
-endif()
+target_link_libraries(server_poc PRIVATE server_core)
 
 # Client executable target
 add_executable(client_poc src/client/main.cpp)
@@ -26,4 +34,3 @@ target_link_libraries(client_poc PRIVATE asio::asio SFML::Graphics SFML::Window 
 if(WIN32)
     target_link_libraries(client_poc PRIVATE ws2_32 mswsock)
 endif()
-
