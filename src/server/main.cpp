@@ -1,7 +1,8 @@
 #include <asio.hpp>
 #include <iostream>
 #include <string>
-#include <array>
+#include <thread>
+#include <chrono>
 
 using asio::ip::tcp;
 
@@ -18,28 +19,35 @@ int main() {
         acceptor.accept(socket);
         std::cout << "[Server] Cliente conectado desde: " << socket.remote_endpoint() << std::endl;
 
-        // Leer mensaje del cliente
-        std::array<char, 1024> buffer;
-        asio::error_code error;
-        size_t bytes_transferred = socket.read_some(asio::buffer(buffer), error);
+        int x = 100;
+        int y = 300;
+        int dx = 50;
 
-        if (error && error != asio::error::eof) {
-            std::cerr << "[Server] Error al leer del socket: " << error.message() << std::endl;
-            return 1;
+        while (true) {
+            std::string message = "DRAW " + std::to_string(x) + " " + std::to_string(y) + "\n";
+            asio::error_code error;
+            asio::write(socket, asio::buffer(message), error);
+
+            if (error) {
+                std::cout << "[Server] Cliente desconectado o error de socket: " << error.message() << std::endl;
+                break;
+            }
+
+            std::cout << "[Server] Enviado: " << message << std::flush;
+
+            // Patron de rebote simple en el rango 100-700
+            x += dx;
+            if (x >= 700) {
+                x = 700;
+                dx = -50;
+            } else if (x <= 100) {
+                x = 100;
+                dx = 50;
+            }
+
+            std::this_thread::sleep_for(std::chrono::seconds(1));
         }
 
-        std::string received_message(buffer.data(), bytes_transferred);
-        std::cout << "[Server] Mensaje recibido del cliente: \"" << received_message << "\"" << std::endl;
-
-        // Reenviar (echo) el mismo texto al cliente
-        asio::write(socket, asio::buffer(received_message), error);
-        if (error) {
-            std::cerr << "[Server] Error al enviar eco: " << error.message() << std::endl;
-            return 1;
-        }
-        std::cout << "[Server] Eco enviado correctamente al cliente." << std::endl;
-
-        // Cerrar la conexion y salir
         asio::error_code ec_shutdown;
         socket.shutdown(tcp::socket::shutdown_both, ec_shutdown);
         socket.close(ec_shutdown);
@@ -51,4 +59,5 @@ int main() {
 
     return 0;
 }
+
 
