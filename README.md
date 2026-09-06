@@ -31,16 +31,66 @@ El objetivo central de este proyecto es portar tanto el servidor dedicado como e
 
 ```
 ArgentumOnline0.13.0/
-├── README.md               # Descripción principal del proyecto y metas de migración
+├── CMakeLists.txt          # Configuración del sistema de construcción CMake
+├── vcpkg.json              # Manifiesto de dependencias C++ (Asio, SFML)
+├── README.md               # Descripción principal del proyecto y guía de compilación
 ├── legacy/                 # Código fuente e información original de VB6 (Solo Lectura)
-│   ├── client/             # Código fuente del cliente VB6 (CODIGO) y recursos gráficos/audio
-│   └── server/             # Código fuente del servidor dedicado VB6 (Codigo) y base de datos
 ├── docs/                   # Hub de documentación de la migración
-│   ├── audit/              # Registro de auditoría histórica y fórmulas extraídas de VB6
-│   └── implementation/     # Decisiones de diseño en C++, especificaciones y checklists
-├── client/                 # (Próximamente) Cliente moderno en C++
-└── server/                 # (Próximamente) Servidor dedicado moderno en C++
+└── src/                    # Código fuente moderno en C++
+    ├── client/             # Pruebas de concepto y código del cliente (`client_poc`)
+    └── server/             # Pruebas de concepto y código del servidor (`server_poc`)
 ```
+
+---
+
+## Guía de Compilación e Instalación (Build & Setup Guide)
+
+### Requisitos Previos
+- Compilador de C++ con soporte C++17 o superior (MSVC / GCC / Clang)
+- [CMake](https://cmake.org/) (versión 3.20 o superior)
+- [vcpkg](https://github.com/microsoft/vcpkg) (gestor de paquetes C++)
+
+### Paso 1: Clonar e Inicializar vcpkg
+Si no tienes `vcpkg` instalado, clonalo e inicialízalo ejecutando:
+
+```cmd
+git clone https://github.com/microsoft/vcpkg.git C:\vcpkg
+C:\vcpkg\bootstrap-vcpkg.bat
+```
+
+### Paso 2: Configurar el Proyecto con CMake y vcpkg
+Ejecuta el comando de configuración desde la raíz del repositorio. CMake utilizará el manifiesto `vcpkg.json` para descargar e integrar automáticamente `asio` y `sfml`:
+
+```cmd
+cmake -B build -S . -DCMAKE_TOOLCHAIN_FILE=C:/vcpkg/scripts/buildsystems/vcpkg.cmake
+```
+
+### Paso 3: Compilar los Ejecutables
+Compila las metas `server_poc` y `client_poc`:
+
+```cmd
+cmake --build build --config Release
+```
+
+### Paso 4: Ejecutar las Pruebas de Concepto (PoC)
+
+**Ejecutar el Servidor (`server_poc`):**
+```cmd
+.\build\server_poc.exe
+# En generadores multiconfiguración (ej. MSVC):
+# .\build\Release\server_poc.exe
+```
+*Salida esperada:*
+`Server skeleton OK`
+
+**Ejecutar el Cliente (`client_poc`):**
+```cmd
+.\build\client_poc.exe
+# En generadores multiconfiguración (ej. MSVC):
+# .\build\Release\client_poc.exe
+```
+*Salida esperada:*
+`Client skeleton OK`
 
 ---
 

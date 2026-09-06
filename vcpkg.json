@@ -1,0 +1,8 @@
+{
+  "name": "argentum-online",
+  "version-string": "0.13.0",
+  "dependencies": [
+    "asio",
+    "sfml"
+  ]
+}
