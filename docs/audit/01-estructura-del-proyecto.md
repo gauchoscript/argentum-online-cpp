@@ -31,6 +31,7 @@ La estructura de directorios separa claramente el cliente y los recursos gráfic
   > Fuente: `legacy/server/Codigo/General.bas`, procedimiento `Main`
   - Carpetas de persistencia de personajes (`Charfile/`), archivos de mapa binario (`Maps/`), configuraciones estáticas (`Dat/`), clanes (`guilds/`) y logs (`Logs/`).
   > Fuente: `legacy/server/Codigo/FileIO.bas`, procedimiento `DoBackUp`
+  - **Módulos Capa 0 Auditados en Detalle**: Para la auditoría profunda de la interfaz y comportamiento de los módulos auxiliares de Capa 0 (`clsdicc.cls` y `cGarbage.cls`), consultá la documentación en [01a-clsdicc-cgarbage.md](01a-clsdicc-cgarbage.md).
 
 ## Lógica y Datos Extraídos
 

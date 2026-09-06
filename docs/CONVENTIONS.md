@@ -25,14 +25,19 @@ with no direct C++/SFML equivalent), group by the same conceptual boundary
 instead, using standard .h/.cpp conventions.
 
 ## What is NOT covered by this policy
-Library and tooling choices (Asio, SFML, SQLite, TGUI, nlohmann/json, 
-CMake/vcpkg) are unavoidable technology substitutions for VB6-specific 
+Library and tooling choices (standalone Asio, SFML, SQLite, TGUI, nlohmann/json, 
+doctest, CMake/vcpkg) are unavoidable technology substitutions for VB6-specific 
 APIs (Winsock, DirectX, flat files) and are not subject to the "preserve 
 legacy structure" rule — only the game logic's own organization is.
+
+## Testing Policy
+All unit tests across this entire project use **doctest** as the single testing 
+framework. It was chosen specifically for its minimal compile-time overhead 
+given the large number of modules being ported.
 
 ## Known necessary exception
 Networking/concurrency: the legacy server already supports multiple 
 simultaneous player connections. Faithfully porting that existing capability 
 (not redesigning it) remains a requirement of this port, even though the 
-underlying networking library (Asio) is necessarily different from the 
+underlying networking library (standalone Asio) is necessarily different from the 
 original Winsock implementation.

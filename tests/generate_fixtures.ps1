@@ -3,9 +3,10 @@
 # Descripción: Generador de datos de prueba (fixtures) para Argentum Online.
 # NOTA: Este script replica de forma 100% fiel los métodos de escritura y
 # formato exacto producidos por las rutinas reales de guardado de VB6
-# (SaveUser en FileIO.bas y gestión de clanes en modGuilds.bas / clsClan.cls),
-# generando la salida en formato INI codificado en Windows-1252 (ANSI).
-# Todos los nombres en charfile/ y guilds/ son válidos según AsciiValidos.
+# (SaveUser en FileIO.bas, gestión de clanes en modGuilds.bas / clsClan.cls,
+# y gestión de foros en modForum.bas), generando la salida en formato INI y
+# archivos secuenciales de texto codificados en Windows-1252 (ANSI).
+# Todos los nombres en charfile/, guilds/ y foros/ cumplen con el formato de VB6.
 # Los casos inválidos (con 'ñ' o acentos) quedan aislados en invalid_chars/ e invalid_guilds/.
 # ============================================================================
 
@@ -14,6 +15,7 @@ $ErrorActionPreference = "Stop"
 $baseDir = "c:\Users\Elio\Documents\ArgentumOnline0.13.0\tests\fixtures"
 $charDir = Join-Path $baseDir "charfile"
 $guildDir = Join-Path $baseDir "guilds"
+$foroDir = Join-Path $baseDir "foros"
 $invalidCharDir = Join-Path $baseDir "invalid_chars"
 $invalidGuildDir = Join-Path $baseDir "invalid_guilds"
 
@@ -24,14 +26,16 @@ if (Test-Path $baseDir) {
 
 New-Item -ItemType Directory -Force -Path $charDir | Out-Null
 New-Item -ItemType Directory -Force -Path $guildDir | Out-Null
+New-Item -ItemType Directory -Force -Path $foroDir | Out-Null
 New-Item -ItemType Directory -Force -Path $invalidCharDir | Out-Null
 New-Item -ItemType Directory -Force -Path $invalidGuildDir | Out-Null
 
 $ansiEncoding = [System.Text.Encoding]::GetEncoding(1252)
 
-# Helper function to write INI content in Windows-1252 ANSI encoding
+# Helper function to write ANSI file in Windows-1252 encoding with CRLF
 function Write-AnsiFile ($filePath, $content) {
-    [System.IO.File]::WriteAllText($filePath, $content, $ansiEncoding)
+    $normalizedContent = $content -replace "`r`n", "`n" -replace "`n", "`r`n"
+    [System.IO.File]::WriteAllText($filePath, $normalizedContent, $ansiEncoding)
 }
 
 # ----------------------------------------------------------------------------
@@ -970,12 +974,75 @@ Guild2=Guerra
 Write-AnsiFile (Join-Path $guildDir "Fuerzas del Caos-relaciones.rel") $caosRelaciones
 
 # ----------------------------------------------------------------------------
-# 4. MANIFIESTO (manifest.md)
+# 4. FOROS VÁLIDOS (foros/)
 # ----------------------------------------------------------------------------
-$manifestContent = @"
+
+# 4.1 Foro General (General.for) - Mezcla de posts y anuncios con caracteres acentuados
+$generalForoInfo = @"
+[INFO]
+CantMSG=3
+CantAnuncios=2
+"@
+Write-AnsiFile (Join-Path $foroDir "General.for") $generalForoInfo
+
+$generalPost1 = "Bienvenidos a la Taberna`r`nGonzalo`r`nForo general para discusiones e interacciones entre todos los aventureros."
+Write-AnsiFile (Join-Path $foroDir "General1.for") $generalPost1
+
+$generalPost2 = "Búsqueda de Grupo para Cacería`r`nPEPE`r`nBusco grupo de cazadores para explorar las catacumbas de Ullathorpe."
+Write-AnsiFile (Join-Path $foroDir "General2.for") $generalPost2
+
+# Post con acentos y caracteres ANSI/Windows-1252 (ñ, á, é, í, ó, ú)
+$generalPost3 = "Noticias de la Peña Real`r`nPEÑA_DE_ORO`r`n¡Bienvenidos al foro de la Peña Real! Se organizarán torneos de pesca y combate con premios en oro e ítems mágicos."
+Write-AnsiFile (Join-Path $foroDir "General3.for") $generalPost3
+
+$generalAnuncio1 = "Anuncio Oficial de la Guardia`r`nSACERDOTEREAL`r`nQueda estrictamente prohibido el combate entre ciudadanos dentro del recinto urbano."
+Write-AnsiFile (Join-Path $foroDir "General1a.for") $generalAnuncio1
+
+$generalAnuncio2 = "Reglamento General del Reino`r`nSEÑORÍO_REAL`r`nNormas de convivencia, leyes de la corona y decretos del Rey de Banderbill."
+Write-AnsiFile (Join-Path $foroDir "General2a.for") $generalAnuncio2
+
+# 4.2 Foro Mercado (Mercado.for) - Foro al límite máximo de CantMSG (30 posts)
+$mercadoForoInfo = @"
+[INFO]
+CantMSG=30
+CantAnuncios=1
+"@
+Write-AnsiFile (Join-Path $foroDir "Mercado.for") $mercadoForoInfo
+
+for ($i = 1; $i -le 30; $i++) {
+    $postContent = "Venta de Ítem #$i`r`nCOMERCIANTE_$i`r`nSe vende objeto número $i al mejor postor. Interesados enviar mensaje privado."
+    Write-AnsiFile (Join-Path $foroDir "Mercado$i.for") $postContent
+}
+
+$mercadoAnuncio1 = "Reglas de Comercio Seguro`r`nMERCADER_MAYOR`r`nVerifiquen siempre la billetera e inventario antes de confirmar una transacción."
+Write-AnsiFile (Join-Path $foroDir "Mercado1a.for") $mercadoAnuncio1
+
+# 4.3 Foro Noticias (Noticias.for) - Foro al límite máximo de CantAnuncios (5 anuncios)
+$noticiasForoInfo = @"
+[INFO]
+CantMSG=5
+CantAnuncios=5
+"@
+Write-AnsiFile (Join-Path $foroDir "Noticias.for") $noticiasForoInfo
+
+for ($i = 1; $i -le 5; $i++) {
+    $postContent = "Noticia Diaria #$i`r`nCRONISTA`r`nResumen de eventos ocurridos en las ciudades durante la jornada $i."
+    Write-AnsiFile (Join-Path $foroDir "Noticias$i.for") $postContent
+
+    $anuncioContent = "Anuncio Fijado Importante #$i`r`nCONSEJO_REAL`r`nDecreto oficial número $i sobre impuestos y tarifas del reino."
+    Write-AnsiFile (Join-Path $foroDir "Noticias$($i)a.for") $anuncioContent
+}
+
+
+# ----------------------------------------------------------------------------
+# 5. MANIFIESTO (manifest.md)
+# ----------------------------------------------------------------------------
+$manifestContent = @'
 # Manifiesto de Datos de Prueba (Fixtures) - Argentum Online
 
-> **Nota de Implementación**: El generador de estos datos (`tests/generate_fixtures.ps1`) replica de forma **100% fiel** los métodos de escritura y formato exacto producidos por las rutinas reales de guardado de VB6 (`SaveUser` en `FileIO.bas` y gestión de clanes en `modGuilds.bas` / `clsClan.cls`), utilizando codificación Windows-1252 (ANSI). Todos los nombres en `charfile/` y `guilds/` cumplen con la restricción de caracteres de `AsciiValidos` y `GuildNameValido`.
+> **Nota de Implementación**: El generador de estos datos (`tests/generate_fixtures.ps1`) replica los métodos de escritura e interfaz en disco documentados en las auditorías (`FileIO.bas`, `modGuilds.bas` y `modForum.bas`), utilizando codificación Windows-1252 (ANSI). Todos los nombres en `charfile/`, `guilds/` y `foros/` cumplen con las reglas del motor legacy.
+> 
+> **ADVERTENCIA DE VERIFICACIÓN (CRÍTICO)**: El script de generación (`tests/generate_fixtures.ps1`) **NO invoca ejecutable ni código ejecutable VB6 real** (vía COM o binarios compilados), sino que construye de forma independiente las cadenas e INIs usando plantillas de PowerShell basándose en la especificación documentada en `docs/audit/06-formatos-de-datos.md` y `docs/audit/11a-modforum-detalle.md`. Por lo tanto, estos fixtures **validan nuestra propia especificación documental**, y no el comportamiento en tiempo de ejecución de un binario VB6 legacy real.
 
 ---
 
@@ -1026,13 +1093,33 @@ Se generaron **3 clanes válidos** representando las tres alineaciones del juego
 
 ---
 
-## 3. Datos Inválidos / Casos de Borde de Codificación (`invalid_chars/` e `invalid_guilds/`)
+## 3. Foros Válidos (`foros/`)
+
+Se generaron **3 foros válidos** cubriendo mezclas de mensajes, caracteres especiales acentuados y límites máximos de capacidad:
+
+1. **`General.for`** (Foro Mixto)
+   - **Archivos**: `General.for` (Índice INI: `CantMSG=3`, `CantAnuncios=2`), `General1.for`, `General2.for`, `General3.for`, `General1a.for`, `General2a.for`.
+   - **Caso de Borde de Codificación**: Contiene publicaciones con autor y texto acentuados (`SEÑORÍO_REAL`, `PEÑA_DE_ORO`, `Búsqueda`, `Cacería`, `mágicos`) para verificar la compatibilidad de caracteres ANSI/Windows-1252 (ñ, á, é, í, ó, ú).
+2. **`Mercado.for`** (Límite Máximo de Posts Generales)
+   - **Archivos**: `Mercado.for` (Índice INI: `CantMSG=30`, `CantAnuncios=1`), `Mercado1.for` a `Mercado30.for` (30 posts generales), `Mercado1a.for`.
+   - **Caso de Borde**: Cobertura del límite máximo estricto de 30 posts por foro (`MAX_MENSAJES_FORO = 30`).
+3. **`Noticias.for`** (Límite Máximo de Anuncios Fijados)
+   - **Archivos**: `Noticias.for` (Índice INI: `CantMSG=5`, `CantAnuncios=5`), `Noticias1.for` a `Noticias5.for`, `Noticias1a.for` a `Noticias5a.for` (5 anuncios fijados).
+   - **Caso de Borde**: Cobertura del límite máximo estricto de 5 anuncios fijados por foro (`MAX_ANUNCIOS_FORO = 5`).
+
+---
+
+## 4. Datos Inválidos / Casos de Borde de Codificación (`invalid_chars/` e `invalid_guilds/`)
 
 1. **`invalid_chars/ÑANDÚPEÑA.chr`**
    - Personaje con caracteres especiales (`Ñ`, `Ú`, `ñ`) que fallan la validación de `AsciiValidos` en VB6.
 2. **`invalid_guilds/Legión de Ñandúes-members.mem`** y `guildsinfo.inf`
    - Clan con caracteres especiales (`ó`, `Ñ`, `ú`) que fallan la validación de `GuildNameValido` en VB6.
-"@
+'@
+
+Write-AnsiFile (Join-Path $baseDir "manifest.md") $manifestContent
+
+Write-Host "Fixtures variados generados exitosamente en $baseDir"
 
 Write-AnsiFile (Join-Path $baseDir "manifest.md") $manifestContent
 

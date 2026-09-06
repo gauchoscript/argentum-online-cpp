@@ -15,12 +15,16 @@ source_files:
   - legacy/server/Codigo/modSendData.bas
   - legacy/server/Codigo/wskapiAO.bas
   - legacy/server/Codigo/wsksock.bas
-tags: [red, protocolo, winsock, paquetes, serializacion, binario, layout]
+tags: [red, protocolo, winsock, paquetes, serializacion, binario, layout, fuente-solo]
 last_updated: 2026-09-06
 ---
 
 ## Resumen
 El protocolo de red de Argentum Online v0.13.0 es un protocolo binario orientado a streams TCP sin delimitadores de fin de mensaje (como `\r\n` o bytes nulos). La serialización y el parseo son gestionados en ambos extremos por una cola circular/FIFO de bytes (`clsByteQueue`). Cada mensaje se compone de un identificador de paquete (opcode) de 1 byte (`ClientPacketID` o `ServerPacketID`) seguido inmediatamente por sus argumentos serializados de forma contigua.
+
+> [!IMPORTANT]
+> **Estado de Verificación de Datos (Source-Only / Not Data-Verified)**:
+> La totalidad de las especificaciones de paquetes, opcodes, encuadre y serialización documentadas en esta auditoría han sido obtenidas **única y exclusivamente mediante la inspección del código fuente VB6**. No se cuenta aún con archivos de fixture ni capturas de tráfico `.pcap` para validación empírica en red, por lo que todos los layouts se clasifican como **inferidos del código fuente (source-only)**.
 
 ---
 
@@ -44,6 +48,7 @@ La clase `clsByteQueue` emplea llamadas directas a la API de Windows `RtlMoveMem
   - Se transmiten con un **prefijo de longitud de 2 bytes** (`Integer` con signo Little-Endian, `int16_t`) que especifica el número exacto de bytes $L$ de la cadena.
   - Inmediatamente a continuación se envían los $L$ bytes de texto codificados en Windows-1252.
   - **No contienen terminador nulo (`\0`)**.
+- **Protocolo de Foros (`modForum.bas`)**: Para la especificación byte a byte de los opcodes de red relacionados con el sistema de foros (`ClientPacketID.ForumPost` [ID 45], `ServerPacketID.ShowForumForm` [ID 63] y `ServerPacketID.AddForumMsg` [ID 62]), consultá la auditoría detallada en [11a-modforum-detalle.md](11a-modforum-detalle.md).
   - Si la cadena está vacía (`""`), el prefijo de longitud es `0x0000` (2 bytes) y no se transmite ningún byte adicional.
 - **Cadenas de longitud fija (`WriteASCIIStringFixed` / `ReadASCIIStringFixed`)**:
   - Se transmiten como una secuencia pura de $N$ bytes (según la constante fija definida en el mensaje).
@@ -66,7 +71,10 @@ Dado que TCP es un flujo continuo de bytes y los mensajes no poseen bytes centin
 
 ## Lógica y Datos Extraídos
 
-A continuación se documenta el layout binario exacto a nivel de bytes para todos los mensajes identificados en el protocolo.
+> [!WARNING]
+> Todos los layouts a continuación han sido auditados directamente del código fuente (`legacy/client/CODIGO/Protocol.bas` y `legacy/server/Codigo/Protocol.bas`). **Estado: Source-Only / Not Data-Verified**.
+
+A continuación se documenta el layout binario exacto a nivel de bytes para los mensajes representativos del protocolo.
 
 ### Opcodes Cliente a Servidor (`ClientPacketID`)
 
@@ -74,6 +82,7 @@ A continuación se documenta el layout binario exacto a nivel de bytes para todo
 - **Tipo de Tamaño**: Dinámico (Prefijado por longitud de strings).
 - **Manejador Servidor**: `Protocol.bas`, `HandleLoginExistingChar`.
 - **Emisor Cliente**: `Protocol.bas`, `WriteLoginExistingChar`.
+- **Estado de Verificación**: Inferido de código fuente (source-only).
 - **Estructura Binaria en el Socket**:
 
 | Campo | Tipo C++ equivalente | Tamaño (Bytes) | Endianness | Descripción |
@@ -96,6 +105,7 @@ A continuación se documenta el layout binario exacto a nivel de bytes para todo
 - **Tipo de Tamaño**: Dinámico.
 - **Manejador Servidor**: `Protocol.bas`, `HandleLoginNewChar`.
 - **Emisor Cliente**: `Protocol.bas`, `WriteLoginNewChar`.
+- **Estado de Verificación**: Inferido de código fuente (source-only).
 - **Estructura Binaria en el Socket**:
 
 | Campo | Tipo C++ equivalente | Tamaño (Bytes) | Endianness | Descripción |
@@ -117,14 +127,13 @@ A continuación se documenta el layout binario exacto a nivel de bytes para todo
 | `UserEmail_Data`| `char[L3]` | $L_3$ | - | Dirección de email en Windows-1252. |
 | `UserHogar` | `uint8_t` | 1 | - | Índice de la ciudad de origen (`eCiudad`). |
 
-* *Tamaño mínimo*: 15 bytes (modo estándar) o 62 bytes (modo `SeguridadAlkon`).
-
 ---
 
 #### 3. `Walk` (Opcode: `ClientPacketID.Walk = 6`)
 - **Tipo de Tamaño**: **Fijo (2 bytes)**.
 - **Manejador Servidor**: `Protocol.bas`, `HandleWalk`.
 - **Emisor Cliente**: `Protocol.bas`, `WriteWalk`.
+- **Estado de Verificación**: Inferido de código fuente (source-only).
 - **Estructura Binaria en el Socket**:
 
 | Campo | Tipo C++ equivalente | Tamaño (Bytes) | Endianness | Descripción |
@@ -138,6 +147,7 @@ A continuación se documenta el layout binario exacto a nivel de bytes para todo
 - **Tipo de Tamaño**: **Fijo (1 byte)**.
 - **Manejador Servidor**: `Protocol.bas`, `HandleAttack`.
 - **Emisor Cliente**: `Protocol.bas`, `WriteAttack`.
+- **Estado de Verificación**: Inferido de código fuente (source-only).
 - **Estructura Binaria en el Socket**:
 
 | Campo | Tipo C++ equivalente | Tamaño (Bytes) | Endianness | Descripción |
@@ -150,6 +160,7 @@ A continuación se documenta el layout binario exacto a nivel de bytes para todo
 - **Tipo de Tamaño**: **Fijo (1 byte)**.
 - **Manejador Servidor**: `Protocol.bas`, `HandlePickUp`.
 - **Emisor Cliente**: `Protocol.bas`, `WritePickUp`.
+- **Estado de Verificación**: Inferido de código fuente (source-only).
 - **Estructura Binaria en el Socket**:
 
 | Campo | Tipo C++ equivalente | Tamaño (Bytes) | Endianness | Descripción |
@@ -162,6 +173,7 @@ A continuación se documenta el layout binario exacto a nivel de bytes para todo
 - **Tipo de Tamaño**: **Fijo (2 bytes)**.
 - **Manejador Servidor**: `Protocol.bas`, `HandleUseItem`.
 - **Emisor Cliente**: `Protocol.bas`, `WriteUseItem`.
+- **Estado de Verificación**: Inferido de código fuente (source-only).
 - **Estructura Binaria en el Socket**:
 
 | Campo | Tipo C++ equivalente | Tamaño (Bytes) | Endianness | Descripción |
@@ -175,6 +187,7 @@ A continuación se documenta el layout binario exacto a nivel de bytes para todo
 - **Tipo de Tamaño**: **Fijo (2 bytes)**.
 - **Manejador Servidor**: `Protocol.bas`, `HandleCastSpell`.
 - **Emisor Cliente**: `Protocol.bas`, `WriteCastSpell`.
+- **Estado de Verificación**: Inferido de código fuente (source-only).
 - **Estructura Binaria en el Socket**:
 
 | Campo | Tipo C++ equivalente | Tamaño (Bytes) | Endianness | Descripción |
@@ -188,6 +201,7 @@ A continuación se documenta el layout binario exacto a nivel de bytes para todo
 - **Tipo de Tamaño**: **Fijo (3 bytes)**.
 - **Manejador Servidor**: `Protocol.bas`, `HandleLeftClick`.
 - **Emisor Cliente**: `Protocol.bas`, `WriteLeftClick`.
+- **Estado de Verificación**: Inferido de código fuente (source-only).
 - **Estructura Binaria en el Socket**:
 
 | Campo | Tipo C++ equivalente | Tamaño (Bytes) | Endianness | Descripción |
@@ -204,6 +218,7 @@ A continuación se documenta el layout binario exacto a nivel de bytes para todo
 - **Tipo de Tamaño**: **Fijo (3 bytes)**.
 - **Manejador Cliente**: `legacy/client/CODIGO/Protocol.bas`, `HandlePosUpdate`.
 - **Emisor Servidor**: `legacy/server/Codigo/Protocol.bas`, `WritePosUpdate`.
+- **Estado de Verificación**: Inferido de código fuente (source-only).
 - **Estructura Binaria en el Socket**:
 
 | Campo | Tipo C++ equivalente | Tamaño (Bytes) | Endianness | Descripción |
@@ -218,6 +233,7 @@ A continuación se documenta el layout binario exacto a nivel de bytes para todo
 - **Tipo de Tamaño**: **Fijo (5 bytes)**.
 - **Manejador Cliente**: `legacy/client/CODIGO/Protocol.bas`, `HandleCharacterMove`.
 - **Emisor Servidor**: `legacy/server/Codigo/Protocol.bas`, `WriteCharacterMove` / `PrepareMessageCharacterMove`.
+- **Estado de Verificación**: Inferido de código fuente (source-only).
 - **Estructura Binaria en el Socket**:
 
 | Campo | Tipo C++ equivalente | Tamaño (Bytes) | Endianness | Descripción |
@@ -233,6 +249,7 @@ A continuación se documenta el layout binario exacto a nivel de bytes para todo
 - **Tipo de Tamaño**: Dinámico (Prefijado por longitud del nombre).
 - **Manejador Cliente**: `legacy/client/CODIGO/Protocol.bas`, `HandleCharacterCreate`.
 - **Emisor Servidor**: `legacy/server/Codigo/Protocol.bas`, `PrepareMessageCharacterCreate`.
+- **Estado de Verificación**: Inferido de código fuente (source-only).
 - **Estructura Binaria en el Socket**:
 
 | Campo | Tipo C++ equivalente | Tamaño (Bytes) | Endianness | Descripción |
@@ -254,14 +271,13 @@ A continuación se documenta el layout binario exacto a nivel de bytes para todo
 | `NickColor` | `uint8_t` | 1 | - | Color del nick (según alineación o estado criminal). |
 | `Privileges`| `uint8_t` | 1 | - | Rango/privilegios de GM o usuario estándar. |
 
-* *Tamaño mínimo*: 24 bytes (Opcode 1B + campos fijos 21B + Name_Len de 2B con longitud 0).
-
 ---
 
 #### 12. `ConsoleMsg` (Opcode: `ServerPacketID.ConsoleMsg = 5`)
 - **Tipo de Tamaño**: Dinámico (Prefijado por longitud del texto).
 - **Manejador Cliente**: `legacy/client/CODIGO/Protocol.bas`, `HandleConsoleMessage`.
 - **Emisor Servidor**: `legacy/server/Codigo/Protocol.bas`, `WriteConsoleMsg` / `PrepareMessageConsoleMsg`.
+- **Estado de Verificación**: Inferido de código fuente (source-only).
 - **Estructura Binaria en el Socket**:
 
 | Campo | Tipo C++ equivalente | Tamaño (Bytes) | Endianness | Descripción |
@@ -271,14 +287,13 @@ A continuación se documenta el layout binario exacto a nivel de bytes para todo
 | `Chat_Data` | `char[L]` | $L$ | - | Texto del mensaje en codificación Windows-1252. |
 | `FontIndex` | `uint8_t` | 1 | - | Enum de color y tipografía (`FontTypeNames`). |
 
-* *Tamaño mínimo*: 4 bytes (Opcode 1B + Chat_Len 2B con valor 0 + FontIndex 1B).
-
 ---
 
 #### 13. `UpdateHP` (Opcode: `ServerPacketID.UpdateHP = 20`)
 - **Tipo de Tamaño**: **Fijo (3 bytes)**.
 - **Manejador Cliente**: `legacy/client/CODIGO/Protocol.bas`, `HandleUpdateHP`.
 - **Emisor Servidor**: `legacy/server/Codigo/Protocol.bas`, `WriteUpdateHP`.
+- **Estado de Verificación**: Inferido de código fuente (source-only).
 - **Estructura Binaria en el Socket**:
 
 | Campo | Tipo C++ equivalente | Tamaño (Bytes) | Endianness | Descripción |
@@ -289,5 +304,6 @@ A continuación se documenta el layout binario exacto a nivel de bytes para todo
 ---
 
 ## Preguntas Abiertas
+- **Generación de Fixtures Binarias de Red**: Para elevar el nivel de madurez del protocolo de `source-only` a `data-verified`, se requiere capturar sesiones TCP o implementar un generador de paquetes en los tests C++ (standalone Asio / doctest) que aserte los bytes exactos recibidos ante cada comando.
 - **Directiva `#If SeguridadAlkon`**: En el archivo de proyecto `legacy/client/Client.vbp` la constante condicional `SeguridadAlkon` no está definida dentro del parámetro `CondComp`, por lo que el compilador VB6 la evalúa por omisión como `0` (False). No obstante, el servidor legacy posee código compilado condicionalmente que espera hashes MD5 de 16 y 32 bytes. En C++, la implementación de red debe parametrizar esta bandera para garantizar compatibilidad con binarios oficiales según la versión requerida.
 - **Ubicación de los Manejadores de Paquetes en el Cliente**: La tabla original de la auditoría indicaba erróneamente que los handlers del cliente residían en `ProtocolCmdParse.bas`. Se comprobó que `ProtocolCmdParse.bas` sólo procesa comandos de texto tipeados por el usuario (e.g. `/online`, `/whisper`), mientras que la recepción, decodificación binaria y despacho de paquetes del socket reside íntegramente en `legacy/client/CODIGO/Protocol.bas`.
