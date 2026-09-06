@@ -1,0 +1,44 @@
+[INIT]
+NroGuilds=3
+
+[GUILD1]
+Founder=Gonzalo
+GuildName=Legion de Honor
+Date=06/09/2026
+Antifaccion=0
+Alineacion=Neutral
+Leader=Gonzalo
+URL=http://www.legiondehonor.com
+GuildNews=Bienvenidos a Legion de Honor.
+Desc=Clan neutral de caballeros y guerreros dedicados a la justicia.
+Codex1=Regla 1: Respetar a todos los miembros.
+Codex2=Regla 2: Cooperacion en cacerias y entrenamientos.
+EleccionesAbiertas=0
+
+[GUILD2]
+Founder=SacerdoteReal
+GuildName=Armada Real
+Date=01/01/2026
+Antifaccion=0
+Alineacion=Real
+Leader=SacerdoteReal
+URL=http://www.armadareal.com
+GuildNews=Defendemos la corona de Banderbill.
+Desc=Clan oficial de las fuerzas leales al Rey.
+Codex1=Regla 1: Proteger a los ciudadanos inocentes.
+Codex2=Regla 2: Combatir a los criminales y fuerzas del caos.
+EleccionesAbiertas=0
+
+[GUILD3]
+Founder=AsesinoSombrio
+GuildName=Fuerzas del Caos
+Date=01/01/2026
+Antifaccion=0
+Alineacion=Caos
+Leader=AsesinoSombrio
+URL=http://www.fuerzasdelcaos.com
+GuildNews=Gloria a Lord Thek.
+Desc=Clan faccionario de las legiones oscuras del Caos.
+Codex1=Regla 1: Destruir a los siervos del Rey.
+Codex2=Regla 2: Sin piedad hacia los leales.
+EleccionesAbiertas=0

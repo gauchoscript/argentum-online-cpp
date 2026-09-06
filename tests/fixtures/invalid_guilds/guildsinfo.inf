@@ -1,0 +1,10 @@
+[INIT]
+NroGuilds=1
+
+[GUILD1]
+Founder=ÑandúPeña
+GuildName=Legión de Ñandúes
+Date=06/09/2026
+Alineacion=Neutral
+Leader=ÑandúPeña
+Desc=Clan invalido para probar el filtro GuildNameValido en VB6 (contiene 'ó', 'Ñ' y 'ú').

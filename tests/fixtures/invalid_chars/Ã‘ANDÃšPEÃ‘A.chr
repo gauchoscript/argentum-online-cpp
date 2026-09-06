@@ -1,0 +1,10 @@
+[INIT]
+Password=clave123
+Genero=1
+Raza=1
+Clase=1
+Desc=Personaje invalido para probar el filtro AsciiValidos (contiene 'ñ' y 'ú').
+
+[STATS]
+ELV=25
+GLD=50000
