@@ -18,6 +18,16 @@ El criterio de ordenamiento es **secuencial por árbol de dependencias**: los m�
 
 ---
 
+> [!IMPORTANT]
+> ### Sistemas de Numeración de la Documentación del Proyecto
+> Es fundamental distinguir los tres sistemas de numeración independientes utilizados en la documentación de este proyecto para evitar confusiones y no asumir erróneamente que se corresponden entre sí:
+> 
+> 1. **`docs/audit/` (01 al 10, más profundizaciones como 01a, 06a, 11a)**: Numerados por **ÁREA TEMÁTICA DE AUDITORÍA**, fijos desde la fase de auditoría inicial. Esta numeración responde únicamente a los temas auditados y **no tiene relación alguna con el orden de implementación** ni debe intentarse alinear con nada más.
+> 2. **`docs/implementation/00-port-plan.md` (este documento)**: Contiene su propia numeración interna de módulos (del 1 al ~43), la cual refleja el **ORDEN TEÓRICO PLANIFICADO POR CAPAS DE DEPENDENCIA** (Capa 0 a Capa 11). Es la referencia maestra de qué debe construirse y en qué orden según la arquitectura de dependencias.
+> 3. **`docs/implementation/0X-nombremodulo.md` (documentos individuales de módulo)**: Numerados por **ORDEN DE COMPLETITUD REAL** — la secuencia cronológica real en la que los módulos fueron migrados y documentados. Este orden puede diferir de la secuencia teórica del plan cuando se descubre un ajuste de dependencias durante el desarrollo (por ejemplo, `Declares` se completó como el documento de implementación `#02`, a pesar de ser el módulo `#9` en la numeración interna del plan de port, debido a la corrección de dependencias de `WorldPos`).
+
+---
+
 > [!CAUTION]
 > ## 1. Requerimientos Críticos de Compatibilidad de Servidor (Banderas Prominentes)
 > 

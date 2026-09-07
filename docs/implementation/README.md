@@ -1,18 +1,28 @@
 # Índice de Implementación de la Migración C++
 
-Este directorio realiza el seguimiento de las decisiones de diseño, tareas, preguntas abiertas y arquitectura para la migración moderna en C++ de Argentum Online v0.13.0.
+Este directorio realiza el seguimiento de las decisiones de diseño, especificaciones de arquitectura, tareas y documentación de migración del código legacy VB6 de Argentum Online v0.13.0 hacia C++.
 
-## Índice de Documentos de Implementación
+## Referencia Maestra
 
-| # | Documento | Estado | Referencia de Auditoría | Slug de Área | Última Actualización |
-| :-: | :--- | :-: | :--- | :--- | :-: |
-| 01 | [01-estructura-del-proyecto.md](01-estructura-del-proyecto.md) | `not-started` | [Auditoría 01](../audit/01-estructura-del-proyecto.md) | `estructura-del-proyecto` | 2026-09-06 |
-| 02 | [02-protocolo-de-red.md](02-protocolo-de-red.md) | `not-started` | [Auditoría 02](../audit/02-protocolo-de-red.md) | `protocolo-de-red` | 2026-09-06 |
-| 03 | [03-prediccion-de-movimiento.md](03-prediccion-de-movimiento.md) | `not-started` | [Auditoría 03](../audit/03-prediccion-de-movimiento.md) | `prediccion-de-movimiento` | 2026-09-06 |
-| 04 | [04-formulas-de-combate.md](04-formulas-de-combate.md) | `not-started` | [Auditoría 04](../audit/04-formulas-de-combate.md) | `formulas-de-combate` | 2026-09-06 |
-| 05 | [05-loop-del-juego.md](05-loop-del-juego.md) | `not-started` | [Auditoría 05](../audit/05-loop-del-juego.md) | `loop-del-juego` | 2026-09-06 |
-| 06 | [06-formatos-de-datos.md](06-formatos-de-datos.md) | `not-started` | [Auditoría 06](../audit/06-formatos-de-datos.md) | `formatos-de-datos` | 2026-09-06 |
-| 07 | [07-pantallas-e-interfaz.md](07-pantallas-e-interfaz.md) | `not-started` | [Auditoría 07](../audit/07-pantallas-e-interfaz.md) | `pantallas-e-interfaz` | 2026-09-06 |
-| 08 | [08-recursos-y-multimedia.md](08-recursos-y-multimedia.md) | `not-started` | [Auditoría 08](../audit/08-recursos-y-multimedia.md) | `recursos-y-multimedia` | 2026-09-06 |
-| 09 | [09-seguridad-y-autenticacion.md](09-seguridad-y-autenticacion.md) | `not-started` | [Auditoría 09](../audit/09-seguridad-y-autenticacion.md) | `seguridad-y-autenticacion` | 2026-09-06 |
-| 10 | [10-herramientas-de-gm.md](10-herramientas-de-gm.md) | `not-started` | [Auditoría 10](../audit/10-herramientas-de-gm.md) | `herramientas-de-gm` | 2026-09-06 |
+- **[`00-port-plan.md`](00-port-plan.md)**: Es el **índice y plan maestro de porting**. Establece la secuencia teórica de migración módulo por módulo según el árbol de dependencias por capas (Capa 0 a Capa 11).
+
+> [!NOTE]
+> ### Aclaración sobre la Numeración de Documentos
+> Los documentos individuales de este directorio (`01-matematicas.md`, `02-declares.md`, etc.) están numerados según el **orden cronológico de completitud real** de la migración. Esta numeración es independiente de la numeración temática de `docs/audit/` y del orden teórico definido en `00-port-plan.md`.
+
+---
+
+## Documentos de Módulos (Orden de Completitud Real)
+
+| # | Documento | Módulo(s) / Tema | Capa | Estado |
+| :-: | :--- | :--- | :-: | :-: |
+| 00 | [`00-port-plan.md`](00-port-plan.md) | Plan Maestro de Porting Secuencial | Todas | `in-progress` |
+| 01 | [`01-matematicas.md`](01-matematicas.md) | Matematicas (`Matematicas.bas`) | 0 | `completed` |
+| 01a | [`01a-clsdicc-cgarbage.md`](01a-clsdicc-cgarbage.md) | Especificación de Migración `clsdicc` / `cGarbage` | 0 | `in-progress` |
+| 02 | [`02-declares.md`](02-declares.md) | Declares (`Declares.bas`) | 0 | `completed` |
+| 03 | [`03-clsinireader.md`](03-clsinireader.md) | clsIniReader (`clsIniReader.cls`) | 0 | `completed` |
+| 04 | [`04-clsdicc.md`](04-clsdicc.md) | clsdicc (`clsdicc.cls`) | 0 | `completed` |
+| 05 | [`05-cgarbage.md`](05-cgarbage.md) | cGarbage (`cGarbage.cls`) | 0 | `partial` |
+| 06 | [`06-modcola-queue-colaarray.md`](06-modcola-queue-colaarray.md) | ModCola (`ModCola.cls`), Queue (`Queue.bas`), cColaArray (`cColaArray.cls`) | 0 | `completed` |
+| 07 | [`07-modhexastrings.md`](07-modhexastrings.md) | modHexaStrings (`modHexaStrings.bas`) | 0 | `completed` |
+| 08 | [`08-csolicitud.md`](08-csolicitud.md) | cSolicitud (`cSolicitud.cls`) | 0 | `completed` |

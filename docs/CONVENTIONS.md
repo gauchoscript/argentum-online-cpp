@@ -77,6 +77,10 @@ El porting o investigación de un módulo **NO se considera completo** hasta que
 
 Si existe tal referencia cruzada, **debés agregar una nota explícita en la entrada del módulo AFECTADO en `docs/implementation/00-port-plan.md`**, citando el documento donde reside la fundamentación completa. No consideres terminado el trabajo de un módulo hasta que este paso de propagación haya sido verificado y completado explícitamente — ya que un colaborador futuro trabajando en el módulo afectado no tiene motivos para revisar la documentación del módulo de origen.
 
+## Documentation & Numbering Policy
+Numbering schemes across different doc folders may diverge when they serve different purposes, but any divergence must be stated explicitly near the top of the relevant index file, not left implicit.
+
+
 ## Known necessary exception
 Networking/concurrency: the legacy server already supports multiple 
 simultaneous player connections. Faithfully porting that existing capability 
