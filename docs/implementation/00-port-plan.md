@@ -140,6 +140,7 @@ Para cada módulo se aplica estrictamente la política de nombres definida en `d
 - **Archivos Legacy**: `legacy/server/Codigo/modHexaStrings.bas`
 - **Propósito**: Conversiones de cadenas a formato hexadecimal y viceversa (utilizado en seguridad y hashes).
 - **Archivo C++ Propuesto**: `src/server/modHexaStrings.hpp` / `src/server/modHexaStrings.cpp`
+- **Estado**: **Completado** (Ver [`07-modhexastrings.md`](07-modhexastrings.md)).
 - **Dependencias**: *Ninguna*.
 - **Estimación**: **Chico** (~80 líneas).
 - **Estrategia de Verificación**: Pruebas unitarias en C++ con **doctest**.
@@ -420,6 +421,7 @@ Para cada módulo se aplica estrictamente la política de nombres definida en `d
 - **Dependencias**: `Declares`, `Modulo_UsUaRiOs`, `MODULO_NPCs`, `Modulo_InventANDobj`, `modSendData`, `FileIO`.
 - **Estimación**: **Mediano** (~500 líneas).
 - **Estrategia de Verificación**: Pruebas con cliente VB6 usando personaje GM.
+- **Nota de Auditoría / Migración (`modHexaStrings` / `MD5sCarga`)**: Al portar `MD5sCarga` y la validación `MD5ok`, recordar que `MD5s(LoopC) = txtOffset(hexMd52Asc(MD5s(LoopC)), 55)` depende de la conversión case-insensitive de `hexMd52Asc` sobre las entradas hexadecimales de `Server.ini` (`MD5AceptadoX`), la cual se compara sensible a mayúsculas/minúsculas con el buffer de 16 bytes recibido del cliente (`buffer.ReadASCIIStringFixed(16)`). Ver [`07-modhexastrings.md`](07-modhexastrings.md).
 
 #### 36. `modCentinela` *(Falta auditoría detallada)*
 - **Archivos Legacy**: `legacy/server/Codigo/modCentinela.bas`
