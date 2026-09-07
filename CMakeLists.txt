@@ -34,3 +34,11 @@ target_link_libraries(client_poc PRIVATE asio::asio SFML::Graphics SFML::Window 
 if(WIN32)
     target_link_libraries(client_poc PRIVATE ws2_32 mswsock)
 endif()
+
+# Unit tests target
+enable_testing()
+add_executable(unit_tests tests/test_matematicas.cpp)
+target_include_directories(unit_tests PRIVATE src)
+target_link_libraries(unit_tests PRIVATE server_core doctest::doctest)
+
+add_test(NAME unit_tests COMMAND unit_tests)

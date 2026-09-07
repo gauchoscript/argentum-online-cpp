@@ -6,6 +6,7 @@ layer: 0
 legacy_source: legacy/server/Codigo/Matematicas.bas
 target_header: src/server/Matematicas.hpp
 target_source: src/server/Matematicas.cpp
+test_suite: tests/test_matematicas.cpp
 last_updated: 2026-09-07
 ---
 
@@ -45,6 +46,16 @@ La migración preservó rigurosamente la firma, nombres de parámetros y algorit
 - **Firma**: `std::int32_t RandomNumber(std::int32_t LowerBound, std::int32_t UpperBound)`
 - **Lógica**: Preserva exactamente la fórmula de VB6: `Fix(Rnd * (UpperBound - LowerBound + 1)) + LowerBound`.
 
-## Pruebas Unitarias
+## Pruebas Unitarias (`doctest`)
 
-Siguiendo la política de pruebas orientadas al valor (Escuela de Detroit / Estilo Clásico) documentada en [`docs/CONVENTIONS.md`](../CONVENTIONS.md), no se mantienen pruebas unitarias artificiales para funciones aritméticas puras de 1 línea. El esfuerzo de testing se reservará para los módulos críticos de red (`clsByteQueue`), persistencia (`FileIO`) y mecánicas complejas con estado del juego.
+Siguiendo la política de testing orientada al valor (Escuela de Detroit / Estilo Clásico), se mantuvo la suite de pruebas unitarias enfocada específicamente en `RandomNumber` (`tests/test_matematicas.cpp`), verificando el correcto comportamiento del truncamiento y acotamiento inclusivo del rango.
+
+### Resultados de la Ejecución
+
+```text
+[doctest] doctest version is "2.5.3"
+===============================================================================
+[doctest] test cases:    1 |    1 passed | 0 failed | 0 skipped
+[doctest] assertions: 2002 | 2002 passed | 0 failed |
+[doctest] Status: SUCCESS!
+```
