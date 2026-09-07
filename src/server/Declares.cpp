@@ -87,3 +87,4 @@ WorldPos Libertad{};
 std::unique_ptr<cCola> Ayuda;
 std::unique_ptr<ConsultasPopulares> ConsultaPopular;
 std::unique_ptr<SoundMapInfo> SonidosMapas;
+std::vector<cGarbage> TrashCollector;

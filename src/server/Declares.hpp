@@ -13,6 +13,7 @@
 #endif
 
 #include "Matematicas.hpp"
+#include "cGarbage.hpp"
 
 // Declaraciones de clases de módulos de clase aun no porteados
 class clsByteQueue {};
@@ -1351,6 +1352,7 @@ extern WorldPos Libertad;
 extern std::unique_ptr<cCola> Ayuda;
 extern std::unique_ptr<ConsultasPopulares> ConsultaPopular;
 extern std::unique_ptr<SoundMapInfo> SonidosMapas;
+extern std::vector<cGarbage> TrashCollector;
 
 // Win32 API functions declarations
 #if defined(_WIN32)

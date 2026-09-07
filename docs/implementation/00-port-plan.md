@@ -125,14 +125,15 @@ Para cada módulo se aplica estrictamente la política de nombres definida en `d
 - **Estimación**: **Chico** (~250 líneas combinadas).
 - **Estrategia de Verificación**: Pruebas unitarias en C++ con **doctest**.
 
-#### 5. `cGarbage`
+#### 5. `cGarbage` (PARCIAL)
 - **Archivos Legacy**: `legacy/server/Codigo/cGarbage.cls`
 - **Propósito**: Estructura plana DTO de coordenadas (`map`, `X`, `Y`) para encolar la limpieza de objetos temporales del mundo (fogatas).
-- **Archivo C++ Propuesto**: `src/server/cGarbage.hpp` / `src/server/cGarbage.cpp` (o `struct ElementoBasura`)
+- **Archivo C++ Propuesto**: `src/server/cGarbage.hpp` (`struct cGarbage`)
+- **Estado**: **Parcial** (Verificación diferida a `Acciones.bas` y `General.bas`, ver [`05-cgarbage.md`](05-cgarbage.md)).
 - **Dependencias**: *Ninguna*.
-- **Estimación**: **Chico** (~60 líneas).
-- **Estrategia de Verificación**: Pruebas unitarias en C++ con **doctest**.
-- **Nota de Auditoría / Migración**: Cobertura completada en [`docs/audit/01a-clsdicc-cgarbage.md`](../audit/01a-clsdicc-cgarbage.md). Especificaciones C++ en [`docs/implementation/01a-clsdicc-cgarbage.md`](01a-clsdicc-cgarbage.md).
+- **Estimación**: **Chico** (~20 líneas).
+- **Estrategia de Verificación**: Verificación de compilación (verificación de integración diferida a `Acciones` y `General`).
+- **Nota de Auditoría / Migración**: Cobertura completada en [`docs/audit/01a-clsdicc-cgarbage.md`](../audit/01a-clsdicc-cgarbage.md). Especificaciones C++ en [`docs/implementation/05-cgarbage.md`](05-cgarbage.md).
 
 #### 6. `modHexaStrings`
 - **Archivos Legacy**: `legacy/server/Codigo/modHexaStrings.bas`
@@ -192,9 +193,10 @@ Para cada módulo se aplica estrictamente la política de nombres definida en `d
 - **Archivos Legacy**: `legacy/server/Codigo/clsClan.cls`, `legacy/server/Codigo/modGuilds.bas`
 - **Propósito**: Administración de clanes, lista global de clanes y persistencia en disco de archivos de clanes (`guildsinfo.inf`, `.mem`, `.sol`, `.rel`).
 - **Archivo C++ Propuesto**: `src/server/clsClan.hpp` / `src/server/clsClan.cpp`, `src/server/modGuilds.hpp` / `src/server/modGuilds.cpp`
-- **Dependencias**: `Declares`, `FileIO`, `clsIniReader`, `cSolicitud`.
+- **Dependencias**: `Declares`, `FileIO`, `clsIniReader`, `cSolicitud`, `clsdicc`.
 - **Estimación**: **Grande** (~2.500 líneas combinadas).
 - **Estrategia de Verificación**: **Verificación byte a byte contra fixtures reales en `tests/fixtures/guilds/` (`guildsinfo.inf`, `.mem`, `.sol`, `.rel`) con pruebas en doctest** y pruebas con cliente VB6.
+- **Nota Importante sobre `ContarVotos` y `clsdicc`**: Al portar `ContarVotos` en `clsClan`, acordate de que `clsdicc.MayorValor(cant)` en caso de empate no devuelve un único ganador ni la última clave, sino **todas las claves empatadas concatenadas por comas en orden de inserción** (ej. `"JUGADOR1,JUGADOR2"`). `ContarVotos` depende de este formato exacto para procesar el resultado de la elección. Ver [`docs/implementation/04-clsdicc.md`](04-clsdicc.md).
 
 ---
 
@@ -395,7 +397,7 @@ Para cada módulo se aplica estrictamente la política de nombres definida en `d
 - **Dependencias**: `Declares`, `InvUsuario`, `MODULO_NPCs`, `Comercio`, `modBanco`, `modSendData`, `ModAreas`.
 - **Estimación**: **Mediano** (~400 líneas).
 - **Estrategia de Verificación**: Pruebas con cliente VB6 interactuando con el mapa.
-- **Nota de Auditoría / Migración (`cGarbage` / Supervivencia)**: Al portar la habilidad de Supervivencia (`CrearFuego`), acordate de incluir la lógica de instanciación y encolado de `cGarbage` en `TrashCollector` al encender una fogata, según lo especificado en [`docs/implementation/01a-clsdicc-cgarbage.md`](01a-clsdicc-cgarbage.md) y [`docs/audit/01a-clsdicc-cgarbage.md`](../audit/01a-clsdicc-cgarbage.md).
+- **Nota de Auditoría / Migración (`cGarbage` / Supervivencia)**: Al portar la habilidad de Supervivencia (`CrearFuego`), acordate de incluir la lógica de instanciación y encolado de `cGarbage` en `TrashCollector` al encender una fogata (must include integration test coverage for TrashCollector/cGarbage cleanup behavior when this module is ported — see docs/audit/01a-clsdicc-cgarbage.md and docs/implementation/05-cgarbage.md).
 
 #### 34. `Modulo_UsUaRiOs`
 - **Archivos Legacy**: `legacy/server/Codigo/Modulo_UsUaRiOs.bas`
@@ -485,7 +487,7 @@ Para cada módulo se aplica estrictamente la política de nombres definida en `d
 - **Dependencias**: *Todos los módulos del servidor previamente migrados*.
 - **Estimación**: **Grande** (~1.467 líneas).
 - **Estrategia de Verificación**: Ejecución del servidor completo en C++ (`ArgentumServer.exe`) recibiendo conexiones del cliente VB6 real.
-- **Nota de Auditoría / Migración (`cGarbage` / `LimpiarMundo`)**: Al portar el procedimiento de mantenimiento `LimpiarMundo`, acordate de incluir la rutina de recorrido y descolado de la colección `TrashCollector` para remover del mapa los objetos `cGarbage` (fogatas), según lo especificado en [`docs/implementation/01a-clsdicc-cgarbage.md`](01a-clsdicc-cgarbage.md) y [`docs/audit/01a-clsdicc-cgarbage.md`](../audit/01a-clsdicc-cgarbage.md).
+- **Nota de Auditoría / Migración (`cGarbage` / `LimpiarMundo`)**: Al portar el procedimiento de mantenimiento `LimpiarMundo`, acordate de incluir la rutina de recorrido y descolado de la colección `TrashCollector` para remover del mapa los objetos `cGarbage` (fogatas) (must include integration test coverage for TrashCollector/cGarbage cleanup behavior when this module is ported — see docs/audit/01a-clsdicc-cgarbage.md and docs/implementation/05-cgarbage.md).
 
 ---
 
@@ -497,7 +499,7 @@ Para cada módulo se aplica estrictamente la política de nombres definida en `d
 | **0** | `clsIniReader.cls` | `src/server/clsIniReader.hpp` | Chico | Base | Pruebas Unitarias doctest |
 | **0** | `clsdicc.cls` | `src/server/clsdicc.hpp` | Chico | Adaptador `std::map` (Audit. Pendiente) | Pruebas Unitarias doctest |
 | **0** | `ModCola`, `Queue`, `cColaArray` | `src/server/ModCola.hpp` | Chico | Queues internas | Pruebas Unitarias doctest |
-| **0** | `cGarbage.cls` | `src/server/cGarbage.hpp` | Chico | Limpieza (Audit. Pendiente) | Pruebas Unitarias doctest |
+| **0** | `cGarbage.cls` | `src/server/cGarbage.hpp` | Chico | Parcial (verificación diferida) | Compilación limpia |
 | **0** | `modHexaStrings.bas` | `src/server/modHexaStrings.hpp` | Chico | Hex / Strings | Pruebas Unitarias doctest |
 | **0** | `cSolicitud.cls` | `src/server/cSolicitud.hpp` | Chico | Solicitudes Clan | doctest + Fixtures `.sol` |
 | **1** | `clsByteQueue.cls` | `src/server/clsByteQueue.hpp` | Mediano | 🚨 **CRÍTICO 2: Red Binaria** | doctest + Socket VB6 |
