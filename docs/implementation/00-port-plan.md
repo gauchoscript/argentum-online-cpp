@@ -147,11 +147,12 @@ Para cada módulo se aplica estrictamente la política de nombres definida en `d
 
 #### 7. `cSolicitud`
 - **Archivos Legacy**: `legacy/server/Codigo/cSolicitud.cls`
-- **Propósito**: Clase contenedora de datos para las solicitudes de ingreso a clanes (`Nombre`, `Detalle`).
-- **Archivo C++ Propuesto**: `src/server/cSolicitud.hpp` / `src/server/cSolicitud.cpp`
+- **Propósito**: Clase contenedora de datos para las solicitudes de ingreso a clanes (`UserName`, `desc`).
+- **Archivo C++ Propuesto**: `src/server/cSolicitud.hpp` (`struct cSolicitud`)
+- **Estado**: **Completado (Parcial / DTO)** (Ver [`08-csolicitud.md`](08-csolicitud.md)).
 - **Dependencias**: *Ninguna*.
-- **Estimación**: **Chico** (~50 líneas).
-- **Estrategia de Verificación**: Pruebas unitarias con **doctest** y verificación con fixtures de clanes (`.sol`).
+- **Estimación**: **Chico** (~15 líneas).
+- **Estrategia de Verificación**: Verificación de compilación limpia (verificación de integración diferida a `clsClan` / `modGuilds`).
 
 ---
 
@@ -199,6 +200,7 @@ Para cada módulo se aplica estrictamente la política de nombres definida en `d
 - **Estimación**: **Grande** (~2.500 líneas combinadas).
 - **Estrategia de Verificación**: **Verificación byte a byte contra fixtures reales en `tests/fixtures/guilds/` (`guildsinfo.inf`, `.mem`, `.sol`, `.rel`) con pruebas en doctest** y pruebas con cliente VB6.
 - **Nota Importante sobre `ContarVotos` y `clsdicc`**: Al portar `ContarVotos` en `clsClan`, acordate de que `clsdicc.MayorValor(cant)` en caso de empate no devuelve un único ganador ni la última clave, sino **todas las claves empatadas concatenadas por comas en orden de inserción** (ej. `"JUGADOR1,JUGADOR2"`). `ContarVotos` depende de este formato exacto para procesar el resultado de la elección. Ver [`docs/implementation/04-clsdicc.md`](04-clsdicc.md).
+- **Nota Importante sobre `cSolicitud` y Archivos `.sol`**: Al portar la persistencia de solicitudes de clan en `clsClan` y `modGuilds` (archivos `<GuildName>-solicitudes.sol` en `tests/fixtures/guilds/`), tener en cuenta que en disco las claves del INI bajo la sección `[SOLICITUDi]` son `Nombre` y `Detalle`, mientras que en la definición legacy de `cSolicitud.cls` los campos se denominan `UserName` y `desc`. Ver [`docs/implementation/08-csolicitud.md`](08-csolicitud.md).
 
 ---
 

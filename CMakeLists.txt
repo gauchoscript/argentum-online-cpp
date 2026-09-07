@@ -22,6 +22,7 @@ add_library(server_core STATIC
     src/server/cGarbage.hpp
     src/server/ModCola.cpp
     src/server/modHexaStrings.cpp
+    src/server/cSolicitud.hpp
 )
 target_include_directories(server_core PUBLIC src)
 target_link_libraries(server_core PUBLIC asio::asio)
