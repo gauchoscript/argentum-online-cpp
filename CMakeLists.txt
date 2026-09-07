@@ -17,6 +17,7 @@ find_package(SFML CONFIG REQUIRED COMPONENTS Graphics Window System Network Audi
 add_library(server_core STATIC
     src/server/Matematicas.cpp
     src/server/Declares.cpp
+    src/server/clsIniReader.cpp
 )
 target_include_directories(server_core PUBLIC src)
 target_link_libraries(server_core PUBLIC asio::asio)
@@ -37,7 +38,10 @@ endif()
 
 # Unit tests target
 enable_testing()
-add_executable(unit_tests tests/test_matematicas.cpp)
+add_executable(unit_tests
+    tests/test_matematicas.cpp
+    tests/test_clsinireader.cpp
+)
 target_include_directories(unit_tests PRIVATE src)
 target_link_libraries(unit_tests PRIVATE server_core doctest::doctest)
 

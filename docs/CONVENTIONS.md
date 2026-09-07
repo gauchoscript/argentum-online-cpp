@@ -59,6 +59,18 @@ real risk of mistranslation — these add maintenance cost without adding
 protection. When in doubt, ask: "would this test have caught a real bug if 
 the port had gotten something subtly wrong?" If no, skip it.
 
+## Lista de Chequeo de Finalización de Módulos (Module-Porting Checklist)
+
+El porting de un módulo **NO se considera completo** hasta que existan **AMBOS** de los siguientes elementos de documentación:
+
+1. **Comentarios de Código en el Fuente**: Comentarios explicativos directamente en los archivos de código fuente C++ (`.hpp` / `.cpp`) indicando cualquier comportamiento no obvio, quirk del legacy VB6 o desviación respecto a una traducción ilusa/directa.
+2. **Documentación de Implementación en `docs/implementation/<modulo>.md`**: Una entrada correspondiente bajo la sección **"Decisiones de Diseño"** (*Design Decisions*) que describa los mismos hallazgos en lenguaje llano, redactada para alguien que no haya abierto el archivo fuente.
+
+> [!IMPORTANT]
+> **Regla de Exclusividad**: Un port **NO está completo** si solo existe uno de estos dos elementos.
+> - **Los comentarios de código por sí solos son insuficientes** porque no resultan descubribles para quien no sabe de antemano qué archivo fuente abrir para revisar decisiones de diseño del proyecto.
+> - **La documentación de implementación por sí sola es insuficiente** porque termina desfasándose del código real con el tiempo si no se encuentra emparejada con comentarios en contexto dentro del archivo fuente.
+
 ## Known necessary exception
 Networking/concurrency: the legacy server already supports multiple 
 simultaneous player connections. Faithfully porting that existing capability 

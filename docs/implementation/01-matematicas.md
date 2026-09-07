@@ -18,6 +18,37 @@ Se completó el puerto transliterado 1:1 del módulo `legacy/server/Codigo/Matem
 
 La migración preservó rigurosamente la firma, nombres de parámetros y algoritmos internos sin refactorizaciones ni optimizaciones.
 
+## Decisiones de Diseño
+
+### Diferencia entre `Distancia` y `Distance`
+
+A partir de la investigación del código fuente original de VB6, se confirmó que `Distancia` y `Distance` son dos funciones genuinamente distintas que responden a necesidades diferentes dentro del juego:
+
+- **`Distancia(wp1, wp2)`**: Recibe dos estructuras `WorldPos` y calcula la **distancia Manhattan ponderada por mapa** en la grilla:
+  `|wp1.X - wp2.X| + |wp1.Y - wp2.Y| + (|wp1.Map - wp2.Map| * 100)`
+  Se utiliza principalmente para la comprobación de proximidad y visibilidad entre posiciones del mundo en la grilla del juego.
+
+- **`Distance(X1, Y1, X2, Y2)`**: Recibe coordenadas de grilla individuales `(X, Y)` y calcula la **distancia euclidiana geométrica 2D**:
+  `sqrt((Y1 - Y2)^2 + (X1 - X2)^2)`
+  Se utiliza para cálculos continuos de rango, radio de hechizos o trayectorias euclidianas.
+
+Ambas funciones coexisten en el port porque sustituirlas por una sola o unificar sus comportamientos alteraría la lógica interna del servidor.
+
+### Comportamiento Confirmado de `RandomNumber`
+
+La función `RandomNumber(LowerBound, UpperBound)` preserva exactamente la fórmula del legacy VB6:
+`Fix(Rnd * (UpperBound - LowerBound + 1)) + LowerBound`
+
+Durante la verificación con pruebas unitarias se ratificaron dos aspectos clave:
+1. **Rango Inclusivo**: El rango devuelto es estrictamente cerrado e inclusivo en ambos extremos `[LowerBound, UpperBound]`.
+2. **Generación con Limite Único**: Cuando `LowerBound == UpperBound`, devuelve exactamente ese valor sin divisiones por cero ni errores de rango.
+
+Una reescritura ilusoria en C++ (usando el operador `%` sobre enteros o variaciones con `std::uniform_int_distribution` sin considerar los límites exactos de truncamiento con `Fix(Rnd * ...)`) podría haber provocado sesgos de distribución o fallos en los extremos inclusivos.
+
+### Poda de la Suite de Pruebas
+
+Siguiendo la [Testing Philosophy](file:///c:/Users/Elio/Documents/ArgentumOnline0.13.0/docs/CONVENTIONS.md#testing-philosophy) detallada en `docs/CONVENTIONS.md`, no se escribieron pruebas unitarias para funciones aritméticas triviales de una sola línea (como `Porcentaje`), dado que no presentaban riesgos reales de mala traducción. La suite de pruebas se centró exclusivamente en verificar los límites inclusivos y la distribución de `RandomNumber`.
+
 ## Estructuras y Funciones Migradas
 
 ### `WorldPos` (Estructura Base)
@@ -48,7 +79,7 @@ La migración preservó rigurosamente la firma, nombres de parámetros y algorit
 
 ## Pruebas Unitarias (`doctest`)
 
-Siguiendo la política de testing orientada al valor (Escuela de Detroit / Estilo Clásico), se mantuvo la suite de pruebas unitarias enfocada específicamente en `RandomNumber` (`tests/test_matematicas.cpp`), verificando el correcto comportamiento del truncamiento y acotamiento inclusivo del rango.
+Siguiendo la política de testing orientada al valor (Escuela Clásica / Detroit), se mantuvo la suite de pruebas unitarias enfocada específicamente en `RandomNumber` (`tests/test_matematicas.cpp`), verificando el correcto comportamiento del truncamiento y acotamiento inclusivo del rango.
 
 ### Resultados de la Ejecución
 

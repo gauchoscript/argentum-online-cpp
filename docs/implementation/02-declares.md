@@ -9,13 +9,46 @@ target_source: src/server/Declares.cpp
 last_updated: 2026-09-07
 ---
 
-# Módulo Declares
+# Módulo #2: Declares
 
 ## Resumen
 
 Se completó la migración integral de `legacy/server/Codigo/Declares.bas` a un único par de archivos `src/server/Declares.hpp` y `src/server/Declares.cpp`.
 
 La investigación confirmó que `Declares.bas` en el código fuente VB6 original es un módulo exclusivamente declarativo (no contiene cuerpos ejecutables de `Sub` o `Function`). Por lo tanto, no posee dependencias ejecutables reales de `Matematicas` ni de `clsIniReader`, lo que permitió moverlo a la Capa 0 como módulo base declarativo.
+
+## Decisiones de Diseño
+
+### 1. Naturaleza Puramente Declarativa de `Declares.bas`
+
+Se confirmó mediante la inspección completa del archivo `legacy/server/Codigo/Declares.bas` que no contiene ningún procedimiento executable (`Sub` o `Function`). Dado que solo define constantes, tipos de datos (UDTs), arreglos globales y firmas de Win32 API, fue seguro portarlo como un único módulo C++ completo unificado en la Capa 0, en lugar de dividirlo en submódulos o posponer su migración.
+
+### 2. Corrección al Plan de Port Inicial sobre Dependencias
+
+En el plan de porting original (`docs/implementation/00-port-plan.md`) se había registrado preliminarmente que `Declares` "dependía de Matematicas y clsIniReader".
+
+Al auditar el código fuente real del servidor VB6 (inspeccionando el contenido y los cuerpos de código en lugar de confiar ciegamente en resúmenes ejecutivos iniciales), se descubrió que dicha supuesta dependencia era inexacta. Se trataba de una asociación organizacional suelta del plan inicial y no de una dependencia real de compilación o código ejecutable. Por esta razón, el módulo `Declares` se reubicó correctamente a la Capa 0 como una cabecera maestra declarativa base.
+
+### 3. Representación de Miembros de Clase con `std::unique_ptr` y Forward Declarations
+
+Todos los miembros de estructuras y variables globales que en VB6 corresponden a instancias de clases (`clsByteQueue`, `clsAntiDoS`, `clsAntiMassClon`, `clsParty`, `cCola`, `ConsultasPopulares`, `SoundMapInfo`) fueron representados en C++ como `std::unique_ptr<T>` acompañados de *forward declarations* en el header (`class ClassName;`).
+
+**Razón del Diseño**: En VB6, las variables de tipo clase son internamente tipos de referencia o punteros (handles COM) administrados en el heap, y jamás tipos de datos incrustados por valor dentro de un UDT. Usar `std::unique_ptr` preserva exactamente esta semántica de referencia y permite compilar `Declares.hpp` sin requerir la inclusión de headers de clases que aún no han sido migradas.
+
+> [!TIP]
+> **Patrón Estándar del Proyecto**: Se establece la representación de miembros `New ClassName` o referencias de clase de VB6 mediante `std::unique_ptr<ClassName>` con *forward declaration* como la convención a aplicar en todo el resto del codebase de C++ al encontrarse con miembros equivalentes en futuros módulos.
+
+### 4. Uso Deliberado de `std::unique_ptr` vs `std::shared_ptr`
+
+Se optó conscientemente por **NO** utilizar `std::shared_ptr` en las estructuras y globales de `Declares`. Todas las intancias globales (como `aDos`, `aClon`, `Parties`) y los miembros de `User` (`outgoingData`, `incomingData`) tienen una semántica clara de propiedad única (*single-ownership*).
+
+El uso de `std::shared_ptr` se descartó deliberadamente para evitar sobrecostos innecesarios de conteo de referencias atómico y para explicitar el ciclo de vida del objeto. `std::shared_ptr` se reservará exclusivamente para casos genuinos de propiedad compartida (*multiple-ownership*) si llegaran a surgir en módulos posteriores.
+
+### 5. Elección de Enumeraciones: `enum` Tradicional vs `enum class`
+
+Las enumeraciones principales del servidor (`PlayerType`, `eClass`, `eCiudad`, `eRaza`, `eGenero`, `UserSkills`, `UserAtributos`, `eNickColor`, etc.) se migraron utilizando `enum` C++ tradicional (con tipo subyacente `std::int32_t`) en lugar de `enum class` fuertemente tipado.
+
+**Razón del Diseño**: En VB6, las constantes de enumeración pertenecen al espacio de nombres global y se utilizan constantemente en operaciones aritméticas, índices de arreglos (`UserList[UserIndex].Stats.UserSkills[UserSkills::Magia]`) y máscaras de bits (`UserList[UserIndex].flags.Privilegios & PlayerType::Admin`). El uso de `enum class` hubiera exigido plagar el código portado de conversiones explícitas `static_cast<int>(...)` en miles de líneas, perjudicando la legibilidad y violando el principio de transliteración directa 1:1. Únicamente se usó `enum class` en tipos auxiliares aislados introducidos para *forward declarations*.
 
 ## Estructura Porteada
 
