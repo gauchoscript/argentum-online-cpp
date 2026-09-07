@@ -61,15 +61,21 @@ the port had gotten something subtly wrong?" If no, skip it.
 
 ## Lista de Chequeo de Finalización de Módulos (Module-Porting Checklist)
 
-El porting de un módulo **NO se considera completo** hasta que existan **AMBOS** de los siguientes elementos de documentación:
+El porting o investigación de un módulo **NO se considera completo** hasta que existan los **TRES** elementos de documentación requeridos:
 
 1. **Comentarios de Código en el Fuente**: Comentarios explicativos directamente en los archivos de código fuente C++ (`.hpp` / `.cpp`) indicando cualquier comportamiento no obvio, quirk del legacy VB6 o desviación respecto a una traducción ilusa/directa.
 2. **Documentación de Implementación en `docs/implementation/<modulo>.md`**: Una entrada correspondiente bajo la sección **"Decisiones de Diseño"** (*Design Decisions*) que describa los mismos hallazgos en lenguaje llano, redactada para alguien que no haya abierto el archivo fuente.
+3. **Propagación de Decisiones Cruzadas entre Módulos (*Cross-Module Decision Propagation*)**: Antes de dar por completado un módulo, verificá explícitamente: ¿algún hallazgo, decisión de diseño o descubrimiento de comportamiento realizado durante este trabajo afecta a OTRO módulo que aún no haya sido porteado?
 
 > [!IMPORTANT]
-> **Regla de Exclusividad**: Un port **NO está completo** si solo existe uno de estos dos elementos.
-> - **Los comentarios de código por sí solos son insuficientes** porque no resultan descubribles para quien no sabe de antemano qué archivo fuente abrir para revisar decisiones de diseño del proyecto.
-> - **La documentación de implementación por sí sola es insuficiente** porque termina desfasándose del código real con el tiempo si no se encuentra emparejada con comentarios en contexto dentro del archivo fuente.
+> **Regla de Incompletitud Cruzada**: Una decisión que solo vive en la documentación del módulo donde fue descubierta, pero afecta a un módulo diferente, es una **decisión incompleta**. La propagación a la entrada del módulo afectado en `docs/implementation/00-port-plan.md` es **obligatoria, no opcional**.
+
+### Escenarios Típicos de Decisiones Cruzadas:
+- **Estructuras compartidas o globales**: La investigación de un módulo revela que su comportamiento real vive o es consumido por otro módulo no porteado (ej. la limpieza real de `cGarbage` ejecutándose en `Acciones.bas` y `General.bas`).
+- **Contratos y formatos de salida no obvios**: El formato o comportamiento de un módulo condiciona a un módulo consumidor futuro que necesita saberlo para evitar asumir un comportamiento incorrecto (ej. el desempate de `MayorValor` en `clsdicc` afectando a `clsClan`).
+- **Resolución de dependencias**: Una dependencia que originalmente se asumía propia de un módulo cambia lo que un módulo futuro debe implementar (ej. el búfer global de `Queue.bas` convirtiéndose en un `std::queue` local dentro de `PathFinding`, una vez que `PathFinding` sea porteado).
+
+Si existe tal referencia cruzada, **debés agregar una nota explícita en la entrada del módulo AFECTADO en `docs/implementation/00-port-plan.md`**, citando el documento donde reside la fundamentación completa. No consideres terminado el trabajo de un módulo hasta que este paso de propagación haya sido verificado y completado explícitamente — ya que un colaborador futuro trabajando en el módulo afectado no tiene motivos para revisar la documentación del módulo de origen.
 
 ## Known necessary exception
 Networking/concurrency: the legacy server already supports multiple 

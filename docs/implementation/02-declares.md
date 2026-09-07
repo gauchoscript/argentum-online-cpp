@@ -50,6 +50,14 @@ Las enumeraciones principales del servidor (`PlayerType`, `eClass`, `eCiudad`, `
 
 **Razón del Diseño**: En VB6, las constantes de enumeración pertenecen al espacio de nombres global y se utilizan constantemente en operaciones aritméticas, índices de arreglos (`UserList[UserIndex].Stats.UserSkills[UserSkills::Magia]`) y máscaras de bits (`UserList[UserIndex].flags.Privilegios & PlayerType::Admin`). El uso de `enum class` hubiera exigido plagar el código portado de conversiones explícitas `static_cast<int>(...)` en miles de líneas, perjudicando la legibilidad y violando el principio de transliteración directa 1:1. Únicamente se usó `enum class` en tipos auxiliares aislados introducidos para *forward declarations*.
 
+### 6. Definición e Inclusión de `struct tVertice`
+
+La estructura plana `tVertice` (`struct tVertice { std::int16_t X{0}; std::int16_t Y{0}; };`) se incluyó en `src/server/Declares.hpp` desde el port inicial del módulo.
+
+**Razón del Diseño**: En el código legacy de VB6, `tVertice` estaba definida originalmente en `Queue.bas` (L32). Sin embargo, en `Declares.bas` la estructura de datos del `npc` contiene la subestructura `NpcPathFindingInfo` (`PFINFO`), que a su vez contiene el camino calculado `Path() As tVertice` (representado en C++ como `std::vector<tVertice> Path;`). Para que `Declares.hpp` pudiera compilar de forma autónoma la estructura `npc` y la declaración externa `Npclist`, fue indispensable definir `struct tVertice` en las primeras líneas de `Declares.hpp`.
+
+Posteriormente, al auditar `Queue.bas`, se confirmó que la cola `Queue` era un contenedor monohilo de uso exclusivo dentro de `SeekPath` en `PathFinding.bas`. Por ende, `Queue.bas` no requiere un módulo global C++ propio y su lógica se implementará como un `std::queue<tVertice>` local dentro de `PathFinding.hpp` al portar la Capa 8, manteniendo a `tVertice` en `Declares.hpp` como la estructura plana de coordenadas compartida por la entidad `npc`.
+
 ## Estructura Porteada
 
 - **Constantes**: Todas las constantes `Public Const` fueron migradas como `constexpr` o `const` preservando sus valores numéricos y cadenas exactas.

@@ -117,12 +117,13 @@ Para cada módulo se aplica estrictamente la política de nombres definida en `d
 - **Estrategia de Verificación**: Pruebas unitarias en C++ con **doctest**.
 - **Nota de Auditoría / Migración**: Cobertura completada en [`docs/audit/01a-clsdicc-cgarbage.md`](../audit/01a-clsdicc-cgarbage.md). Especificaciones C++ en [`docs/implementation/01a-clsdicc-cgarbage.md`](01a-clsdicc-cgarbage.md).
 
-#### 4. `ModCola`, `Queue` y `cColaArray`
-- **Archivos Legacy**: `legacy/server/Codigo/ModCola.cls`, `Queue.bas`, `cColaArray.cls`
-- **Propósito**: Implementaciones de colas FIFO para mensajes y datos internos del servidor.
-- **Archivo C++ Propuesto**: `src/server/ModCola.hpp` / `src/server/ModCola.cpp`, `src/server/Queue.hpp`, `src/server/cColaArray.hpp`
+#### 4. `ModCola` y `Queue` (`cColaArray` EXCLUIDO)
+- **Archivos Legacy**: `legacy/server/Codigo/ModCola.cls`, `Queue.bas` (`legacy/server/Codigo/cColaArray.cls` **EXCLUIDO**)
+- **Propósito**: Implementaciones de colas FIFO para mensajes (`ModCola` / `/AYUDA`) y datos de navegación de NPCs (`Queue` / Pathfinding BFS).
+- **Archivo C++ Propuesto**: `src/server/ModCola.hpp` / `src/server/ModCola.cpp`, `src/server/Queue.hpp` (`cColaArray.hpp` **NO SE PORTA**)
+- **Estado de `cColaArray.cls`**: **EXCLUIDO (Código Muerto)**. Ver auditoría en [`docs/audit/06a-colaarray-dead-code.md`](../audit/06a-colaarray-dead-code.md). La clase está aislada dentro de un bloque `#If UsarQueSocket = 3` deshabilitado en `SERVER.VBP` (`UsarQueSocket = 1`), su única referencia (`CommandsBuffer`) fue eliminada del `Type User` en `Declares.bas` y no compilaría jamás. El changelog de 2006-2007 confirma que fue reemplazada definitivamente por `clsByteQueue`.
 - **Dependencias**: *Ninguna*.
-- **Estimación**: **Chico** (~250 líneas combinadas).
+- **Estimación**: **Chico** (~200 líneas combinadas).
 - **Estrategia de Verificación**: Pruebas unitarias en C++ con **doctest**.
 
 #### 5. `cGarbage` (PARCIAL)
@@ -340,9 +341,10 @@ Para cada módulo se aplica estrictamente la política de nombres definida en `d
 
 #### 27. `PathFinding`
 - **Archivos Legacy**: `legacy/server/Codigo/PathFinding.bas`
-- **Propósito**: Algoritmos de búsqueda de caminos (A*) para movimiento de NPCs esquivando obstáculos en la grilla.
+- **Propósito**: Algoritmos de búsqueda de caminos (BFS) para movimiento de NPCs esquivando obstáculos en la grilla.
 - **Archivo C++ Propuesto**: `src/server/PathFinding.hpp` / `src/server/PathFinding.cpp`
 - **Dependencias**: `Declares`.
+- **Nota de Migración (`Queue.bas`)**: Al portar este módulo, la funcionalidad de `Queue.bas` (de la cual depende `PathFinding.bas`) ya quedó resuelta en la auditoría de Capa 0: no debe crearse una estructura ni módulo global/estático `Queue`. Debe implementarse como un `std::queue<tVertice>` local circunscrito al ámbito de la función `SeekPath`, en consonancia con el modelo de ejecución monohilo monobúsqueda confirmado en [`docs/implementation/06-modcola-queue-colaarray.md`](06-modcola-queue-colaarray.md). La estructura plana `tVertice` ya reside en `Declares.hpp`.
 - **Estimación**: **Mediano** (~300 líneas).
 - **Estrategia de Verificación**: Pruebas unitarias en C++ con **doctest** y pruebas con cliente VB6.
 
@@ -498,7 +500,7 @@ Para cada módulo se aplica estrictamente la política de nombres definida en `d
 | **0** | `Matematicas.bas` | `src/server/Matematicas.hpp` | Chico | Base (Completado) | Pruebas Unitarias doctest |
 | **0** | `clsIniReader.cls` | `src/server/clsIniReader.hpp` | Chico | Base | Pruebas Unitarias doctest |
 | **0** | `clsdicc.cls` | `src/server/clsdicc.hpp` | Chico | Adaptador `std::map` (Audit. Pendiente) | Pruebas Unitarias doctest |
-| **0** | `ModCola`, `Queue`, `cColaArray` | `src/server/ModCola.hpp` | Chico | Queues internas | Pruebas Unitarias doctest |
+| **0** | `ModCola`, `Queue` (`cColaArray.cls` EXCLUIDO) | `src/server/ModCola.hpp`, `src/server/Queue.hpp` | Chico | Queues internas (Ver `06a-colaarray-dead-code.md`) | Pruebas Unitarias doctest |
 | **0** | `cGarbage.cls` | `src/server/cGarbage.hpp` | Chico | Parcial (verificación diferida) | Compilación limpia |
 | **0** | `modHexaStrings.bas` | `src/server/modHexaStrings.hpp` | Chico | Hex / Strings | Pruebas Unitarias doctest |
 | **0** | `cSolicitud.cls` | `src/server/cSolicitud.hpp` | Chico | Solicitudes Clan | doctest + Fixtures `.sol` |

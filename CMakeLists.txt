@@ -20,6 +20,7 @@ add_library(server_core STATIC
     src/server/clsIniReader.cpp
     src/server/clsdicc.cpp
     src/server/cGarbage.hpp
+    src/server/ModCola.cpp
 )
 target_include_directories(server_core PUBLIC src)
 target_link_libraries(server_core PUBLIC asio::asio)
@@ -44,6 +45,7 @@ add_executable(unit_tests
     tests/test_matematicas.cpp
     tests/test_clsinireader.cpp
     tests/test_clsdicc.cpp
+    tests/test_modcola.cpp
 )
 target_include_directories(unit_tests PRIVATE src)
 target_link_libraries(unit_tests PRIVATE server_core doctest::doctest)
