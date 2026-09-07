@@ -31,15 +31,33 @@ APIs (Winsock, DirectX, flat files) and are not subject to the "preserve
 legacy structure" rule — only the game logic's own organization is.
 
 ## Testing Policy
-- All unit tests across this entire project use **doctest** as the single testing 
-  framework. It was chosen specifically for its minimal compile-time overhead 
-  given the large number of modules being ported.
-- **Classic / Detroit School Approach**: Tests must be state-based and exercise real 
-  objects/logic, avoiding mocks wherever possible.
-- **Value-Driven Testing**: Do not write tests for the sake of writing tests or 
-  chasing superficial coverage numbers. Focus testing effort where it brings 
-  genuine confidence (e.g. byte-exact file persistence roundtrips, binary socket packet 
-  serialization, complex combat/magic algorithms, and critical state invariants).
+All unit tests across this entire project use **doctest** as the single testing 
+framework. It was chosen specifically for its minimal compile-time overhead 
+given the large number of modules being ported.
+
+## Testing Philosophy
+This project follows the Classical/Detroit school of testing: prefer real 
+objects and real collaborators over mocks. Only mock genuine external 
+boundaries (network sockets, filesystem where fixture/temp-file testing is 
+impractical, system clock, other non-deterministic or slow externalities) 
+— never mock an internal module we're also porting in this project.
+
+Every test must earn its place. Before writing a test, confirm it does at 
+least one of the following, or don't write it:
+- Tests a boundary or edge case (zero, negative, empty, max value, an 
+  exact known cap from the legacy system).
+- Tests a quirk of the ORIGINAL VB6 behavior specifically surfaced during 
+  audit (rounding, truncation, range inclusivity, case sensitivity, etc.) 
+  — cite the audit finding this test is protecting.
+- Tests a known translation risk area (integer division/overflow 
+  differences between VB6 and C++, string encoding boundaries).
+- Tests real integration between two already-ported modules using real 
+  objects, not isolated arithmetic.
+
+Do not write tests that only restate a trivial one-line operation with no 
+real risk of mistranslation — these add maintenance cost without adding 
+protection. When in doubt, ask: "would this test have caught a real bug if 
+the port had gotten something subtly wrong?" If no, skip it.
 
 ## Known necessary exception
 Networking/concurrency: the legacy server already supports multiple 
