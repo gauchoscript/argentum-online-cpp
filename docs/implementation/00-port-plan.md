@@ -168,13 +168,14 @@ Para cada módulo se aplica estrictamente la política de nombres definida en `d
 
 ### Capa 1: Serialización de Red (Categoría Crítica 2)
 
-#### 8. `clsByteQueue` *(CATEGORÍA CRÍTICA 2 - PROTOCOLO DE RED)*
+#### 8. `clsByteQueue` *(CATEGORÍA CRÍTICA 2 - PROTOCOLO DE RED - COMPLETADO)*
 - **Archivos Legacy**: `legacy/server/Codigo/clsByteQueue.cls`
 - **Propósito**: Cola circular de bytes FIFO responsable del empaquetado binario little-endian, lectura/escritura de enteros, floats, cadenas con prefijo de longitud de 2 bytes y booleans de 1 byte.
 - **Archivo C++ Propuesto**: `src/server/clsByteQueue.hpp` / `src/server/clsByteQueue.cpp`
+- **Estado**: **Completado** (Documentación en [`09-clsbytequeue.md`](09-clsbytequeue.md)).
 - **Dependencias**: *Ninguna* (manipulación pura de buffer de bytes).
 - **Estimación**: **Mediano** (~600 líneas).
-- **Estrategia de Verificación**: **Pruebas unitarias de alineación binaria de bytes con doctest y pruebas de sockets contra cliente VB6 real**.
+- **Estrategia de Verificación**: **Pruebas unitarias de alineación binaria de bytes con doctest y pruebas de sockets contra cliente VB6 real**. Pass 8/8 test cases.
 
 ---
 
@@ -234,11 +235,12 @@ Para cada módulo se aplica estrictamente la política de nombres definida en `d
 
 #### 14. `TCP` (con standalone Asio) *(CATEGORÍA CRÍTICA 2 - CONEXIONES SIMULTÁNEAS)*
 - **Archivos Legacy**: `legacy/server/Codigo/TCP.bas` (absorbe la función de `wsksock.bas` y `wskapiAO.bas`)
-- **Propósito**: Capa de red multijugador basada en **standalone Asio** (la versión header-only no dependiente de Boost). Maneja la asignación de `UserIndex` en `UserList`, aceptación de sockets, eventos de desconexión y monitoreo de timeouts. (Integrado en CMake/vcpkg mediante el paquete `"asio"`).
+- **Propósito**: Capa de red multijugador basada en **standalone Asio** (la versión header-only no dependiente de Boost). Maneja la asignación de `UserIndex` en `UserList`, aceptación de sockets, eventos de desconexión y monitoreo of timeouts. (Integrado en CMake/vcpkg mediante el paquete `"asio"`).
 - **Archivo C++ Propuesto**: `src/server/TCP.hpp` / `src/server/TCP.cpp`
 - **Dependencias**: `Declares`, `clsByteQueue`, `SecurityIp`, `clsAntiMassClon`.
 - **Estimación**: **Grande** (~1.200 líneas).
 - **Estrategia de Verificación**: **Pruebas de sockets con múltiples instancias simultáneas del cliente VB6 real**.
+- **Nota de Migración (`clsByteQueue` y Capacidad Fija de Búfer)**: Cada conexión posee búferes independientes de 10.240 bytes por dirección (`incomingData` y `outgoingData`). Al ser un búfer fijo que no auto-crece, la condición `NOT_ENOUGH_SPACE` (`NotEnoughSpaceException`) representa un evento real en ejecución bajo carga de red (ej. cliente lento o ráfaga de broadcast). En el servidor legacy, la mitigación original vive en los bloques `On Error GoTo Errhandler` de `Protocol.bas` (los cuales capturan `NotEnoughSpaceErrCode`, ejecutan `FlushBuffer(UserIndex)` para forzar el vaciado del búfer al socket TCP y reintentan con `Resume`). Al portar `TCP` con Asio, se debe definir explícitamente cómo replicar o manejar este esquema de flush automático o desconexión/throttling. Ver [`09-clsbytequeue.md`](09-clsbytequeue.md).
 
 #### 15. `modSendData` *(CATEGORÍA CRÍTICA 2 - PROTOCOLO DE RED)*
 - **Archivos Legacy**: `legacy/server/Codigo/modSendData.bas`
@@ -247,6 +249,7 @@ Para cada módulo se aplica estrictamente la política de nombres definida en `d
 - **Dependencias**: `Declares`, `clsByteQueue`, `TCP`.
 - **Estimación**: **Mediano** (~650 líneas).
 - **Estrategia de Verificación**: **Pruebas de broadcast de paquetes recibidos por el cliente VB6 real**.
+- **Nota de Migración (`clsByteQueue`)**: `modSendData` vuelca los datos en la cola `outgoingData` del usuario objetivo usando `WriteBlock` / `Write*`. Ver [`09-clsbytequeue.md`](09-clsbytequeue.md).
 
 #### 16. `Protocol` *(CATEGORÍA CRÍTICA 2 - DECODIFICADOR Y ENCODIFICADOR)*
 - **Archivos Legacy**: `legacy/server/Codigo/Protocol.bas`
@@ -255,6 +258,7 @@ Para cada módulo se aplica estrictamente la política de nombres definida en `d
 - **Dependencias**: `Declares`, `clsByteQueue`, `modSendData`, `TCP`.
 - **Estimación**: **Grande** (~8.500 líneas).
 - **Estrategia de Verificación**: **Pruebas binarias con cliente VB6 autenticando, caminando y enviando comandos al servidor C++**.
+- **Nota de Migración (`clsByteQueue` y transacciones con `CopyBuffer`)**: `Protocol.bas` utiliza `buffer.CopyBuffer(incomingData)` para simular lectura transaccional de paquetes con strings variables. Si salta la excepción `NotEnoughDataException` (`NOT_ENOUGH_DATA`), el paquete está incompleto y la cola `incomingData` principal permanece inalterada hasta recibir el paquete completo TCP. Ver [`09-clsbytequeue.md`](09-clsbytequeue.md).
 
 ---
 
