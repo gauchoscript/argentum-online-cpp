@@ -58,6 +58,37 @@ La estructura plana `tVertice` (`struct tVertice { std::int16_t X{0}; std::int16
 
 Posteriormente, al auditar `Queue.bas`, se confirmó que la cola `Queue` era un contenedor monohilo de uso exclusivo dentro de `SeekPath` en `PathFinding.bas`. Por ende, `Queue.bas` no requiere un módulo global C++ propio y su lógica se implementará como un `std::queue<tVertice>` local dentro de `PathFinding.hpp` al portar la Capa 8, manteniendo a `tVertice` en `Declares.hpp` como la estructura plana de coordenadas compartida por la entidad `npc`.
 
+### 7. Declaración Forward-Reference de `IntervaloParalizado`
+
+La variable global `IntervaloParalizado` (`extern std::int16_t IntervaloParalizado;`) fue incorporada en `src/server/Declares.hpp` como una declaración *forward-reference*.
+
+**Razón del Diseño**: En el código fuente legacy de VB6, la variable pública `IntervaloParalizado` no fue declarada en `Declares.bas`, sino en `Admin.bas` (L58: `Public IntervaloParalizado As Integer`). Sin embargo, su valor es cargado desde `Server.ini` por el módulo `FileIO.bas` (`LoadSini`) y es consumido ampliamente por `FileIO.bas` (`LoadUserInit`), `modHechizos.bas`, `praetorians.bas` y `Trabajo.bas`. Dado que `Admin.bas` pertenece a la Capa 10 y aún no ha sido migrado, se declaró `IntervaloParalizado` en `Declares.hpp` / `Declares.cpp` (poblada por `FileIO.cpp`) para evitar dependencias circulares y permitir que `FileIO.hpp` compile y funcione de forma autónoma. Al migrar `Admin.bas` en el futuro, se reutilizará esta declaración en lugar de redeclararla.
+
+
+### 8. Declaraciones Forward-Reference para Variables de Servidor, MOTD e Intervalos (FileIO Grupo 3)
+
+Se incorporaron en `src/server/Declares.hpp` / `src/server/Declares.cpp` las declaraciones `extern` e instanciaciones globales de las variables de configuración de `Server.ini`, `Motd.ini` e intervalos de servidor:
+- **`BootDelBackUp` y `Puerto`**: Declarados originalmente en `Admin.bas:86-88`, poblados desde `Server.ini` por `FileIO.cpp` (`LoadSini()`).
+- **`tMotd`, `MOTD` y `MaxLines`**: Declarados originalmente en `Admin.bas:32-38`, poblados desde `Dat/Motd.ini` por `FileIO.cpp` (`LoadMotd()`).
+- **Armaduras y Túnicas Faccionarias**: Declaradas originalmente en `ModFacciones.bas:34-58` (`ArmaduraImperial1..3`, `ArmaduraCaos1..3`, `VestimentaImperialHumano`, etc.), pobladas desde `Server.ini` por `FileIO.cpp` (`LoadSini()`).
+- **`MAPA_PRETORIANO`**: Declarada originalmente en `praetorians.bas:40`, poblada desde `Server.ini` por `FileIO.cpp` (`LoadSini()`).
+- **Intervalos de Servidor**: 24 variables de refresco, casteo, trabajo, ataque e invisibilidad (`SanaIntervaloSinDescansar`, `IntervaloUserPuedeCastear`, `MinutosWs`, etc.), declaradas originalmente en `Admin.bas:51-85`, pobladas desde `Server.ini` (`[INTERVALOS]`) por `FileIO.cpp` (`LoadSini()`).
+
+**Razón del Diseño**: `FileIO.cpp` inicializa estas variables en el arranque del servidor (`LoadSini` / `LoadMotd`). Declararlas en `Declares.hpp` / `Declares.cpp` permite que `FileIO.cpp` opere de forma autónoma sin esperar a la migración futura de `ModFacciones.bas` (Capa 9), `praetorians.bas` (Capa 10) y `Admin.bas` (Capa 10), garantizando que dichos módulos consuman las globales declaradas sin redefinirlas.
+
+
+### 9. Estructuras y Variables Globale de Tablas de Datos del Juego (FileIO Grupo 5)
+
+Se incorporaron en `src/server/Declares.hpp` / `src/server/Declares.cpp` los tipos y declaraciones de variables globales requeridas por las tablas de datos del juego:
+- **`eTipoDefArmors` y `tFaccionArmaduras`**: Estructura y enumeración para las defensas de armaduras faccionarias (`Armadas` y `Caos`), declaradas originalmente en `ModFacciones.bas:72-78`, pobladas desde `Dat/ArmadurasFaccionarias.dat` por `FileIO.cpp` (`LoadArmadurasFaccion()`).
+- **`NUM_RANGOS_FACCION` y `RecompensaFacciones`**: Constante de rangos (15) y arreglo de experiencia/recompensas faccionarias, declarados en `ModFacciones.bas:63,81`, poblados por `FileIO.cpp` (`LoadBalance()`).
+- **`tAPuestas` y `Apuestas`**: Estructura y global de métricas de apuestas (`Ganancias`, `Perdidas`, `Jugadas`), declaradas originalmente en `Admin.bas:40-45`, pobladas desde `Dat/apuestas.dat` por `FileIO.cpp` (`CargaApuestas()`).
+- **`PorcentajeRecuperoMana`**: Variable de recupero de maná declarada en `Admin.bas:83`, poblada desde `Dat/Balance.dat` por `FileIO.cpp` (`LoadBalance()`).
+- **`ExponenteNivelParty`**: Variable de balance de party declarada en `mdParty.bas:67`, poblada desde `Dat/Balance.dat` por `FileIO.cpp` (`LoadBalance()`).
+
+**Razón del Diseño**: `FileIO.cpp` carga estas tablas durante la inicialización del servidor. Al declararlas en `Declares.hpp`, los futuros módulos de lógica de juego (`ModFacciones.bas`, `mdParty.bas`, `Admin.bas`) accederán directamente a estos datos ya cargados en memoria.
+
+
 ## Estructura Porteada
 
 - **Constantes**: Todas las constantes `Public Const` fueron migradas como `constexpr` o `const` preservando sus valores numéricos y cadenas exactas.

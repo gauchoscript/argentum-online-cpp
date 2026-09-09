@@ -76,8 +76,8 @@ void clsIniReader::Initialize(const std::string& file) {
                     if (MainNodes > 0) {
                         MainNode& currentMain = fileData[MainNodes - 1];
                         ChildNode child;
-                        child.Value = Text.substr(pos + 1);
-                        child.Key = UCase(Text.substr(0, pos));
+                        child.Value = Trim(Text.substr(pos + 1));
+                        child.Key = UCase(Trim(Text.substr(0, pos)));
                         currentMain.values.push_back(child);
                         currentMain.numValues++;
                     }

@@ -184,6 +184,24 @@ constexpr std::uint8_t NUMRAZAS = 5;
 
 constexpr std::uint8_t MAXSKILLPOINTS = 100;
 constexpr std::uint8_t NUMCIUDADES = 5;
+constexpr std::uint8_t NUM_RANGOS_FACCION = 15;
+
+enum class eTipoDefArmors : std::uint8_t {
+    ieBaja = 1,
+    ieMedia = 2,
+    ieAlta = 3
+};
+
+struct tFaccionArmaduras {
+    std::array<std::int16_t, 4> Armada{};
+    std::array<std::int16_t, 4> Caos{};
+};
+
+struct tAPuestas {
+    std::int32_t Ganancias{0};
+    std::int32_t Perdidas{0};
+    std::int32_t Jugadas{0};
+};
 
 constexpr std::uint8_t MAXMASCOTAS = 3;
 
@@ -1107,6 +1125,7 @@ struct User {
 };
 
 struct NPCStats {
+    std::int16_t Alineacion{0};
     std::int16_t MaxHp{0};
     std::int16_t MinHp{0};
     std::int16_t MaxHIT{0};
@@ -1306,6 +1325,7 @@ extern std::string Minutos;
 extern bool haciendoBK;
 extern std::int16_t PuedeCrearPersonajes;
 extern std::int16_t ServerSoloGMs;
+extern std::int16_t IntervaloParalizado;
 
 extern std::uint8_t MD5ClientesActivado;
 
@@ -1348,6 +1368,41 @@ extern WorldPos Arghal;
 
 extern WorldPos Prision;
 extern WorldPos Libertad;
+
+struct tMotd {
+    std::string texto;
+    std::string Formato;
+};
+
+extern std::vector<tMotd> MOTD;
+extern std::int16_t MaxLines;
+extern std::uint8_t BootDelBackUp;
+extern std::int16_t Puerto;
+extern std::int16_t MAPA_PRETORIANO;
+
+// Variables globales de Tablas de Datos (Grupo 5 FileIO)
+extern std::int16_t NumObjDatas;
+extern std::int16_t NumeroHechizos;
+extern std::int16_t PorcentajeRecuperoMana;
+extern float ExponenteNivelParty;
+extern std::array<std::int32_t, NUM_RANGOS_FACCION + 1> RecompensaFacciones;
+extern tAPuestas Apuestas;
+extern std::array<std::array<tFaccionArmaduras, NUMRAZAS + 1>, NUMCLASES + 1> ArmadurasFaccion;
+
+// Armaduras Faccionarias (ModFacciones.bas)
+extern std::int16_t ArmaduraImperial1, ArmaduraImperial2, ArmaduraImperial3, TunicaMagoImperial, TunicaMagoImperialEnanos;
+extern std::int16_t ArmaduraCaos1, ArmaduraCaos2, ArmaduraCaos3, TunicaMagoCaos, TunicaMagoCaosEnanos;
+extern std::int16_t VestimentaImperialHumano, VestimentaImperialEnano, TunicaConspicuaHumano, TunicaConspicuaEnano, ArmaduraNobilisimaHumano, ArmaduraNobilisimaEnano, ArmaduraGranSacerdote;
+extern std::int16_t VestimentaLegionHumano, VestimentaLegionEnano, TunicaLobregaHumano, TunicaLobregaEnano, TunicaEgregiaHumano, TunicaEgregiaEnano, SacerdoteDemoniaco;
+
+// Intervalos de Servidor (Server.ini / Admin.bas)
+extern std::int16_t SanaIntervaloSinDescansar, StaminaIntervaloSinDescansar, SanaIntervaloDescansar, StaminaIntervaloDescansar;
+extern std::int16_t IntervaloSed, IntervaloHambre, IntervaloVeneno;
+extern std::int16_t IntervaloInvisible, IntervaloFrio, IntervaloWavFx, IntervaloInvocacion, IntervaloParaConexion;
+extern std::int16_t IntervaloPuedeSerAtacado, IntervaloAtacable, IntervaloOwnedNpc;
+extern std::int16_t IntervaloUserPuedeCastear, IntervaloUserPuedeTrabajar, IntervaloUserPuedeAtacar;
+extern std::int16_t IntervaloMagiaGolpe, IntervaloGolpeMagia, IntervaloGolpeUsar;
+extern std::int16_t MinutosWs, IntervaloCerrarConexion, IntervaloUserPuedeUsar, IntervaloFlechasCazadores, IntervaloOculto;
 
 extern std::unique_ptr<cCola> Ayuda;
 extern std::unique_ptr<ConsultasPopulares> ConsultaPopular;

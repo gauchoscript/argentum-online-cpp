@@ -88,3 +88,30 @@ std::unique_ptr<cCola> Ayuda;
 std::unique_ptr<ConsultasPopulares> ConsultaPopular;
 std::unique_ptr<SoundMapInfo> SonidosMapas;
 std::vector<cGarbage> TrashCollector;
+std::int16_t IntervaloParalizado = 500;
+
+// Variables globales de MOTD, Server.ini e Intervalos
+std::vector<tMotd> MOTD;
+std::int16_t MaxLines = 0;
+std::uint8_t BootDelBackUp = 0;
+std::int16_t Puerto = 7666;
+std::int16_t MAPA_PRETORIANO = 0;
+
+std::int16_t PorcentajeRecuperoMana = 0;
+float ExponenteNivelParty = 0.0f;
+std::array<std::int32_t, NUM_RANGOS_FACCION + 1> RecompensaFacciones{};
+tAPuestas Apuestas{};
+std::array<std::array<tFaccionArmaduras, NUMRAZAS + 1>, NUMCLASES + 1> ArmadurasFaccion{};
+
+std::int16_t ArmaduraImperial1 = 0, ArmaduraImperial2 = 0, ArmaduraImperial3 = 0, TunicaMagoImperial = 0, TunicaMagoImperialEnanos = 0;
+std::int16_t ArmaduraCaos1 = 0, ArmaduraCaos2 = 0, ArmaduraCaos3 = 0, TunicaMagoCaos = 0, TunicaMagoCaosEnanos = 0;
+std::int16_t VestimentaImperialHumano = 0, VestimentaImperialEnano = 0, TunicaConspicuaHumano = 0, TunicaConspicuaEnano = 0, ArmaduraNobilisimaHumano = 0, ArmaduraNobilisimaEnano = 0, ArmaduraGranSacerdote = 0;
+std::int16_t VestimentaLegionHumano = 0, VestimentaLegionEnano = 0, TunicaLobregaHumano = 0, TunicaLobregaEnano = 0, TunicaEgregiaHumano = 0, TunicaEgregiaEnano = 0, SacerdoteDemoniaco = 0;
+
+std::int16_t SanaIntervaloSinDescansar = 0, StaminaIntervaloSinDescansar = 0, SanaIntervaloDescansar = 0, StaminaIntervaloDescansar = 0;
+std::int16_t IntervaloSed = 0, IntervaloHambre = 0, IntervaloVeneno = 0;
+std::int16_t IntervaloInvisible = 0, IntervaloFrio = 0, IntervaloWavFx = 0, IntervaloInvocacion = 0, IntervaloParaConexion = 0;
+std::int16_t IntervaloPuedeSerAtacado = 0, IntervaloAtacable = 0, IntervaloOwnedNpc = 0;
+std::int16_t IntervaloUserPuedeCastear = 0, IntervaloUserPuedeTrabajar = 0, IntervaloUserPuedeAtacar = 0;
+std::int16_t IntervaloMagiaGolpe = 0, IntervaloGolpeMagia = 0, IntervaloGolpeUsar = 0;
+std::int16_t MinutosWs = 0, IntervaloCerrarConexion = 0, IntervaloUserPuedeUsar = 0, IntervaloFlechasCazadores = 0, IntervaloOculto = 0;
