@@ -76,16 +76,16 @@ Paralizado=0
 
 [INVENTORY]
 CantidadItems=10
-Item1=101-5-0
-Item2=102-10-0
-Item3=103-15-0
-Item4=104-20-0
-Item5=105-25-0
-Item6=106-30-0
-Item7=107-35-0
-Item8=108-40-0
-Item9=109-45-0
-Item10=110-50-0
+Obj1=101-5-0
+Obj2=102-10-0
+Obj3=103-15-0
+Obj4=104-20-0
+Obj5=105-25-0
+Obj6=106-30-0
+Obj7=107-35-0
+Obj8=108-40-0
+Obj9=109-45-0
+Obj10=110-50-0
 
 [SPELLS]
 CantidadSpells=5

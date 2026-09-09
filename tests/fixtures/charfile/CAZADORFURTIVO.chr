@@ -76,14 +76,14 @@ Paralizado=0
 
 [INVENTORY]
 CantidadItems=8
-Item1=301-1-1
-Item2=302-500-0
-Item3=303-1-1
-Item4=304-1-1
-Item5=305-10-0
-Item6=306-5-0
-Item7=307-2-0
-Item8=308-1-0
+Obj1=301-1-1
+Obj2=302-500-0
+Obj3=303-1-1
+Obj4=304-1-1
+Obj5=305-10-0
+Obj6=306-5-0
+Obj7=307-2-0
+Obj8=308-1-0
 WeaponEqpSlot=1
 ArmourEqpSlot=3
 EscudoEqpSlot=0
