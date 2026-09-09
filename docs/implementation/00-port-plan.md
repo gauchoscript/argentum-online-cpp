@@ -195,13 +195,21 @@ Para cada módulo se aplica estrictamente la política de nombres definida en `d
 
 ### Capa 3: Persistencia de Datos e I/O de Disco (Categoría Crítica 1)
 
-#### 10. `FileIO` *(CATEGORÍA CRÍTICA 1 - PERSISTENCIA DE PERSONAJES)*
+#### 10. `FileIO` *(CATEGORÍA CRÍTICA 1 - PERSISTENCIA DE PERSONAJES - COMPLETADO)*
 - **Archivos Legacy**: `legacy/server/Codigo/FileIO.bas`
 - **Propósito**: Persistencia de archivos de personaje (`.chr`), mapas binarios (`.map`, `.inf`), tablas de datos (`OBJ.dat`, `NPCs.dat`, `Hechizos.dat`), configuración `Server.ini` y backups `DoBackUp`.
 - **Archivo C++ Propuesto**: `src/server/FileIO.hpp` / `src/server/FileIO.cpp`
+- **Estado**: **Completado** (Documentación en [`10-fileio-persistencia-personajes.md`](10-fileio-persistencia-personajes.md), [`11-fileio-configuracion-servidor.md`](11-fileio-configuracion-servidor.md), [`12-fileio-tablas-datos.md`](12-fileio-tablas-datos.md), [`13-fileio-mapas.md`](13-fileio-mapas.md) y [`14-fileio-backup-logging.md`](14-fileio-backup-logging.md)).
 - **Dependencias**: `Declares`, `clsIniReader`, `Matematicas`.
-- **Estimación**: **Grande** (~2.246 líneas).
-- **Estrategia de Verificación**: **Verificación byte a byte contra fixtures reales en `tests/fixtures/charfile/` (la función `SaveUser` debe generar salida idéntica a VB6) con pruebas en doctest** y pruebas con cliente VB6.
+- **Estimación**: **Grande** (~2.246 líneas, 38 rutinas).
+- **Estrategia de Desglose y Verificación**: **Desglosado en 7 grupos lógicos secuenciales** (ver especificación detallada en [`FileIO-breakdown.md`](FileIO-breakdown.md)):
+  1. *Paso 1 (G1 — Base)*: Utilidades base de archivos e INI (`GetVar`, `WriteVar`, `TxtDimension`, `ReadField`) — **✅ COMPLETADO**.
+  2. *Paso 2 (G2 — Crítico)*: Persistencia de personajes `.chr` (`SaveUser`, `LoadUserInit`, etc.) — **✅ COMPLETADO** (Verificación byte a byte contra fixtures en `tests/fixtures/charfile/` con doctest, 7/7 casos pasados).
+  3. *Paso 3 (G3 — Config)*: Configuración del servidor (`LoadSini`, `EsAdmin`, etc. en `Server.ini`) — **✅ COMPLETADO**.
+  4. *Paso 4 (G5 — Tablas)*: Carga de tablas de datos e inicialización de juego (`Dat/*.dat`) — **✅ COMPLETADO**.
+  5. *Paso 5 (G4 — Mapas)*: Carga y guardado de mapas binarios e INI (`.map`, `.inf`, `.dat`) — **✅ COMPLETADO** (Verificación byte a byte contra mapas reales 1, 4, 8 y 15 con doctest).
+  6. *Paso 6 (G7 — Logs)*: Logging administrativo y sanciones (`LogBan`, `LogBanFromName`, `Ban`) — **✅ COMPLETADO** (3/3 casos pasados, 15 aserciones).
+  7. *Paso 7 (G6 — Backup)*: Sistema de respaldos de mundo (`DoBackUp`, `CargarBackUp`, `BackUPnPc`, `CargarNpcBackUp`) — **✅ COMPLETADO** (3/3 casos pasados, 35 aserciones, fixtures reales de WorldBackup).
 
 #### 11. `clsClan` y `modGuilds` *(CATEGORÍA CRÍTICA 1 - PERSISTENCIA DE CLANES)*
 - **Archivos Legacy**: `legacy/server/Codigo/clsClan.cls`, `legacy/server/Codigo/modGuilds.bas`
@@ -343,6 +351,10 @@ Para cada módulo se aplica estrictamente la política de nombres definida en `d
 - **Dependencias**: `Declares`, `modSendData`, `FileIO`.
 - **Estimación**: **Mediano** (~800 líneas).
 - **Estrategia de Verificación**: Pruebas con cliente VB6 (cambio de status criminal y jerarquías).
+- **Nota de Auditoría / Propagación Cruzada (Variables de Vestimentas, Armaduras Faccionarias y Recompensas de Facción)**:
+  1. **Túnicas e Ítems Faccionarios (Grupo 3 FileIO)**: Las 24 variables globales de ítems de armaduras y túnicas faccionarias declaradas originalmente en `ModFacciones.bas:34-58` (`ArmaduraImperial1..3`, `TunicaMagoImperial`, `TunicaMagoImperialEnanos`, `ArmaduraCaos1..3`, `TunicaMagoCaos`, `TunicaMagoCaosEnanos`, `VestimentaImperialHumano`, `VestimentaImperialEnano`, `TunicaConspicuaHumano`, `TunicaConspicuaEnano`, `ArmaduraNobilisimaHumano`, `ArmaduraNobilisimaEnano`, `ArmaduraGranSacerdote`, `VestimentaLegionHumano`, `VestimentaLegionEnano`, `TunicaLobregaHumano`, `TunicaLobregaEnano`, `TunicaEgregiaHumano`, `TunicaEgregiaEnano`, `SacerdoteDemoniaco`) son pobladas desde `Server.ini` durante el arranque por `FileIO.cpp` (`LoadSini()`).
+  2. **Defensas de Armaduras Faccionarias y Recompensas por Rango (Grupo 5 FileIO)**: La estructura `tFaccionArmaduras`, la enumeración `eTipoDefArmors`, la constante `NUM_RANGOS_FACCION` (15), el arreglo 2D/3D `ArmadurasFaccion(1 To NUMCLASES, 1 To NUMRAZAS)` y el arreglo de experiencia `RecompensaFacciones(NUM_RANGOS_FACCION)` declarados originalmente en `ModFacciones.bas:63,72-81` son poblados desde `Dat/ArmadurasFaccionarias.dat` (`LoadArmadurasFaccion()`) y `Dat/Balance.dat` (`LoadBalance()`) por `FileIO.cpp`.
+  Todas estas variables ya se encuentran declaradas e instanciadas en `Declares.hpp` / `Declares.cpp`. Al portar `ModFacciones`, deben consumirse desde `Declares.hpp` sin volver a declararlas. Ver [`11-fileio-configuracion-servidor.md`](11-fileio-configuracion-servidor.md) y [`12-fileio-tablas-datos.md`](12-fileio-tablas-datos.md).
 
 #### 26. `Trabajo` *(Falta auditoría detallada)*
 - **Archivos Legacy**: `legacy/server/Codigo/Trabajo.bas`
@@ -372,6 +384,10 @@ Para cada módulo se aplica estrictamente la política de nombres definida en `d
 - **Dependencias**: `Declares`, `FileIO`, `Modulo_InventANDobj`, `ModAreas`, `modSendData`, `Matematicas`.
 - **Estimación**: **Grande** (~1.000 líneas).
 - **Estrategia de Verificación**: Pruebas con cliente VB6 (aparición y muerte de NPCs).
+- **Nota de Auditoría / Propagación Cruzada (Carga y Guardado de NPCs en Mapas)**:
+  En el archivo binario `.inf`, el registro de NPC persiste el número de plantilla/tipo (`NpcNumber`, ej. 502, 536). En el legacy (`FileIO.bas:1410-1434`), `CargarMapa` lee temporalmente dicho número e invoca `OpenNPC(.NpcIndex)` para instanciar el NPC en el arreglo `Npclist(1 To MAXNPCS)`, asignando `Orig` y `Pos` y llamando a `MakeNPCChar`. Al serializar el mapa (`FileIO.bas:518-520`), `GrabarMapa` recupera y escribe el número de plantilla original mediante `Npclist(.NpcIndex).Numero`.
+  En la Capa 2 / 3 (`FileIO.cpp`), para mantener el módulo desacoplado antes de la migración de `MODULO_NPCs`, se almacena directamente el número en `MapData[...].NpcIndex` y se replica en `Npclist`. Al implementar `MODULO_NPCs`, se debe conectar `OpenNPC` con la deserialización de mapas asegurando la correspondencia exacta entre el índice de runtime de `Npclist` y el número de plantilla en disco. Ver [`docs/implementation/13-fileio-mapas.md`](13-fileio-mapas.md).
+
 
 #### 29. `AI_NPC`
 - **Archivos Legacy**: `legacy/server/Codigo/AI_NPC.bas`
@@ -388,6 +404,7 @@ Para cada módulo se aplica estrictamente la política de nombres definida en `d
 - **Dependencias**: `Declares`, `AI_NPC`, `MODULO_NPCs`, `ModFacciones`.
 - **Estimación**: **Grande** (~2.100 líneas).
 - **Estrategia de Verificación**: Pruebas con cliente VB6 interactuando con guardias de ciudad.
+- **Nota de Auditoría / Propagación Cruzada (`MAPA_PRETORIANO`)**: La constante/variable global `MAPA_PRETORIANO` (declarada originalmente en `praetorians.bas:40` para identificar el mapa de la fortaleza de los guardias pretorianos) es cargada desde `Server.ini` (`MapaPretoriano`) por `FileIO.cpp` (`LoadSini()`). Ya fue declarada e instanciada en `Declares.hpp` / `Declares.cpp`. Al portar `praetorians`, reutilizar `MAPA_PRETORIANO` desde `Declares.hpp` sin volver a declararla. Ver [`docs/implementation/11-fileio-configuracion-servidor.md`](11-fileio-configuracion-servidor.md).
 
 ---
 
@@ -408,6 +425,7 @@ Para cada módulo se aplica estrictamente la política de nombres definida en `d
 - **Dependencias**: `Declares`, `modSendData`, `Matematicas`.
 - **Estimación**: **Mediano** (~900 líneas combinadas).
 - **Estrategia de Verificación**: Pruebas con múltiples clientes VB6 en party.
+- **Nota de Auditoría / Propagación Cruzada (Variable de Balance ExponenteNivelParty)**: La variable `ExponenteNivelParty` declarada originalmente en `mdParty.bas:67` (`Public ExponenteNivelParty As Single`) es poblada desde `Dat/Balance.dat` por `FileIO.cpp` (`LoadBalance()`). Ya se encuentra declarada e instanciada en `Declares.hpp` / `Declares.cpp`. Al portar `mdParty`, debe consumirse desde `Declares.hpp` sin volver a declararla. Ver [`12-fileio-tablas-datos.md`](12-fileio-tablas-datos.md).
 
 #### 33. `Acciones`
 - **Archivos Legacy**: `legacy/server/Codigo/Acciones.bas`
@@ -437,6 +455,13 @@ Para cada módulo se aplica estrictamente la política de nombres definida en `d
 - **Dependencias**: `Declares`, `Modulo_UsUaRiOs`, `MODULO_NPCs`, `Modulo_InventANDobj`, `modSendData`, `FileIO`.
 - **Estimación**: **Mediano** (~500 líneas).
 - **Estrategia de Verificación**: Pruebas con cliente VB6 usando personaje GM.
+- **Nota de Auditoría / Propagación Cruzada (Variables de Configuración, MOTD e Intervalos de Servidor)**:
+  1. **Servidor y Red**: `BootDelBackUp` (flag de inicio desde backup) y `Puerto` (puerto TCP de escucha), declarados en `Admin.bas:86-88`, son poblados desde `Server.ini` por `FileIO.cpp` (`LoadSini()`).
+  2. **Mensaje del Día**: La estructura `tMotd`, el vector global `MOTD` y `MaxLines`, declarados en `Admin.bas:32-38`, son poblados desde `Dat/Motd.ini` por `FileIO.cpp` (`LoadMotd()`).
+  3. **Intervalos de Servidor**: Los 24 contadores e intervalos globales de refresco y combate (`SanaIntervaloSinDescansar`, `StaminaIntervaloSinDescansar`, `SanaIntervaloDescansar`, `StaminaIntervaloDescansar`, `IntervaloSed`, `IntervaloHambre`, `IntervaloVeneno`, `IntervaloParalizado`, `IntervaloInvisible`, `IntervaloFrio`, `IntervaloWavFx`, `IntervaloInvocacion`, `IntervaloParaConexion`, `IntervaloPuedeSerAtacado`, `IntervaloAtacable`, `IntervaloOwnedNpc`, `IntervaloUserPuedeCastear`, `IntervaloUserPuedeTrabajar`, `IntervaloUserPuedeAtacar`, `IntervaloMagiaGolpe`, `IntervaloGolpeMagia`, `IntervaloGolpeUsar`, `MinutosWs`, `IntervaloCerrarConexion`, `IntervaloUserPuedeUsar`, `IntervaloFlechasCazadores`, `IntervaloOculto`), declarados en `Admin.bas:51-85`, son poblados desde `Server.ini` (`[INTERVALOS]`) por `FileIO.cpp` (`LoadSini()`).
+  4. **Balance y Apuestas (Grupo 5 FileIO)**: La variable `PorcentajeRecuperoMana` (declarada en `Admin.bas:83`) y la estructura/global `tAPuestas` / `Apuestas` (declaradas en `Admin.bas:40-45`) son pobladas desde `Dat/Balance.dat` (`LoadBalance()`) y `Dat/apuestas.dat` (`CargaApuestas()`) por `FileIO.cpp`.
+  5. **Bans de IPs y WorldSave (Grupos 6 y 7 FileIO)**: La persistencia de `Dat/BanIps.dat` (`GuardarBanIps`, `CargarBanIps`) y la colección global `BanIps` pertenecen a `Admin.bas`, no a `FileIO`. Asimismo, la orquestación interna de `WorldSave` (`Admin.bas:134`) durante el proceso `DoBackUp` invoca directamente `FileIO::GrabarMapa` para los mapas con `BackUp = 1` y `FileIO::BackUPnPc` para los NPCs con `flags.BackUp = 1`.
+  Todas estas variables ya se encuentran declaradas e instanciadas en `Declares.hpp` / `Declares.cpp`. Al portar `Admin`, deben reutilizarse desde `Declares.hpp` en lugar de volver a declararlas. Ver [`10-fileio-persistencia-personajes.md`](10-fileio-persistencia-personajes.md), [`11-fileio-configuracion-servidor.md`](11-fileio-configuracion-servidor.md), [`12-fileio-tablas-datos.md`](12-fileio-tablas-datos.md) y [`14-fileio-backup-logging.md`](14-fileio-backup-logging.md).
 - **Nota de Auditoría / Migración (`modHexaStrings` / `MD5sCarga`)**: Al portar `MD5sCarga` y la validación `MD5ok`, recordar que `MD5s(LoopC) = txtOffset(hexMd52Asc(MD5s(LoopC)), 55)` depende de la conversión case-insensitive de `hexMd52Asc` sobre las entradas hexadecimales de `Server.ini` (`MD5AceptadoX`), la cual se compara sensible a mayúsculas/minúsculas con el buffer de 16 bytes recibido del cliente (`buffer.ReadASCIIStringFixed(16)`). Ver [`07-modhexastrings.md`](07-modhexastrings.md).
 
 #### 36. `modCentinela` *(Falta auditoría detallada)*
@@ -524,7 +549,7 @@ Para cada módulo se aplica estrictamente la política de nombres definida en `d
 | **0** | `cSolicitud.cls` | `src/server/cSolicitud.hpp` | Chico | Solicitudes Clan | doctest + Fixtures `.sol` |
 | **1** | `clsByteQueue.cls` | `src/server/clsByteQueue.hpp` | Mediano | 🚨 **CRÍTICO 2: Red Binaria** | doctest + Socket VB6 |
 | **0** | `Declares.bas` | `src/server/Declares.hpp` | Grande | Estado Global (Completado) | Compilación C++ (`server_core`) |
-| **3** | `FileIO.bas` | `src/server/FileIO.hpp` | Grande | 🚨 **CRÍTICO 1: Persistencia** | **doctest + Fixtures Byte-Exact `charfile/`** |
+| **3** | `FileIO.bas` | `src/server/FileIO.hpp` | Grande | 🚨 **CRÍTICO 1: Persistencia** (7 pasos lógicos) | **Ver [`FileIO-breakdown.md`](FileIO-breakdown.md)** (doctest + Fixtures `charfile/`) |
 | **3** | `clsClan.cls` / `modGuilds.bas` | `src/server/modGuilds.hpp` | Grande | 🚨 **CRÍTICO 1: Clanes** | **doctest + Fixtures Byte-Exact `guilds/`** |
 | **4** | `SecurityIp.bas` | `src/server/SecurityIp.hpp` | Mediano | Security / Flood | doctest + Multicliente VB6 |
 | **4** | `clsAntiMassClon.cls` | `src/server/clsAntiMassClon.hpp` | Chico | Anti-Clon | doctest + Multicliente VB6 |
