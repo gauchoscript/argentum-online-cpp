@@ -24,6 +24,7 @@ add_library(server_core STATIC
     src/server/modHexaStrings.cpp
     src/server/cSolicitud.hpp
     src/server/clsByteQueue.cpp
+    src/server/FileIO.cpp
 )
 target_include_directories(server_core PUBLIC src)
 target_link_libraries(server_core PUBLIC asio::asio)
@@ -51,6 +52,12 @@ add_executable(unit_tests
     tests/test_modcola.cpp
     tests/test_modhexastrings.cpp
     tests/test_clsbytequeue.cpp
+    tests/test_fileio_charfile.cpp
+    tests/test_fileio_serverconfig.cpp
+    tests/test_fileio_gamedata.cpp
+    tests/test_fileio_map.cpp
+    tests/test_fileio_adminlogs.cpp
+    tests/test_fileio_backup.cpp
 )
 target_include_directories(unit_tests PRIVATE src)
 target_link_libraries(unit_tests PRIVATE server_core doctest::doctest)

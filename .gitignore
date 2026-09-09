@@ -2,3 +2,4 @@ build/
 vcpkg_installed/
 .vs/
 *.user
+tests/temp_*/
