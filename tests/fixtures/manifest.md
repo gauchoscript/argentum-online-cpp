@@ -1,8 +1,12 @@
 # Manifiesto de Datos de Prueba (Fixtures) - Argentum Online
 
-> **Nota de Implementación**: El generador de estos datos (`tests/generate_fixtures.ps1`) fue desarrollado tomando como referencia directa el código fuente legacy VB6 (`FileIO.bas`, `modGuilds.bas` y `modForum.bas`), utilizando la codificación Windows-1252 (ANSI) idéntica a la que usaba VB6 en sus operaciones de E/S de archivos (`Open ... For Output/Binary`). El directorio se denomina `foros/` porque el módulo legacy `modForum.bas` referencia explícitamente `App.Path & "\foros\"` (y `\Foros\`), respetando las reglas de nombrado del proyecto (`docs/CONVENTIONS.md`).
+> **Nota de Implementación**: El generador de estos datos (`tests/generate_fixtures.ps1`) replica los métodos de escritura e interfaz en disco documentados en las auditorías (`FileIO.bas`, `modGuilds.bas` y `modForum.bas`), utilizando codificación Windows-1252 (ANSI). Todos los nombres en `charfile/`, `guilds/` y `foros/` cumplen con las reglas del motor legacy.
 > 
-> **Nota sobre Ejecución**: Si bien el script de generación (`tests/generate_fixtures.ps1`) reproduce fielmente la lógica del código fuente legacy VB6 en PowerShell, no ejecuta el binario/compilado `.exe` de VB6 en tiempo de ejecución.
+> **ADVERTENCIA DE VERIFICACIÓN (CRÍTICO)**: El script de generación (`tests/generate_fixtures.ps1`) **NO invoca ejecutable ni código ejecutable VB6 real** (vía COM o binarios compilados), sino que construye de forma independiente las cadenas e INIs usando plantillas de PowerShell basándose en la especificación documentada en `docs/audit/06-formatos-de-datos.md` y `docs/audit/11a-modforum-detalle.md`. Por lo tanto, estos fixtures **validan nuestra propia especificación documental**, y no el comportamiento en tiempo de ejecución de un binario VB6 legacy real.
+> 
+> > [!CAUTION]
+> > **Corrección Registrada en el Generador Sintético (`generate_fixtures.ps1`)**:
+> > Durante la migración del Grupo 2 de `FileIO.bas`, se descubrió un fallo en el propio generador sintético: escribía las claves de inventario como `Item<N>=` en lugar de `Obj<N>=`. La inspección directa del código fuente legacy VB6 (`FileIO.bas:1136` y `1882`) confirmó que la implementación original utiliza únicamente `Obj<N>=` (`Obj1`, `Obj2`, ...). Se corrigió `tests/generate_fixtures.ps1` y se regeneraron todos los fixtures sintéticos en `tests/fixtures/charfile/`. Este hallazgo deja registro explícito de que la limitación aceptada de los fixtures sintéticos conlleva riesgos reales de autoconsistencia.
 
 ---
 
@@ -75,3 +79,30 @@ Se generaron **3 foros válidos** cubriendo mezclas de mensajes, caracteres espe
    - Personaje con caracteres especiales (`Ñ`, `Ú`, `ñ`) que fallan la validación de `AsciiValidos` en VB6.
 2. **`invalid_guilds/Legión de Ñandúes-members.mem`** y `guildsinfo.inf`
    - Clan con caracteres especiales (`ó`, `Ñ`, `ú`) que fallan la validación de `GuildNameValido` en VB6.
+
+---
+
+## 5. Mapas Reales y Autoritativos del Juego (`maps/`)
+
+> [!IMPORTANT]
+> **Datos Originales de Producción**: A diferencia de las secciones sintéticas 1 a 4, los fixtures en `maps/` son **datos reales y originales del juego**, copiados directamente desde `legacy/server/Maps/` para validar la deserialización binaria y el roundtrip byte a byte de `FileIO` (Grupo 4). Ver detalle completo en [`maps/manifest.md`](maps/manifest.md).
+
+- **`Mapa1` (Ciudad de Ullathorpe)**: Ejercita las 4 capas gráficas completas, 940 triggers, 36 NPCs, 159 objetos y 344 traslados.
+- **`Mapa4` (Bosque Exterior)**: Capas superiores densas, 164 triggers y 32 NPCs.
+- **`Mapa8` (Llanura Despejada)**: Línea base simple sin capas 2/4 ni triggers.
+- **`Mapa15` (Dungeon Subterráneo)**: Perfil inverso con capa 2 densa pero sin capas 3/4 ni triggers.
+
+---
+
+## 6. Fixtures Reales Autoritativos Adicionales (`charfile/real/`, `guilds/real/`, `serverconfig/real/`, `gamedata/real/`)
+
+> [!IMPORTANT]
+> **Actualización de Estatus Autoritativo**: Se incorporaron a la suite de pruebas los datos históricos de producción hallados en el árbol legacy. Los fixtures sintéticos se preservan intactos para evaluar casos de borde específicos (valores extremos, banco lleno, caracteres acentuados).
+
+1. **Personajes Reales (`charfile/real/`)**: `ELIO.chr`, `USER.chr`, `BETATESTER.chr`, `MASTER.chr`. Ver [`charfile/manifest.md`](charfile/manifest.md).
+2. **Clanes Reales (`guilds/real/`)**: `guildsinfo.inf`, `Game Masters-members.mem`, `Game Masters-solicitudes.sol`. Ver [`guilds/manifest.md`](guilds/manifest.md).
+3. **Configuración del Servidor Real (`serverconfig/real/`)**: `Server.ini`, `Motd.ini`, `Ciudades.Dat`. Ver [`serverconfig/manifest.md`](serverconfig/manifest.md).
+4. **Tablas de Datos Maestras Reales (`gamedata/real/`)**: `obj.dat`, `Hechizos.dat`, `Balance.dat`, `ArmasHerrero.dat`, `ArmadurasHerrero.dat`, `ObjCarpintero.dat`, `ArmadurasFaccionarias.dat`, `Invokar.dat`, `NombresInvalidos.txt`, `apuestas.dat`. Ver [`gamedata/manifest.md`](gamedata/manifest.md).
+5. **Respaldos de Mundo Reales (`worldbackup/real/`)**: `Mapa1`, `Mapa10`, `Mapa11` (`.Map`, `.Inf`, `.dat`). Ver [`worldbackup/manifest.md`](worldbackup/manifest.md).
+
+
