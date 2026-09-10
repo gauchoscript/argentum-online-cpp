@@ -32,9 +32,13 @@ enum class TipoAI : std::int32_t {
 };
 
 enum class ALINEACION_GUILD : std::int32_t {
-    ALINEACION_NEUTRAL = 0,
-    ALINEACION_REAL = 1,
-    ALINEACION_CAOS = 2
+    ALINEACION_NINGUNA = 0,
+    ALINEACION_LEGION = 1,
+    ALINEACION_CRIMINAL = 2,
+    ALINEACION_NEUTRO = 3,
+    ALINEACION_CIUDA = 4,
+    ALINEACION_ARMADA = 5,
+    ALINEACION_MASTER = 6
 };
 
 struct AreaInfo {
@@ -1109,7 +1113,7 @@ struct User {
     tCOmercioUsuario ComUsu{};
     
     std::int16_t GuildIndex{0};
-    ALINEACION_GUILD FundandoGuildAlineacion{ALINEACION_GUILD::ALINEACION_NEUTRAL};
+    ALINEACION_GUILD FundandoGuildAlineacion{ALINEACION_GUILD::ALINEACION_NINGUNA};
     std::int16_t EscucheClan{0};
     
     std::int16_t PartyIndex{0};

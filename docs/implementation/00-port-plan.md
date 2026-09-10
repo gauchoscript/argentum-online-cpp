@@ -211,15 +211,16 @@ Para cada módulo se aplica estrictamente la política de nombres definida en `d
   6. *Paso 6 (G7 — Logs)*: Logging administrativo y sanciones (`LogBan`, `LogBanFromName`, `Ban`) — **✅ COMPLETADO** (3/3 casos pasados, 15 aserciones).
   7. *Paso 7 (G6 — Backup)*: Sistema de respaldos de mundo (`DoBackUp`, `CargarBackUp`, `BackUPnPc`, `CargarNpcBackUp`) — **✅ COMPLETADO** (3/3 casos pasados, 35 aserciones, fixtures reales de WorldBackup).
 
-#### 11. `clsClan` y `modGuilds` *(CATEGORÍA CRÍTICA 1 - PERSISTENCIA DE CLANES)*
+#### 11. `clsClan` y `modGuilds` *(CATEGORÍA CRÍTICA 1 - PERSISTENCIA DE CLANES)* — **✅ COMPLETADO**
 - **Archivos Legacy**: `legacy/server/Codigo/clsClan.cls`, `legacy/server/Codigo/modGuilds.bas`
 - **Propósito**: Administración de clanes, lista global de clanes y persistencia en disco de archivos de clanes (`guildsinfo.inf`, `.mem`, `.sol`, `.rel`).
-- **Archivo C++ Propuesto**: `src/server/clsClan.hpp` / `src/server/clsClan.cpp`, `src/server/modGuilds.hpp` / `src/server/modGuilds.cpp`
+- **Archivo C++ Implementado**: `src/server/clsClan.hpp` / `src/server/clsClan.cpp`, `src/server/modGuilds.hpp` / `src/server/modGuilds.cpp`
+- **Estado**: **Completado** (Documentación en [`clsClan-breakdown.md`](clsClan-breakdown.md) y [`15-clsclan-modguilds.md`](15-clsclan-modguilds.md)).
 - **Dependencias**: `Declares`, `FileIO`, `clsIniReader`, `cSolicitud`, `clsdicc`.
-- **Estimación**: **Grande** (~2.500 líneas combinadas).
-- **Estrategia de Verificación**: **Verificación byte a byte contra fixtures reales en `tests/fixtures/guilds/` (`guildsinfo.inf`, `.mem`, `.sol`, `.rel`) con pruebas en doctest** y pruebas con cliente VB6.
-- **Nota Importante sobre `ContarVotos` y `clsdicc`**: Al portar `ContarVotos` en `clsClan`, acordate de que `clsdicc.MayorValor(cant)` en caso de empate no devuelve un único ganador ni la última clave, sino **todas las claves empatadas concatenadas por comas en orden de inserción** (ej. `"JUGADOR1,JUGADOR2"`). `ContarVotos` depende de este formato exacto para procesar el resultado de la elección. Ver [`docs/implementation/04-clsdicc.md`](04-clsdicc.md).
-- **Nota Importante sobre `cSolicitud` y Archivos `.sol`**: Al portar la persistencia de solicitudes de clan en `clsClan` y `modGuilds` (archivos `<GuildName>-solicitudes.sol` en `tests/fixtures/guilds/`), tener en cuenta que en disco las claves del INI bajo la sección `[SOLICITUDi]` son `Nombre` y `Detalle`, mientras que en la definición legacy de `cSolicitud.cls` los campos se denominan `UserName` y `desc`. Ver [`docs/implementation/08-csolicitud.md`](08-csolicitud.md).
+- **Estimación**: **Grande** (~2.503 líneas combinadas, desglosado en 7 grupos lógicos).
+- **Estrategia de Verificación**: **Verificación byte a byte contra fixtures reales en `tests/fixtures/guilds/real/` (`guildsinfo.inf`, `Game Masters-members.mem`, `Game Masters-solicitudes.sol`) con pruebas en doctest** (6/6 casos dedicados en `tests/test_clsclan.cpp`, 69/69 casos totales pasados).
+- **Resolución de Empates en `ContarVotos`**: Verificado end-to-end con reproducción verbatim del bug legacy original: no se asigna nuevo líder, el líder actual se mantiene intacto, se elimina el archivo temporal `.vot` y el anuncio en `GuildNews` reproduce el texto original donde la cantidad de empatados se reporta erróneamente como cantidad de votos.
+- **Frontera de Serialización de `cSolicitud`**: Documentado y testeado el mapeo explícito e inmutable entre claves INI en disco (`Nombre` / `Detalle`) y miembros del struct C++ (`UserName` / `desc`).
 
 ---
 
