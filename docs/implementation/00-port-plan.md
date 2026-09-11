@@ -5,6 +5,7 @@ audit_reference:
   - docs/audit/01-estructura-del-proyecto.md
   - docs/audit/01a-clsdicc-cgarbage.md
   - docs/audit/02-protocolo-de-red.md
+  - docs/audit/02a-securityip-detalle.md
   - docs/audit/06-formatos-de-datos.md
 tags: [plan, arquitectura, port, dependencias, modulos, servidor, cpp]
 last_updated: 2026-09-06
@@ -226,13 +227,26 @@ Para cada módulo se aplica estrictamente la política de nombres definida en `d
 
 ### Capa 4: Infraestructura de Red y Múltiples Conexiones (Categoría Crítica 2)
 
-#### 12. `SecurityIp`
+#### 12. `SecurityIp` (PARCIAL)
 - **Archivos Legacy**: `legacy/server/Codigo/SecurityIp.bas`
 - **Propósito**: Filtrado de IPs, control anti-flood, límites de conexiones por IP (`MaxConnectionsPerIP`) y baneo de IP.
-- **Archivo C++ Propuesto**: `src/server/SecurityIp.hpp` / `src/server/SecurityIp.cpp`
-- **Dependencias**: `Declares`, `clsIniReader`.
+- **Archivo C++ Implementado**: `src/server/SecurityIp.hpp` / `src/server/SecurityIp.cpp`
+- **Estado**: **Parcial** (Detalle completo en [`docs/implementation/16-securityip.md`](16-securityip.md)).
+- **Dependencias**: *Ninguna* (en el subconjunto anti-flood implementado; las dependencias de red y logging corresponden a las rutinas diferidas).
 - **Estimación**: **Mediano** (~350 líneas).
-- **Estrategia de Verificación**: Pruebas unitarias con **doctest** de límites de IP y pruebas con múltiples conexiones simultáneas del cliente VB6.
+- **Implementado**:
+  - `InitIpTables(OptCountersValue)`: Únicamente la porción de `IpTables` (capacidad base, dimensionamiento y reseteo de contadores).
+  - `IpSecurityMantenimientoLista()`: Limpieza horaria y reescalado dinámico preservando el quirk de asimetría histórica.
+  - `IpSecurityAceptarNuevaConexion(ip)`: Control de intervalo mínimo (1000 ms) y marcas temporales.
+  - Ayudantes privados transliterados literalmente: `FindTableIp` y `AddNewIpIntervalo` (reproduciendo fielmente la cota inicial `Last = MaxValue` y la inserción desordenada por `~(Middle * 2)`).
+  - Desbordamiento aritmético de ticks: Salvaguardado mediante [`SecurityIp::TickCountOverflowException`](src/server/SecurityIp.hpp) (reproduciendo el Error 6 "Overflow" del binario legacy compilado con `OverflowCheck=0` en `SERVER.VBP`) en lugar de incurrir en comportamiento indefinido (*Undefined Behavior*) por desbordamiento de enteros con signo en C++.
+- **Diferido y Justificación**:
+  - `IPSecuritySuperaLimiteConexiones` e `IpRestarConexion`: Ambas rutinas constituyen código muerto en el servidor de producción 0.13.0 (comentadas con apóstrofe en todos sus puntos de invocación en `wskapiAO.bas:433`, `wskapiAO.bas:466` y `TCP.bas:626` según la auditoría [`docs/audit/02a-securityip-detalle.md`](../audit/02a-securityip-detalle.md) §7). Quedan diferidas al paso de porteo de `TCP.bas` (Módulo #14).
+  - `DumpTables`: Comando administrativo de diagnóstico. Depende de `TCP.GetAscIP` (de `TCP.bas`) y `General.LogCriticEvent` (de `General.bas`), módulos aún no migrados; se difiere hasta que se complete el segundo de dichos módulos.
+- **Registro de Bugs y Quirks Históricos**:
+  - Consultar [`docs/implementation/16-securityip.md`](16-securityip.md) para la documentación exhaustiva del módulo.
+  - Entradas del ledger maestro (#11 a #16) documentadas en [`docs/implementation/16a-securityip-known-bugs.md`](16a-securityip-known-bugs.md) y [`docs/implementation/KNOWN-LEGACY-BUGS.md`](KNOWN-LEGACY-BUGS.md).
+- **Estrategia de Verificación**: Pruebas unitarias en C++ con **doctest** en [`tests/test_securityip.cpp`](../../tests/test_securityip.cpp) (traza manual del bug de inserción desordenada, validación de anti-flood con reloj determinista, y reproducción fiel del Error 6 con invariancia absoluta de estado).
 
 #### 13. `clsAntiMassClon` *(Falta auditoría detallada)*
 - **Archivos Legacy**: `legacy/server/Codigo/clsAntiMassClon.cls`
@@ -552,7 +566,7 @@ Para cada módulo se aplica estrictamente la política de nombres definida en `d
 | **0** | `Declares.bas` | `src/server/Declares.hpp` | Grande | Estado Global (Completado) | Compilación C++ (`server_core`) |
 | **3** | `FileIO.bas` | `src/server/FileIO.hpp` | Grande | 🚨 **CRÍTICO 1: Persistencia** (7 pasos lógicos) | **Ver [`FileIO-breakdown.md`](FileIO-breakdown.md)** (doctest + Fixtures `charfile/`) |
 | **3** | `clsClan.cls` / `modGuilds.bas` | `src/server/modGuilds.hpp` | Grande | 🚨 **CRÍTICO 1: Clanes** | **doctest + Fixtures Byte-Exact `guilds/`** |
-| **4** | `SecurityIp.bas` | `src/server/SecurityIp.hpp` | Mediano | Security / Flood | doctest + Multicliente VB6 |
+| **4** | `SecurityIp.bas` | `src/server/SecurityIp.hpp` | Mediano | Security / Anti-Flood (Parcial) | doctest + Multicliente VB6 |
 | **4** | `clsAntiMassClon.cls` | `src/server/clsAntiMassClon.hpp` | Chico | Anti-Clon | doctest + Multicliente VB6 |
 | **4** | `TCP.bas` (standalone Asio) | `src/server/TCP.hpp` | Grande | 🚨 **CRÍTICO 2: Multi-Conexión**| Sockets cliente VB6 real |
 | **4** | `modSendData.bas` | `src/server/modSendData.hpp` | Mediano | 🚨 **CRÍTICO 2: Broadcast** | Broadcast a cliente VB6 real |
