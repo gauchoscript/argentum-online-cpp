@@ -15,8 +15,8 @@
 #include "Matematicas.hpp"
 #include "cGarbage.hpp"
 
-// Declaraciones de clases de módulos de clase aun no porteados
-class clsByteQueue {};
+// Declaraciones de clases de módulos de clase
+#include "clsByteQueue.hpp"
 class clsAntiDoS {};
 // clsAntiMassClon excluido por tratarse de código muerto (ver docs/audit/02b-antimassclon-detalle.md)
 class cCola {};
@@ -1092,7 +1092,7 @@ struct User {
     WorldPos Pos{};
     
     bool ConnIDValida{false};
-    std::int32_t ConnID{0};
+    std::int32_t ConnID{-1};
     
     BancoInventario BancoInvent{};
     UserCounters Counters{};

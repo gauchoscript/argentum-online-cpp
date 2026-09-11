@@ -3,6 +3,8 @@
 #include <cstdint>
 #include <vector>
 #include <string>
+#include <string_view>
+#include <functional>
 #include <stdexcept>
 
 /**
@@ -113,6 +115,18 @@ void SetTimeSourceForTesting(TimeSourceFn fn);
  * @brief Restablece la fuente de tiempo al reloj estándar del sistema (GetTickCount).
  */
 void ResetTimeSource();
+
+/**
+ * @brief Emite un volcado de diagnóstico de las entradas activas en la tabla de IPs.
+ *
+ * Transliteración de DumpTables de SecurityIp.bas (líneas 314-327).
+ * Itera las entradas de IpTables formateando la IP mediante TCP::GetAscIP.
+ * Cuando se porte General.bas, la llamada legacy a General.LogCriticEvent se
+ * canalizará mediante el log_sink provisto.
+ *
+ * @param log_sink Callback opcional receptor de cada línea de log. Si es nullptr, emite a std::clog.
+ */
+void DumpTables(std::function<void(std::string_view)> log_sink = nullptr);
 
 // --- Funciones privadas / helpers internos ---
 

@@ -1,7 +1,9 @@
 #include "SecurityIp.hpp"
+#include "TCP.hpp"
 #include <cstring>
 #include <chrono>
 #include <limits>
+#include <iostream>
 
 #if defined(_WIN32)
 #ifndef WIN32_LEAN_AND_MEAN
@@ -195,6 +197,32 @@ void AddNewIpIntervalo(std::int32_t ip, std::int32_t index) {
 
     // 3) Subo el indicador de el maximo valor almacenado y listo :) (línea 153)
     MaxValue = MaxValue + 1;
+}
+
+void DumpTables(std::function<void(std::string_view)> log_sink) {
+    // Port transliterado de SecurityIp.bas líneas 314-327:
+    // For i = 0 To MaxConTablesEntry * 2 - 1 Step 2
+    //     Call LogCriticEvent(GetAscIP(MaxConTables(i)) & " > " & MaxConTables(i + 1))
+    // Next i
+    for (std::int32_t i = 0; i < MaxValue; ++i) {
+        const std::size_t ip_idx = static_cast<std::size_t>(i * 2);
+        const std::size_t time_idx = ip_idx + 1;
+
+        if (time_idx >= IpTables.size()) {
+            break;
+        }
+
+        const std::int32_t raw_ip = IpTables[ip_idx];
+        const std::int32_t timestamp = IpTables[time_idx];
+        const std::string ip_str = TCP::GetAscIP(static_cast<std::uint32_t>(raw_ip));
+
+        const std::string line = "IP " + ip_str + " Intervalo: " + std::to_string(timestamp);
+        if (log_sink) {
+            log_sink(line);
+        } else {
+            std::clog << line << '\n';
+        }
+    }
 }
 
 } // namespace SecurityIp
