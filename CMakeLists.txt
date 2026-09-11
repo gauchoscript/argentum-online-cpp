@@ -27,6 +27,7 @@ add_library(server_core STATIC
     src/server/FileIO.cpp
     src/server/clsClan.cpp
     src/server/modGuilds.cpp
+    src/server/SecurityIp.cpp
 )
 target_include_directories(server_core PUBLIC src)
 target_link_libraries(server_core PUBLIC asio::asio)
@@ -61,6 +62,7 @@ add_executable(unit_tests
     tests/test_fileio_adminlogs.cpp
     tests/test_fileio_backup.cpp
     tests/test_clsclan.cpp
+    tests/test_securityip.cpp
 )
 target_include_directories(unit_tests PRIVATE src)
 target_link_libraries(unit_tests PRIVATE server_core doctest::doctest)
