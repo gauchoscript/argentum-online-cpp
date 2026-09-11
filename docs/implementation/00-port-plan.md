@@ -241,8 +241,8 @@ Para cada módulo se aplica estrictamente la política de nombres definida en `d
   - Ayudantes privados transliterados literalmente: `FindTableIp` y `AddNewIpIntervalo` (reproduciendo fielmente la cota inicial `Last = MaxValue` y la inserción desordenada por `~(Middle * 2)`).
   - Desbordamiento aritmético de ticks: Salvaguardado mediante [`SecurityIp::TickCountOverflowException`](src/server/SecurityIp.hpp) (reproduciendo el Error 6 "Overflow" del binario legacy compilado con `OverflowCheck=0` en `SERVER.VBP`) en lugar de incurrir en comportamiento indefinido (*Undefined Behavior*) por desbordamiento de enteros con signo en C++.
 - **Diferido y Justificación**:
-  - `IPSecuritySuperaLimiteConexiones` e `IpRestarConexion`: Ambas rutinas constituyen código muerto en el servidor de producción 0.13.0 (comentadas con apóstrofe en todos sus puntos de invocación en `wskapiAO.bas:433`, `wskapiAO.bas:466` y `TCP.bas:626` según la auditoría [`docs/audit/02a-securityip-detalle.md`](../audit/02a-securityip-detalle.md) §7). Quedan diferidas al paso de porteo de `TCP.bas` (Módulo #14).
-  - `DumpTables`: Comando administrativo de diagnóstico. Depende de `TCP.GetAscIP` (de `TCP.bas`) y `General.LogCriticEvent` (de `General.bas`), módulos aún no migrados; se difiere hasta que se complete el segundo de dichos módulos.
+  - `IPSecuritySuperaLimiteConexiones` e `IpRestarConexion`: Ambas rutinas constituyen código muerto en el servidor de producción 0.13.0 (comentadas con apóstrofe en todos sus puntos de invocación en `wskapiAO.bas:433`, `wskapiAO.bas:466` y `TCP.bas:626` según la auditoría [`docs/audit/02a-securityip-detalle.md`](../audit/02a-securityip-detalle.md) §7 y [`02c-tcp-detalle.md`](../audit/02c-tcp-detalle.md)). Quedaron formalmente **excluidas por código muerto** en la etapa de TCP.
+  - `DumpTables`: Comando administrativo de diagnóstico (`SecurityIp.bas:314-327`). **Completado** en el Paso 7 de TCP mediante `SecurityIp::DumpTables(log_sink)`, consumiendo `TCP::GetAscIP` para formatear las direcciones IP de `IpTables` y ofreciendo un sink inyectable para el logging.
 - **Registro de Bugs y Quirks Históricos**:
   - Consultar [`docs/implementation/16-securityip.md`](16-securityip.md) para la documentación exhaustiva del módulo.
   - Entradas del ledger maestro (#11 a #16) documentadas en [`docs/implementation/16a-securityip-known-bugs.md`](16a-securityip-known-bugs.md) y [`docs/implementation/KNOWN-LEGACY-BUGS.md`](KNOWN-LEGACY-BUGS.md).
@@ -255,13 +255,18 @@ Para cada módulo se aplica estrictamente la política de nombres definida en `d
 - **Documentación de Auditoría**: [`docs/audit/02b-antimassclon-detalle.md`](../audit/02b-antimassclon-detalle.md) y [`docs/implementation/KNOWN-LEGACY-BUGS.md`](KNOWN-LEGACY-BUGS.md) (Entrada #18).
 
 #### 14. `TCP` (con standalone Asio) *(CATEGORÍA CRÍTICA 2 - CONEXIONES SIMULTÁNEAS)*
-- **Archivos Legacy**: `legacy/server/Codigo/TCP.bas` (absorbe la función de `wsksock.bas` y `wskapiAO.bas`)
-- **Propósito**: Capa de red multijugador basada en **standalone Asio** (la versión header-only no dependiente de Boost). Maneja la asignación de `UserIndex` en `UserList`, aceptación de sockets, eventos de desconexión y monitoreo of timeouts. (Integrado en CMake/vcpkg mediante el paquete `"asio"`).
-- **Archivo C++ Propuesto**: `src/server/TCP.hpp` / `src/server/TCP.cpp`
+- **Archivos Legacy**: `legacy/server/Codigo/TCP.bas` (absorbe la totalidad de `wsksock.bas` y `wskapiAO.bas`)
+- **Propósito**: Capa de red multijugador basada en **standalone Asio Monohilo** (`io_context.poll()`). Maneja la asignación y blanqueo de slots en `UserList`, escucha y aceptación asíncrona, filtrado anti-flood síncrono (Bug #20 mitigado), recepción y despacho seguro con cola saliente (Bug #19 mitigado), ciclo de desconexión y retención de entidad Anti-CombatLog por 10 segundos en zonas PK.
+- **Archivo C++ Implementado**: `src/server/TCP.hpp` / `src/server/TCP.cpp`
+- **Estado**: **✅ COMPLETADO** (Ver documentación técnica en [`17-tcp.md`](17-tcp.md) y desglose por fases en [`TCP-breakdown.md`](TCP-breakdown.md)).
 - **Dependencias**: `Declares`, `clsByteQueue`, `SecurityIp`.
-- **Estimación**: **Grande** (~1.200 líneas).
-- **Estrategia de Verificación**: **Pruebas de sockets con múltiples instancias simultáneas del cliente VB6 real**.
-- **Nota de Migración (`clsByteQueue` y Capacidad Fija de Búfer)**: Cada conexión posee búferes independientes de 10.240 bytes por dirección (`incomingData` y `outgoingData`). Al ser un búfer fijo que no auto-crece, la condición `NOT_ENOUGH_SPACE` (`NotEnoughSpaceException`) representa un evento real en ejecución bajo carga de red (ej. cliente lento o ráfaga de broadcast). En el servidor legacy, la mitigación original vive en los bloques `On Error GoTo Errhandler` de `Protocol.bas` (los cuales capturan `NotEnoughSpaceErrCode`, ejecutan `FlushBuffer(UserIndex)` para forzar el vaciado del búfer al socket TCP y reintentan con `Resume`). Al portar `TCP` con Asio, se debe definir explícitamente cómo replicar o manejar este esquema de flush automático o desconexión/throttling. Ver [`09-clsbytequeue.md`](09-clsbytequeue.md).
+- **Estimación**: **Grande** (~3.276 líneas legacy unificadas).
+- **Estrategia de Verificación**: 24 tests unitarios específicos con **doctest** en [`tests/test_tcp.cpp`](../../tests/test_tcp.cpp) cubriendo los 7 grupos funcionales (G1 a G7) con sockets de loopback y avance temporal determinista.
+- **Notas de Diseño y Mitigación**:
+  - *Modelo Monohilo*: `TCP::PollRed()` se ejecuta en el mismo hilo que el Game Loop, preservando la fidelidad al STA de VB6 y la coherencia del estado global sin locks ni condiciones de carrera.
+  - *Mitigación de Backpressure (Bug #19)*: Se erradica el busy-loop infinito de `NOT_ENOUGH_SPACE` + `Resume` mediante colas salientes asíncronas y corte preventivo a los 64 KB (`MAX_OUTGOING_BUFFER_SIZE`).
+  - *Mitigación de Socket Leak (Bug #20)*: El cierre RAII explícito de `asio::ip::tcp::socket` ante rechazos de `SecurityIp` previene descriptores huérfanos.
+  - *Mecánica Anti-CombatLog*: `CloseSocketSL` destruye el socket TCP pero retiene la entidad en mapa durante 10 segundos antes del volcado a disco y reseteo definitivo del slot con `CloseSocket`.
 
 #### 15. `modSendData` *(CATEGORÍA CRÍTICA 2 - PROTOCOLO DE RED)*
 - **Archivos Legacy**: `legacy/server/Codigo/modSendData.bas`
@@ -270,7 +275,7 @@ Para cada módulo se aplica estrictamente la política de nombres definida en `d
 - **Dependencias**: `Declares`, `clsByteQueue`, `TCP`.
 - **Estimación**: **Mediano** (~650 líneas).
 - **Estrategia de Verificación**: **Pruebas de broadcast de paquetes recibidos por el cliente VB6 real**.
-- **Nota de Migración (`clsByteQueue`)**: `modSendData` vuelca los datos en la cola `outgoingData` del usuario objetivo usando `WriteBlock` / `Write*`. Ver [`09-clsbytequeue.md`](09-clsbytequeue.md).
+- **Nota de Migración (`clsByteQueue` y `TCP`)**: `modSendData` vuelca los datos en la cola `outgoingData` del usuario objetivo usando `WriteBlock` / `Write*`. Para el despacho inmediato de tramas completas, la transmisión hacia la red se canaliza invocando `TCP::EnviarDatosASlot(user_index, datos)`. Ver [`09-clsbytequeue.md`](09-clsbytequeue.md) y [`17-tcp.md`](17-tcp.md).
 
 #### 16. `Protocol` *(CATEGORÍA CRÍTICA 2 - DECODIFICADOR Y ENCODIFICADOR)*
 - **Archivos Legacy**: `legacy/server/Codigo/Protocol.bas`
@@ -280,6 +285,7 @@ Para cada módulo se aplica estrictamente la política de nombres definida en `d
 - **Estimación**: **Grande** (~8.500 líneas).
 - **Estrategia de Verificación**: **Pruebas binarias con cliente VB6 autenticando, caminando y enviando comandos al servidor C++**.
 - **Nota de Migración (`clsByteQueue` y transacciones con `CopyBuffer`)**: `Protocol.bas` utiliza `buffer.CopyBuffer(incomingData)` para simular lectura transaccional de paquetes con strings variables. Si salta la excepción `NotEnoughDataException` (`NOT_ENOUGH_DATA`), el paquete está incompleto y la cola `incomingData` principal permanece inalterada hasta recibir el paquete completo TCP. Ver [`09-clsbytequeue.md`](09-clsbytequeue.md).
+- **Nota de Auditoría / Migración (`FlushBuffer` y Erradicación del Bug #19)**: La función `FlushBuffer(UserIndex)` delega directamente en `TCP::FlushBuffer(user_index)`. En C++ **no debe reproducirse el patrón legacy de captura de `NOT_ENOUGH_SPACE` con `Resume`**, dado que la protección contra saturación fue resuelta a nivel de transporte en `TCP::EnviarDatosASlot` con búferes salientes asíncronos y backpressure seguro (ver [`17-tcp.md`](17-tcp.md) y [`KNOWN-LEGACY-BUGS.md`](KNOWN-LEGACY-BUGS.md) Entrada #19).
 - **Nota de Auditoría / Migración (`clsAntiMassClon` / Anti-Clon)**: La comprobación `aClon.MaxPersonajes(UserList(UserIndex).ip)` en `HandleLoginNewChar` (`Protocol.bas:1502`) no debe invocarse por tratarse de código muerto omitido (ver [`docs/audit/02b-antimassclon-detalle.md`](../audit/02b-antimassclon-detalle.md)).
 
 ---
@@ -539,6 +545,7 @@ Para cada módulo se aplica estrictamente la política de nombres definida en `d
 - **Estimación**: **Grande** (~1.200 líneas combinadas).
 - **Estrategia de Verificación**: Pruebas de tiempo de ejecución del servidor C++ y cliente VB6 real.
 - **Nota de Auditoría / Migración (`clsAntiMassClon` / AutoSave)**: La llamada periódica `aClon.VaciarColeccion` en el timer de autoguardado (`AutoSave_Timer` / `DoBackUp`, `frmMain.frm:405`) no debe implementarse por haber sido excluido el módulo como código muerto (ver [`docs/audit/02b-antimassclon-detalle.md`](../audit/02b-antimassclon-detalle.md)).
+- **Nota de Migración (`TCP` / Game Loop)**: El bucle central de ejecución debe invocar `TCP::PollRed()` al inicio de cada frame para procesar de forma no bloqueante todos los eventos asíncronos de E/S de Asio. Asimismo, en el temporizador de 1 segundo (`General.PasarSegundo`) se debe invocar `TCP::PasarSegundoUsuarios()` para gestionar la cuenta regresiva de logout y la mecánica Anti-CombatLog. Ver [`17-tcp.md`](17-tcp.md).
 
 #### 43. `General`
 - **Archivos Legacy**: `legacy/server/Codigo/General.bas`
@@ -548,6 +555,7 @@ Para cada módulo se aplica estrictamente la política de nombres definida en `d
 - **Estimación**: **Grande** (~1.467 líneas).
 - **Estrategia de Verificación**: Ejecución del servidor completo en C++ (`ArgentumServer.exe`) recibiendo conexiones del cliente VB6 real.
 - **Nota de Auditoría / Migración (`cGarbage` / `LimpiarMundo`)**: Al portar el procedimiento de mantenimiento `LimpiarMundo`, acordate de incluir la rutina de recorrido y descolado de la colección `TrashCollector` para remover del mapa los objetos `cGarbage` (fogatas) (must include integration test coverage for TrashCollector/cGarbage cleanup behavior when this module is ported — see docs/audit/01a-clsdicc-cgarbage.md and docs/implementation/05-cgarbage.md).
+- **Nota de Migración (`TCP` / Bootstrap y Shutdown)**: El procedimiento `Main` arranca la escucha de red invocando `TCP::IniciaServidor(Puerto, bind_ip)`, y `ShutdownServer` cierra ordenadamente todos los sockets y libera descriptores mediante `TCP::DetenerServidor()`. Ver [`17-tcp.md`](17-tcp.md).
 
 ---
 
@@ -568,7 +576,7 @@ Para cada módulo se aplica estrictamente la política de nombres definida en `d
 | **3** | `clsClan.cls` / `modGuilds.bas` | `src/server/modGuilds.hpp` | Grande | 🚨 **CRÍTICO 1: Clanes** | **doctest + Fixtures Byte-Exact `guilds/`** |
 | **4** | `SecurityIp.bas` | `src/server/SecurityIp.hpp` | Mediano | Security / Anti-Flood (Parcial) | doctest + Multicliente VB6 |
 | **4** | `clsAntiMassClon.cls` | *Ninguno (Excluido)* | Chico | **EXCLUIDO (Código Muerto)** | Documentado en [`02b-antimassclon-detalle.md`](../audit/02b-antimassclon-detalle.md) |
-| **4** | `TCP.bas` (standalone Asio) | `src/server/TCP.hpp` | Grande | 🚨 **CRÍTICO 2: Multi-Conexión**| Sockets cliente VB6 real |
+| **4** | `TCP.bas` (standalone Asio) | `src/server/TCP.hpp` | Grande | 🚨 **CRÍTICO 2: Multi-Conexión**| **Completado (Asio Monohilo)** (24 tests en `test_tcp.cpp`, ver [`17-tcp.md`](17-tcp.md)) |
 | **4** | `modSendData.bas` | `src/server/modSendData.hpp` | Mediano | 🚨 **CRÍTICO 2: Broadcast** | Broadcast a cliente VB6 real |
 | **4** | `Protocol.bas` | `src/server/Protocol.hpp` | Grande | 🚨 **CRÍTICO 2: Opcodes** | Login / Movimiento cliente VB6 |
 | **5** | `ModAreas.bas` | `src/server/ModAreas.hpp` | Mediano | Grilla de Visión | 2+ Clientes VB6 en mapa |

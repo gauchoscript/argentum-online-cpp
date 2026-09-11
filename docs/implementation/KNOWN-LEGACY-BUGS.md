@@ -3,7 +3,7 @@ area: auditoria-y-compatibilidad
 status: living_document
 title: Registro Centralizado de Bugs y Quirks Históricos del Legacy VB6
 tags: [ledger, bugs, quirks, off-by-one, legacy-vb6, paridad, compatibilidad]
-last_updated: 2026-09-10
+last_updated: 2026-09-11
 ---
 
 # Registro Centralizado de Bugs y Quirks Históricos del Legacy VB6 (`KNOWN-LEGACY-BUGS.md`)
@@ -30,12 +30,14 @@ De acuerdo con la convención del proyecto ([`docs/CONVENTIONS.md`](../CONVENTIO
 | **10** | `FileIO` (Grupo 7) | `FileIO.bas:2158, 2178` | `LogBanFromName` y `Ban` persisten registros en `logs/BanDetail.dat` con extensión `.dat` en lugar de `.log` | **Activo** | **Replicated**<br>[`src/server/FileIO.cpp:1159, 1177`](src/server/FileIO.cpp#L1159)<br>Test: [`test_fileio_backup_logging.cpp:45`](tests/test_fileio_backup_logging.cpp#L45) | [`14-fileio-backup-logging.md`](14-fileio-backup-logging.md#a-formatos-de-registro-y-quirk-historico-de-extensiones-log-vs-dat) |
 | **11** | `SecurityIp` #1 | `SecurityIp.bas:291` / `310` | Búsqueda binaria retorna `~(Middle * 2)` en vez de `~(First * 2)`, insertando fuera de orden | **Activo** (`IP_INTERVALOS`) / **Muerto** (`IP_LIMITECONEXIONES`) | **Replicated**<br>[`src/server/SecurityIp.cpp:44`](src/server/SecurityIp.cpp#L44)<br>Test: [`test_securityip.cpp:121`](tests/test_securityip.cpp#L121) | [`16a-securityip-known-bugs.md`](16a-securityip-known-bugs.md#bug-1-retorno-de-middle--2-en-vez-de-first--2-en-búsqueda-binaria) |
 | **12** | `SecurityIp` #2 | `SecurityIp.bas:278` / `296` | Cota superior inicial `Last = MaxValue` (off-by-one) que compara contra elemento no inicializado o fuera de rango | **Activo** (`IP_INTERVALOS`) / **Muerto** (`IP_LIMITECONEXIONES`) | **Replicated**<br>[`src/server/SecurityIp.cpp:21`](src/server/SecurityIp.cpp#L21)<br>Test: [`test_securityip.cpp:17`](tests/test_securityip.cpp#L17) | [`16a-securityip-known-bugs.md`](16a-securityip-known-bugs.md#quirk-2-cota-superior-inicial-desplazada-last--maxvalue-off-by-one) |
-| **13** | `SecurityIp` #3 | `SecurityIp.bas:247` | Sobrecopia de 16 bytes en compactación de `MaxConTables` dentro de `IpRestarConexion` provocando lecturas y escrituras fuera de rango | **Muerto / Comentado** | **Deferred**<br>(Módulo destino: `TCP.bas`) | [`16a-securityip-known-bugs.md`](16a-securityip-known-bugs.md#bug-3-sobrecopia-de-memoria--lectura-fuera-de-rango-en-iprestarconexion) |
-| **14** | `SecurityIp` #4 | `SecurityIp.bas:180-188` | Retorno permisivo (`False`) ante agotamiento de slots en `IPSecuritySuperaLimiteConexiones`, admitiendo conexiones sin registrar | **Muerto / Comentado** | **Deferred**<br>(Módulo destino: `TCP.bas`) | [`16a-securityip-known-bugs.md`](16a-securityip-known-bugs.md#bug-4-retorno-permisivo-ante-agotamiento-de-slots-en-ipsecuritysuperalimiteconexiones) |
+| **13** | `SecurityIp` #3 | `SecurityIp.bas:247` | Sobrecopia de 16 bytes en compactación de `MaxConTables` dentro de `IpRestarConexion` provocando lecturas y escrituras fuera de rango | **Muerto / Comentado** | **Excluded (dead code, not ported)** | [`16a-securityip-known-bugs.md`](16a-securityip-known-bugs.md#bug-3-sobrecopia-de-memoria--lectura-fuera-de-rango-en-iprestarconexion)<br>Detalle: [`../audit/02c-tcp-detalle.md`](../audit/02c-tcp-detalle.md#43-estado-de-ipsecuritysuperalimiteconexiones-e-iprestarconexion) |
+| **14** | `SecurityIp` #4 | `SecurityIp.bas:180-188` | Retorno permisivo (`False`) ante agotamiento de slots en `IPSecuritySuperaLimiteConexiones`, admitiendo conexiones sin registrar | **Muerto / Comentado** | **Excluded (dead code, not ported)** | [`16a-securityip-known-bugs.md`](16a-securityip-known-bugs.md#bug-4-retorno-permisivo-ante-agotamiento-de-slots-en-ipsecuritysuperalimiteconexiones)<br>Detalle: [`../audit/02c-tcp-detalle.md`](../audit/02c-tcp-detalle.md#43-estado-de-ipsecuritysuperalimiteconexiones-e-iprestarconexion) |
 | **15** | `SecurityIp` #5 | `SecurityIp.bas:86-97` | Asimetría de mantenimiento horario: purga `IpTables` pero no interviene sobre `MaxConTables` | **Activo** | **Replicated**<br>[`src/server/SecurityIp.cpp:78`](src/server/SecurityIp.cpp#L78)<br>Test: [`test_securityip.cpp:325`](tests/test_securityip.cpp#L325) | [`16a-securityip-known-bugs.md`](16a-securityip-known-bugs.md#quirk-5-asimetria-en-el-mantenimiento-periodico-ipsecuritymantenimientolista) |
 | **16** | `SecurityIp` #6 | `SecurityIp.bas:111` | Error 6 ("Overflow") de VB6 tras ~24.85 días de uptime (`SERVER.VBP` `OverflowCheck=0`) | **Activo** | **Replicated (Excepción Tipada)**<br>[`SecurityIp::TickCountOverflowException`](src/server/SecurityIp.hpp)<br>Test: [`test_securityip.cpp:342`](tests/test_securityip.cpp#L342) | [`16a-securityip-known-bugs.md`](16a-securityip-known-bugs.md#quirk-6-aritmetica-temporal-con-desbordamiento--wraparound-de-gettickcount) |
 | **17** | `cColaArray` | `cColaArray.cls` | Clase de búfer circular de texto inalcanzable, bloqueada bajo `#If UsarQueSocket = 3` y sin campos en `User` | **Muerto / Inalcanzable** | **Excluded (dead code, not ported)** | [`docs/audit/06a-colaarray-dead-code.md`](../audit/06a-colaarray-dead-code.md) |
 | **18** | `clsAntiMassClon` | `clsAntiMassClon.cls:46-67, 58-63`<br>`SERVER.VBP:76` | Inserción de IPs inoperante por condicional `#If SeguridadAlkon` apagado y tipo inexistente `UserIpAdress` (bypass total en producción) | **Muerto / Inoperante** | **Excluded (dead code, not ported)** | [`docs/audit/02b-antimassclon-detalle.md`](../audit/02b-antimassclon-detalle.md) |
+| **19** | `TCP` / `wskapiAO` | `wskapiAO.bas:334-342`<br>`clsByteQueue.cls:196-199`<br>`Protocol.bas:858-863` | Congelamiento del servidor por bucle infinito ocupado (busy-loop) ante `WSAEWOULDBLOCK` en `WsApiEnviar` combinado con `NOT_ENOUGH_SPACE` y `Resume` | **Activo** | **Mitigated (Safe Backpressure)**<br>[`TCP::EnviarDatosASlot`](src/server/TCP.cpp)<br>Test: [`test_tcp.cpp:653`](tests/test_tcp.cpp#L653) | [`docs/audit/02c-tcp-detalle.md`](../audit/02c-tcp-detalle.md#54-umbrales-de-socket-os-y-la-trampa-de-bloqueo-wsaewouldblock)<br>[`17-tcp.md`](17-tcp.md#2-mitigación-de-backpressure-bug-19) |
+| **20** | `TCP` / `wskapiAO` | `wskapiAO.bas:402-405, 420` | Fuga de descriptor de socket (*socket leak*) en rechazo anti-flood por invocar `WSApiCloseSocket(NuevoSock)` antes de asignar `NuevoSock = Ret` (cerrando descriptor 0) | **Activo** | **Mitigated (Safe RAII / Explicit Close)**<br>[`TCP::HandleAccept`](src/server/TCP.cpp)<br>Test: [`test_tcp.cpp:301`](tests/test_tcp.cpp#L301) | [`docs/audit/02c-tcp-detalle.md`](../audit/02c-tcp-detalle.md#c-procesamiento-del-evento-de-conexión-entrante-fd_accept)<br>[`17-tcp.md`](17-tcp.md#3-cierre-seguro-raii-en-aceptación-bug-20) |
 
 ---
 
@@ -146,8 +148,8 @@ A continuación se documentan en detalle aquellas entradas que provienen de mód
 Para el desglose analítico completo de las entradas #11 a #16 correspondientes al módulo `SecurityIp.bas`:
 - Bug #11 (Búsqueda binaria con inserción desordenada por `~(Middle * 2)`).
 - Quirk #12 (Cota inicial `Last = MaxValue` con acceso espurio fuera de rango).
-- Bug #13 (Sobrecopia de 16 bytes en `IpRestarConexion`).
-- Bug #14 (Retorno permisivo ante saturación de slots en `IPSecuritySuperaLimiteConexiones`).
+- Bug #13 (Sobrecopia de 16 bytes en `IpRestarConexion`): **Excluido por código muerto**, al confirmarse en [`docs/audit/02c-tcp-detalle.md`](../audit/02c-tcp-detalle.md#43-estado-de-ipsecuritysuperalimiteconexiones-e-iprestarconexion) y [`17-tcp.md`](17-tcp.md) que todas sus llamadas en `wskapiAO.bas:466` y `TCP.bas:626` están comentadas con apóstrofe en el servidor de producción.
+- Bug #14 (Retorno permisivo ante saturación de slots en `IPSecuritySuperaLimiteConexiones`): **Excluido por código muerto**, al confirmarse en [`docs/audit/02c-tcp-detalle.md`](../audit/02c-tcp-detalle.md#43-estado-de-ipsecuritysuperalimiteconexiones-e-iprestarconexion) y [`17-tcp.md`](17-tcp.md) que su única llamada en `wskapiAO.bas:433` está comentada con apóstrofe en producción.
 - Quirk #15 (Mantenimiento horario asimétrico en `IpSecurityMantenimientoLista`).
 - Quirk #16 (Aritmética temporal propensa a wraparound de `GetTickCount`).
 
@@ -165,3 +167,37 @@ Consultá directamente el documento dedicado: [`16a-securityip-known-bugs.md`](1
 - **Camino de Producción**: **Muerto / Inoperante**.
 - **Estado en C++**: **Excluded (dead code, not ported)**. La clase se excluye del porting para respetar el principio de no rediseñar ni inventar tipos inexistentes, preservando el comportamiento observable de la versión 0.13.0 de producción.
 - **Documentación Detallada**: [`docs/audit/02b-antimassclon-detalle.md`](../audit/02b-antimassclon-detalle.md).
+
+---
+
+### Entrada #19 — `TCP` / `wskapiAO`: Congelamiento del Servidor por Bucle Infinito Ocupado ante `WSAEWOULDBLOCK` y `NOT_ENOUGH_SPACE`
+- **Cita Legacy**: [`legacy/server/Codigo/wskapiAO.bas:334-342`](legacy/server/Codigo/wskapiAO.bas#L334-L342), [`legacy/server/Codigo/clsByteQueue.cls:196-199`](legacy/server/Codigo/clsByteQueue.cls#L196-L199) y [`legacy/server/Codigo/Protocol.bas:858-863`](legacy/server/Codigo/Protocol.bas#L858-L863).
+- **Descripción**: En el servidor legacy, la cola de salida `outgoingData As clsByteQueue` posee una capacidad fija de 10 KB (`DATA_BUFFER = 10240`). Cuando la serialización de un paquete satura la cola, se dispara la excepción `NOT_ENOUGH_SPACE`. En 101 funciones de `Protocol.bas`, el bloque `Errhandler:` captura el error, ejecuta `Call FlushBuffer(UserIndex)` y luego `Resume` para reintentar la instrucción. Sin embargo:
+  1. `FlushBuffer` toma los 10 KB y los intenta enviar síncronamente mediante `send()` en `WsApiEnviar`.
+  2. Si el búfer del kernel del sistema operativo está lleno (cliente laggeado o ventana TCP saturada), `send()` retorna `-1` con error `WSAEWOULDBLOCK` (10035).
+  3. Al recibir `WSAEWOULDBLOCK`, `WsApiEnviar` reinyecta íntegramente los 10 KB de vuelta en `outgoingData` (`Call UserList(Slot).outgoingData.WriteASCIIStringFixed(str)`).
+  4. La instrucción `Resume` en `Protocol.bas` vuelve a intentar escribir sobre la cola que sigue 100% llena, relanzando `NOT_ENOUGH_SPACE`, llamando nuevamente a `FlushBuffer`, rebotando en `WSAEWOULDBLOCK` y ejecutando `Resume` de forma perpetua.
+  5. Dado que todo el servidor legacy corre en un único hilo de ejecución (STA), este rebote genera un **bucle infinito ocupado (busy-wait) al 100% de CPU**, congelando el servidor completo.
+- **Camino de Producción**: **Activo**.
+- **Estado en C++**: **Mitigated (Safe Backpressure)**. En el diseño con Asio se elimina el control de flujo por excepciones y reintentos infinitos, reemplazándolo por una cola de buffers salientes con umbral máximo de seguridad (backpressure limit); si un cliente satura su cola saliente sin drenar, se programa su desconexión controlada protegiendo la estabilidad del servidor. Implementado en `src/server/TCP.cpp` (`MAX_OUTGOING_BUFFER_SIZE`) y probado en `tests/test_tcp.cpp:653-698`.
+- **Documentación Detallada**: [`17-tcp.md`](17-tcp.md#2-mitigación-de-backpressure-bug-19) y [`docs/audit/02c-tcp-detalle.md`](../audit/02c-tcp-detalle.md#54-umbrales-de-socket-os-y-la-trampa-de-bloqueo-wsaewouldblock).
+
+---
+
+### Entrada #20 — `TCP` / `wskapiAO`: Socket Leak por Invocación Prematura de `WSApiCloseSocket` en Rechazo Anti-Flood
+- **Cita Legacy**: [`legacy/server/Codigo/wskapiAO.bas:402-405, 420`](legacy/server/Codigo/wskapiAO.bas#L402-L405).
+- **Descripción**: En la subrutina `EventoSockAccept`:
+  1. Se acepta la conexión entrante: `Ret = accept(SockID, sa, Tam)` en la línea 394.
+  2. Inmediatamente en la línea 402 se valida la seguridad de la IP:
+     ```vb
+     If Not SecurityIp.IpSecurityAceptarNuevaConexion(sa.sin_addr) Then
+         Call WSApiCloseSocket(NuevoSock)
+         Exit Sub
+     End If
+     ```
+  3. Sin embargo, la variable local `NuevoSock` recién se asigna **15 líneas después** en la línea 420 (`NuevoSock = Ret`).
+  4. Como consecuencia, si el anti-flood rechaza la conexión, `WSApiCloseSocket` recibe `NuevoSock = 0` (cerrando el descriptor 0 correspondiente a stdin o inválido), mientras que el descriptor TCP real devuelto por `accept()` (`Ret`) queda huérfano y abierto en el kernel de Windows, provocando una **fuga acumulativa de descriptores de sockets (socket leak)** ante ráfagas de ataques de conexión.
+- **Camino de Producción**: **Activo**.
+- **Estado en C++**: **Mitigated (Safe RAII / Explicit Close)**. En C++, la aceptación del socket se realiza mediante `asio::ip::tcp::socket`, cuyo destructor RAII garantiza el cierre inmediato del descriptor si la validación anti-flood rechaza la conexión antes de enrolarla en la sesión. Implementado en `src/server/TCP.cpp:61` y probado en `tests/test_tcp.cpp:301-341`.
+- **Documentación Detallada**: [`17-tcp.md`](17-tcp.md#3-cierre-seguro-raii-en-aceptación-bug-20) y [`docs/audit/02c-tcp-detalle.md`](../audit/02c-tcp-detalle.md#c-procesamiento-del-evento-de-conexión-entrante-fd_accept).
+
