@@ -64,7 +64,7 @@ std::vector<std::int16_t> ObjCarpintero;
 std::vector<std::string> MD5s;
 
 std::unique_ptr<clsAntiDoS> aDos;
-std::unique_ptr<clsAntiMassClon> aClon;
+// aClon (clsAntiMassClon) excluido por tratarse de código muerto (ver docs/audit/02b-antimassclon-detalle.md)
 
 std::array<std::unique_ptr<clsParty>, MAX_PARTIES + 1> Parties;
 std::array<ModClase, NUMCLASES + 1> ModClaseList{};

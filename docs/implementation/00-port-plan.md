@@ -40,7 +40,7 @@ El criterio de ordenamiento es **secuencial por árbol de dependencias**: los m�
 > - **Estrategia de Verificación**: **No se valida únicamente con el cliente**, sino contra los archivos de fixture reales ubicados en `tests/fixtures/charfile/` y `tests/fixtures/guilds/` mediante suites de pruebas unitarias en C++ usando **doctest**.
 > 
 > ### Categoría 2: Módulos de Protocolo de Red y Múltiples Conexiones Simultáneas
-> - **Módulos involucrados**: `clsByteQueue.cls`, `SecurityIp.bas`, `clsAntiMassClon.cls`, `TCP.bas` (reemplazando `wsksock.bas`/`wskapiAO.bas` con **standalone Asio**), `modSendData.bas`, `Protocol.bas`.
+> - **Módulos involucrados**: `clsByteQueue.cls`, `SecurityIp.bas`, `TCP.bas` (reemplazando `wsksock.bas`/`wskapiAO.bas` con **standalone Asio**), `modSendData.bas`, `Protocol.bas` (con `clsAntiMassClon.cls` formalmente excluido por código muerto).
 > - **Requisito de Compatibilidad**: **Compatibilidad binaria de socket a nivel de byte y soporte multijugador**. El empaquetamiento little-endian de enteros, floats, cadenas con prefijo de 2 bytes y booleans de 1 byte debe encajar de forma exacta con la especificación de `ClientPacketID` y `ServerPacketID`. Además, se debe preservar la capacidad del servidor de gestionar múltiples conexiones simultáneas mapeadas a su `UserIndex` independiente.
 > - **Estrategia de Verificación**: Verificación binaria con pruebas unitarias en **doctest** sobre `clsByteQueue` y validación de integración conectando el **cliente ejecutable real en VB6** contra nuestro servidor C++.
 
@@ -248,19 +248,17 @@ Para cada módulo se aplica estrictamente la política de nombres definida en `d
   - Entradas del ledger maestro (#11 a #16) documentadas en [`docs/implementation/16a-securityip-known-bugs.md`](16a-securityip-known-bugs.md) y [`docs/implementation/KNOWN-LEGACY-BUGS.md`](KNOWN-LEGACY-BUGS.md).
 - **Estrategia de Verificación**: Pruebas unitarias en C++ con **doctest** en [`tests/test_securityip.cpp`](../../tests/test_securityip.cpp) (traza manual del bug de inserción desordenada, validación de anti-flood con reloj determinista, y reproducción fiel del Error 6 con invariancia absoluta de estado).
 
-#### 13. `clsAntiMassClon` *(Falta auditoría detallada)*
+#### 13. `clsAntiMassClon` (EXCLUIDO - Código Muerto)
 - **Archivos Legacy**: `legacy/server/Codigo/clsAntiMassClon.cls`
-- **Propósito**: Prevención de clonación masiva de personajes y conexiones automatizadas múltiples.
-- **Archivo C++ Propuesto**: `src/server/clsAntiMassClon.hpp` / `src/server/clsAntiMassClon.cpp`
-- **Dependencias**: `Declares`, `SecurityIp`.
-- **Estimación**: **Chico** (~90 líneas).
-- **Estrategia de Verificación**: Pruebas de conexión multicliente con **doctest** / cliente VB6.
+- **Diagnóstico de Auditoría**: **100% código muerto, inoperante e incompilable** en producción 0.13.0 (`SeguridadAlkon` nunca estuvo definido en `SERVER.VBP:76`, la inserción de IPs nunca compilaba y la clase `UserIpAdress` no existe en el código fuente).
+- **Decisión de Porting**: **EXCLUIDO.** No se generará ningún archivo C++ equivalente (`src/server/clsAntiMassClon.hpp` / `src/server/clsAntiMassClon.cpp`). Se retiran stubs y variables de `Declares` y se omite en módulos consumidores.
+- **Documentación de Auditoría**: [`docs/audit/02b-antimassclon-detalle.md`](../audit/02b-antimassclon-detalle.md) y [`docs/implementation/KNOWN-LEGACY-BUGS.md`](KNOWN-LEGACY-BUGS.md) (Entrada #18).
 
 #### 14. `TCP` (con standalone Asio) *(CATEGORÍA CRÍTICA 2 - CONEXIONES SIMULTÁNEAS)*
 - **Archivos Legacy**: `legacy/server/Codigo/TCP.bas` (absorbe la función de `wsksock.bas` y `wskapiAO.bas`)
 - **Propósito**: Capa de red multijugador basada en **standalone Asio** (la versión header-only no dependiente de Boost). Maneja la asignación de `UserIndex` en `UserList`, aceptación de sockets, eventos de desconexión y monitoreo of timeouts. (Integrado en CMake/vcpkg mediante el paquete `"asio"`).
 - **Archivo C++ Propuesto**: `src/server/TCP.hpp` / `src/server/TCP.cpp`
-- **Dependencias**: `Declares`, `clsByteQueue`, `SecurityIp`, `clsAntiMassClon`.
+- **Dependencias**: `Declares`, `clsByteQueue`, `SecurityIp`.
 - **Estimación**: **Grande** (~1.200 líneas).
 - **Estrategia de Verificación**: **Pruebas de sockets con múltiples instancias simultáneas del cliente VB6 real**.
 - **Nota de Migración (`clsByteQueue` y Capacidad Fija de Búfer)**: Cada conexión posee búferes independientes de 10.240 bytes por dirección (`incomingData` y `outgoingData`). Al ser un búfer fijo que no auto-crece, la condición `NOT_ENOUGH_SPACE` (`NotEnoughSpaceException`) representa un evento real en ejecución bajo carga de red (ej. cliente lento o ráfaga de broadcast). En el servidor legacy, la mitigación original vive en los bloques `On Error GoTo Errhandler` de `Protocol.bas` (los cuales capturan `NotEnoughSpaceErrCode`, ejecutan `FlushBuffer(UserIndex)` para forzar el vaciado del búfer al socket TCP y reintentan con `Resume`). Al portar `TCP` con Asio, se debe definir explícitamente cómo replicar o manejar este esquema de flush automático o desconexión/throttling. Ver [`09-clsbytequeue.md`](09-clsbytequeue.md).
@@ -282,6 +280,7 @@ Para cada módulo se aplica estrictamente la política de nombres definida en `d
 - **Estimación**: **Grande** (~8.500 líneas).
 - **Estrategia de Verificación**: **Pruebas binarias con cliente VB6 autenticando, caminando y enviando comandos al servidor C++**.
 - **Nota de Migración (`clsByteQueue` y transacciones con `CopyBuffer`)**: `Protocol.bas` utiliza `buffer.CopyBuffer(incomingData)` para simular lectura transaccional de paquetes con strings variables. Si salta la excepción `NotEnoughDataException` (`NOT_ENOUGH_DATA`), el paquete está incompleto y la cola `incomingData` principal permanece inalterada hasta recibir el paquete completo TCP. Ver [`09-clsbytequeue.md`](09-clsbytequeue.md).
+- **Nota de Auditoría / Migración (`clsAntiMassClon` / Anti-Clon)**: La comprobación `aClon.MaxPersonajes(UserList(UserIndex).ip)` en `HandleLoginNewChar` (`Protocol.bas:1502`) no debe invocarse por tratarse de código muerto omitido (ver [`docs/audit/02b-antimassclon-detalle.md`](../audit/02b-antimassclon-detalle.md)).
 
 ---
 
@@ -539,6 +538,7 @@ Para cada módulo se aplica estrictamente la política de nombres definida en `d
 - **Dependencias**: `Declares`, `Modulo_UsUaRiOs`, `AI_NPC`, `MODULO_NPCs`, `FileIO`, `ModAreas`.
 - **Estimación**: **Grande** (~1.200 líneas combinadas).
 - **Estrategia de Verificación**: Pruebas de tiempo de ejecución del servidor C++ y cliente VB6 real.
+- **Nota de Auditoría / Migración (`clsAntiMassClon` / AutoSave)**: La llamada periódica `aClon.VaciarColeccion` en el timer de autoguardado (`AutoSave_Timer` / `DoBackUp`, `frmMain.frm:405`) no debe implementarse por haber sido excluido el módulo como código muerto (ver [`docs/audit/02b-antimassclon-detalle.md`](../audit/02b-antimassclon-detalle.md)).
 
 #### 43. `General`
 - **Archivos Legacy**: `legacy/server/Codigo/General.bas`
@@ -567,7 +567,7 @@ Para cada módulo se aplica estrictamente la política de nombres definida en `d
 | **3** | `FileIO.bas` | `src/server/FileIO.hpp` | Grande | 🚨 **CRÍTICO 1: Persistencia** (7 pasos lógicos) | **Ver [`FileIO-breakdown.md`](FileIO-breakdown.md)** (doctest + Fixtures `charfile/`) |
 | **3** | `clsClan.cls` / `modGuilds.bas` | `src/server/modGuilds.hpp` | Grande | 🚨 **CRÍTICO 1: Clanes** | **doctest + Fixtures Byte-Exact `guilds/`** |
 | **4** | `SecurityIp.bas` | `src/server/SecurityIp.hpp` | Mediano | Security / Anti-Flood (Parcial) | doctest + Multicliente VB6 |
-| **4** | `clsAntiMassClon.cls` | `src/server/clsAntiMassClon.hpp` | Chico | Anti-Clon | doctest + Multicliente VB6 |
+| **4** | `clsAntiMassClon.cls` | *Ninguno (Excluido)* | Chico | **EXCLUIDO (Código Muerto)** | Documentado en [`02b-antimassclon-detalle.md`](../audit/02b-antimassclon-detalle.md) |
 | **4** | `TCP.bas` (standalone Asio) | `src/server/TCP.hpp` | Grande | 🚨 **CRÍTICO 2: Multi-Conexión**| Sockets cliente VB6 real |
 | **4** | `modSendData.bas` | `src/server/modSendData.hpp` | Mediano | 🚨 **CRÍTICO 2: Broadcast** | Broadcast a cliente VB6 real |
 | **4** | `Protocol.bas` | `src/server/Protocol.hpp` | Grande | 🚨 **CRÍTICO 2: Opcodes** | Login / Movimiento cliente VB6 |

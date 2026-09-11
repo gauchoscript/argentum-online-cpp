@@ -35,6 +35,7 @@ De acuerdo con la convención del proyecto ([`docs/CONVENTIONS.md`](../CONVENTIO
 | **15** | `SecurityIp` #5 | `SecurityIp.bas:86-97` | Asimetría de mantenimiento horario: purga `IpTables` pero no interviene sobre `MaxConTables` | **Activo** | **Replicated**<br>[`src/server/SecurityIp.cpp:78`](src/server/SecurityIp.cpp#L78)<br>Test: [`test_securityip.cpp:325`](tests/test_securityip.cpp#L325) | [`16a-securityip-known-bugs.md`](16a-securityip-known-bugs.md#quirk-5-asimetria-en-el-mantenimiento-periodico-ipsecuritymantenimientolista) |
 | **16** | `SecurityIp` #6 | `SecurityIp.bas:111` | Error 6 ("Overflow") de VB6 tras ~24.85 días de uptime (`SERVER.VBP` `OverflowCheck=0`) | **Activo** | **Replicated (Excepción Tipada)**<br>[`SecurityIp::TickCountOverflowException`](src/server/SecurityIp.hpp)<br>Test: [`test_securityip.cpp:342`](tests/test_securityip.cpp#L342) | [`16a-securityip-known-bugs.md`](16a-securityip-known-bugs.md#quirk-6-aritmetica-temporal-con-desbordamiento--wraparound-de-gettickcount) |
 | **17** | `cColaArray` | `cColaArray.cls` | Clase de búfer circular de texto inalcanzable, bloqueada bajo `#If UsarQueSocket = 3` y sin campos en `User` | **Muerto / Inalcanzable** | **Excluded (dead code, not ported)** | [`docs/audit/06a-colaarray-dead-code.md`](../audit/06a-colaarray-dead-code.md) |
+| **18** | `clsAntiMassClon` | `clsAntiMassClon.cls:46-67, 58-63`<br>`SERVER.VBP:76` | Inserción de IPs inoperante por condicional `#If SeguridadAlkon` apagado y tipo inexistente `UserIpAdress` (bypass total en producción) | **Muerto / Inoperante** | **Excluded (dead code, not ported)** | [`docs/audit/02b-antimassclon-detalle.md`](../audit/02b-antimassclon-detalle.md) |
 
 ---
 
@@ -151,3 +152,16 @@ Para el desglose analítico completo de las entradas #11 a #16 correspondientes 
 - Quirk #16 (Aritmética temporal propensa a wraparound de `GetTickCount`).
 
 Consultá directamente el documento dedicado: [`16a-securityip-known-bugs.md`](16a-securityip-known-bugs.md).
+
+---
+
+### Entrada #18 — `clsAntiMassClon`: Inserción de IPs Inoperante por `#If SeguridadAlkon` Apagado y Tipo Inexistente
+- **Cita Legacy**: [`legacy/server/Codigo/clsAntiMassClon.cls:46-67, 58-63`](../../legacy/server/Codigo/clsAntiMassClon.cls#L46-L67) y [`legacy/server/SERVER.VBP:76`](../../legacy/server/SERVER.VBP#L76).
+- **Descripción**: La clase `clsAntiMassClon` fue diseñada para limitar la creación masiva de personajes a un máximo de 15 por IP entre WorldSaves. Sin embargo:
+  1. En `SERVER.VBP:76` la directiva `CondComp` es `"UsarQueSocket = 1 : ConUpTime = 1"`, no incluyendo `SeguridadAlkon`.
+  2. La sentencia `m_coleccion.Add oIp` está encerrada bajo `#If SeguridadAlkon Then`, por lo que nunca se compila ni se insertan IPs en la colección.
+  3. En ejecución real, `m_coleccion.Count` permanece en `0`, haciendo que `MaxPersonajes(sIp)` siempre retorne `False` (bypass absoluto de la restricción en producción).
+  4. La clase/tipo referenciado `UserIpAdress` no existe en ninguna parte de los fuentes del servidor ni del cliente. Si se hubiera habilitado `SeguridadAlkon = 1`, el compilador de VB6 hubiera fallado con `Compile error: User-defined type not defined`.
+- **Camino de Producción**: **Muerto / Inoperante**.
+- **Estado en C++**: **Excluded (dead code, not ported)**. La clase se excluye del porting para respetar el principio de no rediseñar ni inventar tipos inexistentes, preservando el comportamiento observable de la versión 0.13.0 de producción.
+- **Documentación Detallada**: [`docs/audit/02b-antimassclon-detalle.md`](../audit/02b-antimassclon-detalle.md).

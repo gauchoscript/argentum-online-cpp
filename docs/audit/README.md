@@ -16,3 +16,13 @@ Este directorio contiene la documentación de auditoría histórica del código 
 | 08 | [08-recursos-y-multimedia.md](08-recursos-y-multimedia.md) | Sprites Bitmaps (`.bmp`), índices `.ind`, audio WAV, MIDI y MP3. | `recursos-y-multimedia` | 2026-09-06 |
 | 09 | [09-seguridad-y-autenticacion.md](09-seguridad-y-autenticacion.md) | Flujo de autenticación, contraseñas en texto plano y vulnerabilidades. | `seguridad-y-autenticacion` | 2026-09-06 |
 | 10 | [10-herramientas-de-gm.md](10-herramientas-de-gm.md) | Jerarquía de 5 rangos de GM (`Server.ini`), opcodes (`/BAN`, `/CI`) y paneles GUI. | `herramientas-de-gm` | 2026-09-06 |
+
+## Anexos y Documentos de Detalle / Código Muerto
+
+| Documento | Descripción Corta | Estado / Tipo | Última Actualización |
+| :--- | :--- | :--- | :---: |
+| [01a-clsdicc-cgarbage.md](01a-clsdicc-cgarbage.md) | Análisis de `clsdicc.cls` y `cGarbage.cls`. | Detalle Módulos Base | 2026-09-08 |
+| [02a-securityip-detalle.md](02a-securityip-detalle.md) | Auditoría de `SecurityIp.bas` (anti-flood e IP security). | Detalle Protocolo / Red | 2026-09-10 |
+| [02b-antimassclon-detalle.md](02b-antimassclon-detalle.md) | Auditoría de `clsAntiMassClon.cls` y exclusión por código muerto. | Exclusión (Código Muerto) | 2026-09-11 |
+| [06a-colaarray-dead-code.md](06a-colaarray-dead-code.md) | Auditoría de `cColaArray.cls` y exclusión por código muerto. | Exclusión (Código Muerto) | 2026-09-08 |
+| [11a-modforum-detalle.md](11a-modforum-detalle.md) | Auditoría de `modForum.bas` (sistema de foros). | Detalle Sub-sistema | 2026-09-08 |

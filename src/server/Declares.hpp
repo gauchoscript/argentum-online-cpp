@@ -18,7 +18,7 @@
 // Declaraciones de clases de módulos de clase aun no porteados
 class clsByteQueue {};
 class clsAntiDoS {};
-class clsAntiMassClon {};
+// clsAntiMassClon excluido por tratarse de código muerto (ver docs/audit/02b-antimassclon-detalle.md)
 class cCola {};
 class clsParty {};
 class ConsultasPopulares {};
@@ -1353,7 +1353,7 @@ extern std::vector<std::int16_t> ObjCarpintero;
 extern std::vector<std::string> MD5s;
 
 extern std::unique_ptr<clsAntiDoS> aDos;
-extern std::unique_ptr<clsAntiMassClon> aClon;
+// aClon (clsAntiMassClon) excluido por tratarse de código muerto (ver docs/audit/02b-antimassclon-detalle.md)
 
 extern std::array<std::unique_ptr<clsParty>, MAX_PARTIES + 1> Parties;
 extern std::array<ModClase, NUMCLASES + 1> ModClaseList;
