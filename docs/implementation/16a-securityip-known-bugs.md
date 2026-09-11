@@ -9,7 +9,7 @@ last_updated: 2026-09-10
 
 # Registro Consolidado de Bugs y Quirks — `SecurityIp.bas`
 
-Este documento cataloga de forma exhaustiva todos los bugs conocidos, comportamientos anómalos y quirks históricos identificados en [`legacy/server/Codigo/SecurityIp.bas`](legacy/server/Codigo/SecurityIp.bas) durante la auditoría técnica ([`docs/audit/02a-securityip-detalle.md`](docs/audit/02a-securityip-detalle.md)), especificando su estado de replicación en el port a C++, su ubicación en el código fuente y su impacto en el camino de producción.
+Este documento cataloga de forma exhaustiva todos los bugs conocidos, comportamientos anómalos y quirks históricos identificados en [`legacy/server/Codigo/SecurityIp.bas`](legacy/server/Codigo/SecurityIp.bas) durante la auditoría técnica ([`docs/audit/02a-securityip-detalle.md`](../audit/02a-securityip-detalle.md)), especificando su estado de replicación en el port a C++, su ubicación en el código fuente y su impacto en el camino de producción.
 
 ---
 

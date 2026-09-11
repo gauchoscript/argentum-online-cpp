@@ -20,7 +20,7 @@ Este módulo implementa el subsistema de seguridad perimetral para conexiones en
 
 ## Alcance Implementado en este Módulo
 
-Conforme a la auditoría técnica previa ([`docs/audit/02a-securityip-detalle.md`](docs/audit/02a-securityip-detalle.md)), el alcance implementado cubre el camino 100% activo en el servidor de producción 0.13.0:
+Conforme a la auditoría técnica previa ([`docs/audit/02a-securityip-detalle.md`](../audit/02a-securityip-detalle.md)), el alcance implementado cubre el camino 100% activo en el servidor de producción 0.13.0:
 
 1. **`InitIpTables(OptCountersValue)`**: Inicializa la capacidad base de `IpTables` (por defecto 1000 entradas), resetea `Multiplicado = 1` y dimensiona el vector en ceros.
 2. **`IpSecurityMantenimientoLista()`**: Subrutina invocada cada una hora por el temporizador general del servidor (`General.bas:169`) para purgar las marcas de intervalos acumuladas y reducir la capacidad al tamaño base dividiendo `EntrysCounter` por `Multiplicado`.
@@ -36,7 +36,7 @@ Conforme a la auditoría técnica previa ([`docs/audit/02a-securityip-detalle.md
 ### 1. Inyección de Fuente de Tiempo para `GetTickCount` (*Testing Philosophy*)
 - **Contexto**: En el código legacy de VB6, `IpSecurityAceptarNuevaConexion` consulta directamente la API Win32 `GetTickCount()` de Windows.
 - **Decisión en C++**: Para el entorno de producción, se mantiene la invocación directa a la API nativa de Win32 `::GetTickCount()` en Windows (y un fallback equivalente con `std::chrono::steady_clock` para entornos no-Windows).
-- **Abstracción para Testing**: En estricto cumplimiento de la *Testing Philosophy* de [`docs/CONVENTIONS.md`](docs/CONVENTIONS.md) (*"Only mock genuine external boundaries: system clock..."*), se incorporó un mecanismo liviano de inyección de tiempo mediante un puntero a función estático (`g_TimeSource`). Esto permite que la suite de pruebas unitarias simule marcas temporales arbitrarias (casos de 999 ms, 1000 ms exactos, 1001 ms) de forma instantánea y determinista, sin requerir esperas activas (`sleep`), sin clases abstractas pesadas y sin alterar la firma pública original de la función.
+- **Abstracción para Testing**: En estricto cumplimiento de la *Testing Philosophy* de [`docs/CONVENTIONS.md`](../CONVENTIONS.md) (*"Only mock genuine external boundaries: system clock..."*), se incorporó un mecanismo liviano de inyección de tiempo mediante un puntero a función estático (`g_TimeSource`). Esto permite que la suite de pruebas unitarias simule marcas temporales arbitrarias (casos de 999 ms, 1000 ms exactos, 1001 ms) de forma instantánea y determinista, sin requerir esperas activas (`sleep`), sin clases abstractas pesadas y sin alterar la firma pública original de la función.
 - **Restablecimiento**: Se proveen las funciones auxiliares `SetTimeSourceForTesting` y `ResetTimeSource` para aislar los tests y garantizar que el reloj del sistema se use por defecto.
 
 ### 2. Reproducción del Crash de Producción por Desbordamiento Aritmético (Error 6 de VB6)
@@ -80,11 +80,11 @@ Conforme a la auditoría técnica previa ([`docs/audit/02a-securityip-detalle.md
   ReDim MaxConTables(Declaraciones.MaxUsers * 2 - 1) As Long
   MaxConTablesEntry = 0
   ```
-- **Razón de la Omisión**: Como se constató en la auditoría ([`docs/audit/02a-securityip-detalle.md`](docs/audit/02a-securityip-detalle.md) §1), el sistema de límite de conexiones simultáneas por IP (`MaxConTables`, `IPSecuritySuperaLimiteConexiones` e `IpRestarConexion`) se encontraba **completado pero comentado / deshabilitado en el código fuente de producción** (`wskapiAO.bas:433` y `466`, `TCP.bas:626`).
+- **Razón de la Omisión**: Como se constató en la auditoría ([`docs/audit/02a-securityip-detalle.md`](../audit/02a-securityip-detalle.md) §1), el sistema de límite de conexiones simultáneas por IP (`MaxConTables`, `IPSecuritySuperaLimiteConexiones` e `IpRestarConexion`) se encontraba **completado pero comentado / deshabilitado en el código fuente de producción** (`wskapiAO.bas:433` y `466`, `TCP.bas:626`).
 - Asignar memoria y definir variables para una tabla cuyo ciclo de vida no tiene consumidores activos en este estrato violaría la política de implementar únicamente código justificado y testeable. Por ende, la infraestructura de `MaxConTables` se posterga deliberadamente hasta la etapa de porteo del subsistema de red (`TCP.bas`).
 
 ### 4. Resumen de Aspectos Diferidos y Enlaces al Registro Maestro
-Los siguientes componentes de `SecurityIp.bas` quedan formalmente diferidos para etapas posteriores, registrados en [`docs/implementation/KNOWN-LEGACY-BUGS.md`](docs/implementation/KNOWN-LEGACY-BUGS.md):
+Los siguientes componentes de `SecurityIp.bas` quedan formalmente diferidos para etapas posteriores, registrados en [`docs/implementation/KNOWN-LEGACY-BUGS.md`](KNOWN-LEGACY-BUGS.md):
 - **Entrada #13 (`Bug #3`)**: Sobrecopia de 16 bytes en la compactación de `MaxConTables` dentro de `IpRestarConexion` (`SecurityIp.bas:247`). Diferido a `TCP.bas`.
 - **Entrada #14 (`Bug #4`)**: Retorno permisivo (`False`) ante agotamiento de slots en `IPSecuritySuperaLimiteConexiones` (`SecurityIp.bas:180-188`). Diferido a `TCP.bas`.
 - **Entrada #15 (`Quirk #5`)**: Asimetría en el mantenimiento horario en `IpSecurityMantenimientoLista` (`SecurityIp.bas:86-97`), que solo purga `IpTables` pero no `MaxConTables`. Preservado fielmente en la implementación actual.

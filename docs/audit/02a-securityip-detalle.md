@@ -151,7 +151,7 @@ El módulo interactúa con los siguientes símbolos y bibliotecas del sistema fu
 - **Aclaración sobre la clave `IntervaloParaConexion` en `Server.ini`**:
   En el archivo `Server.ini` existe una clave bajo la sección `[INTERVALOS]`: `IntervaloParaConexion= 3000`. No obstante, esta clave **no tiene relación alguna con `SecurityIp.bas`**. Dicha variable es leída en [`FileIO.bas:1579`](legacy/server/Codigo/FileIO.bas#L1579) y utilizada exclusivamente en [`frmMain.frm:687`](legacy/server/Codigo/frmMain.frm#L687) para desconectar por inactividad a clientes que se quedan en la pantalla de presentación sin loguear (`.Counters.IdleCount > IntervaloParaConexion`).
 - **Discrepancia con el Plan de Porteo**:
-  La entrada correspondiente a `SecurityIp` en [`docs/implementation/00-port-plan.md`](docs/implementation/00-port-plan.md#L231) indicaba hipotéticamente que el módulo leía `MaxConnectionsPerIP` desde `Server.ini` y dependía de `clsIniReader`. Esta presunción queda formalmente refutada: no existe tal clave ni dependencia de lectura de configuración en el código legacy original.
+  La entrada correspondiente a `SecurityIp` en [`docs/implementation/00-port-plan.md`](../implementation/00-port-plan.md#L231) indicaba hipotéticamente que el módulo leía `MaxConnectionsPerIP` desde `Server.ini` y dependía de `clsIniReader`. Esta presunción queda formalmente refutada: no existe tal clave ni dependencia de lectura de configuración en el código legacy original.
 
 ---
 
@@ -346,9 +346,9 @@ Se analizó la totalidad del árbol de código fuente [`legacy/server/Codigo/`](
 ## 8. Evaluación de Cobertura en `docs/audit/02-protocolo-de-red.md`
 
 > [!WARNING]
-> **Diagnóstico**: La cobertura actual de `SecurityIp.bas` en [`docs/audit/02-protocolo-de-red.md`](docs/audit/02-protocolo-de-red.md) es **completamente inexistente**.
+> **Diagnóstico**: La cobertura actual de `SecurityIp.bas` en [`docs/audit/02-protocolo-de-red.md`](02-protocolo-de-red.md) es **completamente inexistente**.
 
-- En el frontmatter YAML de [`docs/audit/02-protocolo-de-red.md:12`](docs/audit/02-protocolo-de-red.md#L12), el archivo `legacy/server/Codigo/SecurityIp.bas` se encuentra listado dentro de la clave `source_files:`.
+- En el frontmatter YAML de [`docs/audit/02-protocolo-de-red.md:12`](02-protocolo-de-red.md#L12), el archivo `legacy/server/Codigo/SecurityIp.bas` se encuentra listado dentro de la clave `source_files:`.
 - Sin embargo, a lo largo de todo el cuerpo del documento (secciones 1 a 3, tablas de opcodes y preguntas abiertas), no existe **ni una sola mención** a la seguridad por IP, control anti-flood, topes de concurrencia, límites temporales ni estructuras de búsqueda binaria.
 - El documento `02-protocolo-de-red.md` se restringió con exclusividad al encuadre de paquetes, tipos binarios, colas de bytes (`clsByteQueue`) y formatos de serialización de mensajes cliente-servidor de `Protocol.bas`.
 - En consecuencia, toda la lógica, interfaces y particularidades de [`SecurityIp.bas`](legacy/server/Codigo/SecurityIp.bas) encontradas en el código fuente crudo estuvieron completamente ausentes de la auditoría de red previa.
