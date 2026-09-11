@@ -24,5 +24,6 @@ Este directorio contiene la documentación de auditoría histórica del código 
 | [01a-clsdicc-cgarbage.md](01a-clsdicc-cgarbage.md) | Análisis de `clsdicc.cls` y `cGarbage.cls`. | Detalle Módulos Base | 2026-09-08 |
 | [02a-securityip-detalle.md](02a-securityip-detalle.md) | Auditoría de `SecurityIp.bas` (anti-flood e IP security). | Detalle Protocolo / Red | 2026-09-10 |
 | [02b-antimassclon-detalle.md](02b-antimassclon-detalle.md) | Auditoría de `clsAntiMassClon.cls` y exclusión por código muerto. | Exclusión (Código Muerto) | 2026-09-11 |
+| [02c-tcp-detalle.md](02c-tcp-detalle.md) | Auditoría de `TCP.bas`, `wskapiAO.bas` y `wsksock.bas` (red y Asio). | Detalle Protocolo / Red | 2026-09-11 |
 | [06a-colaarray-dead-code.md](06a-colaarray-dead-code.md) | Auditoría de `cColaArray.cls` y exclusión por código muerto. | Exclusión (Código Muerto) | 2026-09-08 |
 | [11a-modforum-detalle.md](11a-modforum-detalle.md) | Auditoría de `modForum.bas` (sistema de foros). | Detalle Sub-sistema | 2026-09-08 |

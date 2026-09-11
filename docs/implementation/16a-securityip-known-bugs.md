@@ -4,7 +4,7 @@ status: ledger
 source_files:
   - legacy/server/Codigo/SecurityIp.bas
 tags: [SecurityIp, bugs, quirks, anti-flood, limites-conexiones, ledger]
-last_updated: 2026-09-10
+last_updated: 2026-09-11
 ---
 
 # Registro Consolidado de Bugs y Quirks — `SecurityIp.bas`
@@ -19,8 +19,8 @@ Este documento cataloga de forma exhaustiva todos los bugs conocidos, comportami
 | :-: | :--- | :--- | :-: | :-: |
 | **#1** | `SecurityIp.bas:291` / `310` | Retorno de `~(Middle * 2)` en vez de `~(First * 2)` en búsqueda binaria | **Activo** (`IP_INTERVALOS`) / **Muerto** (`IP_LIMITECONEXIONES`) | **Replicated** |
 | **#2** | `SecurityIp.bas:278` / `296` | Cota superior inicial desplazada `Last = MaxValue` (off-by-one) | **Activo** (`IP_INTERVALOS`) / **Muerto** (`IP_LIMITECONEXIONES`) | **Replicated** |
-| **#3** | `SecurityIp.bas:247` | Sobrecopia de memoria de 16 bytes en compactación de `IpRestarConexion` | **Muerto / Comentado** | **Deferred** |
-| **#4** | `SecurityIp.bas:180-188` | Retorno permisivo (`False`) ante agotamiento de slots en `IPSecuritySuperaLimiteConexiones` | **Muerto / Comentado** | **Deferred** |
+| **#3** | `SecurityIp.bas:247` | Sobrecopia de memoria de 16 bytes en compactación de `IpRestarConexion` | **Muerto / Comentado** | **Excluded (dead code, not ported)** |
+| **#4** | `SecurityIp.bas:180-188` | Retorno permisivo (`False`) ante agotamiento de slots en `IPSecuritySuperaLimiteConexiones` | **Muerto / Comentado** | **Excluded (dead code, not ported)** |
 | **#5** | `SecurityIp.bas:86-97` | Mantenimiento asimétrico: solo purga `IpTables`, dejando `MaxConTables` perpetua | **Activo** | **Replicated** |
 | **#6** | `SecurityIp.bas:111` | Error 6 ("Overflow") de VB6 tras ~24.85 días de uptime (`SERVER.VBP` `OverflowCheck=0`) | **Activo** | **Replicated** |
 
@@ -58,7 +58,7 @@ Este documento cataloga de forma exhaustiva todos los bugs conocidos, comportami
 - **Cita Legacy**: [`legacy/server/Codigo/SecurityIp.bas:247`](legacy/server/Codigo/SecurityIp.bas#L247).
 - **Descripción**: La fórmula `(MaxConTablesEntry - (key \ 2) + 1) * 8` empleada en `CopyMemory` para compactar `MaxConTables` copia 2 entradas lógicas (16 bytes) más allá del final de los datos válidos, provocando lecturas y escrituras fuera de rango cuando la tabla se acerca al límite `Declaraciones.MaxUsers`.
 - **Camino de Producción**: **Muerto / Comentado** (las llamadas a `IpRestarConexion` en [`legacy/server/Codigo/wskapiAO.bas:466`](legacy/server/Codigo/wskapiAO.bas#L466) y [`legacy/server/Codigo/TCP.bas:626`](legacy/server/Codigo/TCP.bas#L626) están comentadas con apóstrofe).
-- **Estado**: **Deferred** (postergado al porteo del módulo `TCP.bas` y las estructuras de `MaxConTables`).
+- **Estado**: **Excluded (dead code, not ported)** (excluido formalmente al confirmarse en [`docs/audit/02c-tcp-detalle.md`](../audit/02c-tcp-detalle.md#43-estado-de-ipsecuritysuperalimiteconexiones-e-iprestarconexion) que sus llamadas están comentadas en el código de producción 0.13.0).
 
 ---
 
@@ -66,7 +66,7 @@ Este documento cataloga de forma exhaustiva todos los bugs conocidos, comportami
 - **Cita Legacy**: [`legacy/server/Codigo/SecurityIp.bas:180-188`](legacy/server/Codigo/SecurityIp.bas#L180-L188).
 - **Descripción**: Si `MaxConTablesEntry >= Declaraciones.MaxUsers`, la función emite una alerta crítica mediante `LogCriticEvent`, pero mantiene la variable de retorno en `False` (línea 180), permitiendo el ingreso de la conexión sin registrarla para su seguimiento.
 - **Camino de Producción**: **Muerto / Comentado** (la llamada a `IPSecuritySuperaLimiteConexiones` en [`legacy/server/Codigo/wskapiAO.bas:433`](legacy/server/Codigo/wskapiAO.bas#L433) está comentada).
-- **Estado**: **Deferred** (postergado al porteo del módulo `TCP.bas` y las estructuras de `MaxConTables`).
+- **Estado**: **Excluded (dead code, not ported)** (excluido formalmente al confirmarse en [`docs/audit/02c-tcp-detalle.md`](../audit/02c-tcp-detalle.md#43-estado-de-ipsecuritysuperalimiteconexiones-e-iprestarconexion) que su llamada está comentada en el código de producción 0.13.0).
 
 ---
 
