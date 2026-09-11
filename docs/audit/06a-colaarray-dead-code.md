@@ -31,18 +31,18 @@ Este documento constituye el registro permanente de auditoría técnica sobre la
 Se realizó una búsqueda exhaustiva en la totalidad del repositorio (incluyendo fuentes `.bas`, `.cls`, `.frm`, `.frx`, proyectos `.vbp`, archivos de trabajo `.vbw` y documentación).
 
 * **Registros de proyecto**:
-  * [legacy/server/SERVER.VBP:L31](file:///c:/Users/Elio/Documents/ArgentumOnline0.13.0/legacy/server/SERVER.VBP#L31): `Class=CColaArray; Codigo\cColaArray.cls`
-  * [legacy/server/SERVER.vbw:L29](file:///c:/Users/Elio/Documents/ArgentumOnline0.13.0/legacy/server/SERVER.vbw#L29): `CColaArray = 0, 0, 0, 0, C`
+  * [legacy/server/SERVER.VBP:L31](legacy/server/SERVER.VBP#L31): `Class=CColaArray; Codigo\cColaArray.cls`
+  * [legacy/server/SERVER.vbw:L29](legacy/server/SERVER.vbw#L29): `CColaArray = 0, 0, 0, 0, C`
 * **Definición de clase**:
-  * [legacy/server/Codigo/cColaArray.cls:L9](file:///c:/Users/Elio/Documents/ArgentumOnline0.13.0/legacy/server/Codigo/cColaArray.cls#L9): `Attribute VB_Name = "CColaArray"`
+  * [legacy/server/Codigo/cColaArray.cls:L9](legacy/server/Codigo/cColaArray.cls#L9): `Attribute VB_Name = "CColaArray"`
 * **Único punto de referencia en el código fuente**:
-  * [legacy/server/Codigo/frmMain.frm:L1034](file:///c:/Users/Elio/Documents/ArgentumOnline0.13.0/legacy/server/Codigo/frmMain.frm#L1034): `Set UserList(NewIndex).CommandsBuffer = New CColaArray`
+  * [legacy/server/Codigo/frmMain.frm:L1034](legacy/server/Codigo/frmMain.frm#L1034): `Set UserList(NewIndex).CommandsBuffer = New CColaArray`
 
 ---
 
 ### 2. Análisis del Bloque de Compilación Condicional
 
-Al analizar la única referencia en [frmMain.frm:L995-L1035](file:///c:/Users/Elio/Documents/ArgentumOnline0.13.0/legacy/server/Codigo/frmMain.frm#L995-L1035), se constató que la rutina `TCPServ_NuevaConn` está totalmente aislada dentro de una directiva de compilación condicional:
+Al analizar la única referencia en [frmMain.frm:L995-L1035](legacy/server/Codigo/frmMain.frm#L995-L1035), se constató que la rutina `TCPServ_NuevaConn` está totalmente aislada dentro de una directiva de compilación condicional:
 
 ```vb
 #If UsarQueSocket = 3 Then
@@ -54,7 +54,7 @@ End Sub
 #End If
 ```
 
-* En el archivo principal de proyecto [SERVER.VBP:L84](file:///c:/Users/Elio/Documents/ArgentumOnline0.13.0/legacy/server/SERVER.VBP#L84), las constantes de compilación activas son:
+* En el archivo principal de proyecto [SERVER.VBP:L84](legacy/server/SERVER.VBP#L84), las constantes de compilación activas son:
   ```ini
   CondComp="UsarQueSocket = 1 : ConUpTime = 1"
   ```
@@ -67,7 +67,7 @@ End Sub
 En el caso hipotético de que un desarrollador modificase `SERVER.VBP` para compilar con `UsarQueSocket = 3`:
 
 1. El compilador de VB6 se detendría con un error fatal de compilación en la línea 1034 de `frmMain.frm`: *"Method or data member not found"*.
-2. El miembro `.CommandsBuffer` **no existe** dentro del `Type User` definido en [Declares.bas:L1186-L1265](file:///c:/Users/Elio/Documents/ArgentumOnline0.13.0/legacy/server/Codigo/Declares.bas#L1186-L1265).
+2. El miembro `.CommandsBuffer` **no existe** dentro del `Type User` definido en [Declares.bas:L1186-L1265](legacy/server/Codigo/Declares.bas#L1186-L1265).
 3. No existe ningún otro `Type` o `Class` en todo el codebase que contenga una propiedad o campo llamado `CommandsBuffer`.
 
 ---
@@ -77,13 +77,13 @@ En el caso hipotético de que un desarrollador modificase `SERVER.VBP` para comp
 Se descartó cualquier posible invocación indirecta:
 * **`CallByName`**: No existe ninguna llamada a `CallByName` en todo el codebase del servidor.
 * **Acceso por `Object` / `Variant`**: No existen variables genéricas que invoquen `.MaxElems`, `.Push` o `.Pop` sobre instancias de `CColaArray`.
-* **Uso de `.MaxElems`**: La propiedad `MaxElems` aparece **exclusivamente** dentro de la definición de `cColaArray.cls` ([cColaArray.cls:L109-L113](file:///c:/Users/Elio/Documents/ArgentumOnline0.13.0/legacy/server/Codigo/cColaArray.cls#L109-L113)).
+* **Uso de `.MaxElems`**: La propiedad `MaxElems` aparece **exclusivamente** dentro de la definición de `cColaArray.cls` ([cColaArray.cls:L109-L113](legacy/server/Codigo/cColaArray.cls#L109-L113)).
 
 ---
 
 ### 5. Contexto Histórico del Código Legacy
 
-La presencia de esta clase se explica analizando el historial de cambios registrado en [Changelog-server.txt](file:///c:/Users/Elio/Documents/ArgentumOnline0.13.0/legacy/server/Changelog-server.txt):
+La presencia de esta clase se explica analizando el historial de cambios registrado en [Changelog-server.txt](legacy/server/Changelog-server.txt):
 
 * **27/04/2006**: *Se incluyó la clase clsByteQueue utilizada en el nuevo protocolo. (Maraxus).*
 * **10/01/2007**: *Todo rastro de ColaSalida ha sido borrado y remplazado por el outgoingData Buffer en los casos necesarios (Tavo).*
@@ -97,5 +97,5 @@ En las versiones antiguas de Argentum Online (pre-0.12.x), los comandos saliente
 1. **`cColaArray.cls` NO se portará a C++**.
 2. No debe crearse ningún archivo `src/server/cColaArray.hpp` ni `src/server/cColaArray.cpp`.
 3. Esta exclusión **NO afecta** a los otros dos módulos de cola de Capa 0:
-   - [ModCola.cls](file:///c:/Users/Elio/Documents/ArgentumOnline0.13.0/legacy/server/Codigo/ModCola.cls) (`cCola`): Se utiliza activamente para el sistema de soporte y peticiones `/AYUDA` (`Ayuda As New cCola`).
-   - [Queue.bas](file:///c:/Users/Elio/Documents/ArgentumOnline0.13.0/legacy/server/Codigo/Queue.bas) (`Queue`): Se utiliza activamente para el algoritmo de Pathfinding BFS de NPCs (`tVertice`).
+   - [ModCola.cls](legacy/server/Codigo/ModCola.cls) (`cCola`): Se utiliza activamente para el sistema de soporte y peticiones `/AYUDA` (`Ayuda As New cCola`).
+   - [Queue.bas](legacy/server/Codigo/Queue.bas) (`Queue`): Se utiliza activamente para el algoritmo de Pathfinding BFS de NPCs (`tVertice`).

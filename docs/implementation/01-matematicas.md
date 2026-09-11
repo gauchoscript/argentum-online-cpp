@@ -47,7 +47,7 @@ Una reescritura ilusoria en C++ (usando el operador `%` sobre enteros o variacio
 
 ### Poda de la Suite de Pruebas
 
-Siguiendo la [Testing Philosophy](file:///c:/Users/Elio/Documents/ArgentumOnline0.13.0/docs/CONVENTIONS.md#testing-philosophy) detallada en `docs/CONVENTIONS.md`, no se escribieron pruebas unitarias para funciones aritméticas triviales de una sola línea (como `Porcentaje`), dado que no presentaban riesgos reales de mala traducción. La suite de pruebas se centró exclusivamente en verificar los límites inclusivos y la distribución de `RandomNumber`.
+Siguiendo la [Testing Philosophy](docs/CONVENTIONS.md#testing-philosophy) detallada en `docs/CONVENTIONS.md`, no se escribieron pruebas unitarias para funciones aritméticas triviales de una sola línea (como `Porcentaje`), dado que no presentaban riesgos reales de mala traducción. La suite de pruebas se centró exclusivamente en verificar los límites inclusivos y la distribución de `RandomNumber`.
 
 ## Estructuras y Funciones Migradas
 

@@ -12,7 +12,7 @@
 
 $ErrorActionPreference = "Stop"
 
-$baseDir = "c:\Users\Elio\Documents\ArgentumOnline0.13.0\tests\fixtures"
+$baseDir = Join-Path $PSScriptRoot "fixtures"
 $charDir = Join-Path $baseDir "charfile"
 $guildDir = Join-Path $baseDir "guilds"
 $foroDir = Join-Path $baseDir "foros"
