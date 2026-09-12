@@ -32,6 +32,7 @@ std::vector<std::array<std::uint8_t, SIZE_RCVBUF>> s_client_read_buffers;
 std::vector<OutgoingQueue> s_client_write_queues;
 TCP::PacketHandler s_packet_handler = nullptr;
 TCP::CloseUserHandler s_close_user_handler = nullptr;
+TCP::SendDataHook s_send_data_hook = nullptr;
 std::int32_t s_next_conn_id = 1;
 std::string s_bound_ip;
 
@@ -549,10 +550,18 @@ void SetPacketHandler(PacketHandler handler) {
     s_packet_handler = std::move(handler);
 }
 
+void SetSendDataHook(SendDataHook hook) {
+    s_send_data_hook = std::move(hook);
+}
+
 void EnviarDatosASlot(std::int16_t user_index, std::string_view datos) {
     // Port de TCP.bas:822-843 y wskapiAO.bas:314-352 (WsApiEnviar)
     if (datos.empty()) {
         return;
+    }
+
+    if (s_send_data_hook) {
+        s_send_data_hook(user_index, datos);
     }
 
     if (user_index < 1 || static_cast<std::size_t>(user_index) >= UserList.size() ||

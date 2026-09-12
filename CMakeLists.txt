@@ -1,7 +1,7 @@
 cmake_minimum_required(VERSION 3.20)
 project(ArgentumOnline VERSION 0.13.0 LANGUAGES CXX)
 
-set(CMAKE_CXX_STANDARD 17)
+set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 if(WIN32)
@@ -29,6 +29,7 @@ add_library(server_core STATIC
     src/server/modGuilds.cpp
     src/server/SecurityIp.cpp
     src/server/TCP.cpp
+    src/server/modSendData.cpp
 )
 target_include_directories(server_core PUBLIC src)
 target_link_libraries(server_core PUBLIC asio::asio)
@@ -65,6 +66,7 @@ add_executable(unit_tests
     tests/test_clsclan.cpp
     tests/test_securityip.cpp
     tests/test_tcp.cpp
+    tests/test_modsenddata.cpp
 )
 target_include_directories(unit_tests PRIVATE src)
 target_link_libraries(unit_tests PRIVATE server_core doctest::doctest)

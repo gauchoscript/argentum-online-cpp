@@ -42,8 +42,19 @@ enum class ALINEACION_GUILD : std::int32_t {
 };
 
 struct AreaInfo {
-    std::uint8_t AreaRecibida[9]{};
-    std::uint8_t AreaReenviada[9]{};
+    std::int16_t AreaPerteneceX{0};
+    std::int16_t AreaPerteneceY{0};
+    std::int16_t AreaReciveX{0};
+    std::int16_t AreaReciveY{0};
+    std::int16_t MinX{0};
+    std::int16_t MinY{0};
+    std::int32_t AreaID{0};
+};
+
+struct ConnGroup {
+    std::int32_t CountEntrys{0};
+    std::int32_t OptValue{0};
+    std::vector<std::int32_t> UserEntrys;
 };
 
 struct tCOmercioUsuario {
@@ -1337,6 +1348,7 @@ extern bool EnPausa;
 extern bool EnTesting;
 
 extern std::vector<User> UserList;
+extern std::vector<ConnGroup> ConnGroups;
 extern std::array<npc, MAXNPCS + 1> Npclist;
 extern std::vector<MapBlock> MapData;
 extern std::vector<MapInfo> MapInfoList;

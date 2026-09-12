@@ -150,6 +150,12 @@ void PollRed();
 // ============================================================================
 
 using PacketHandler = std::function<void(std::int16_t)>;
+using SendDataHook = std::function<void(std::int16_t, std::string_view)>;
+
+/**
+ * @brief Registra un hook opcional invocado al enviar datos por EnviarDatosASlot (útil para testing).
+ */
+void SetSendDataHook(SendDataHook hook);
 
 /**
  * @brief Inicia la recepción continua de datos para el socket del slot de usuario indicado.

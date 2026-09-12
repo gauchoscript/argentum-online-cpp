@@ -48,6 +48,7 @@ bool EnPausa = false;
 bool EnTesting = false;
 
 std::vector<User> UserList;
+std::vector<ConnGroup> ConnGroups;
 std::array<npc, MAXNPCS + 1> Npclist{};
 std::vector<MapBlock> MapData;
 std::vector<MapInfo> MapInfoList;

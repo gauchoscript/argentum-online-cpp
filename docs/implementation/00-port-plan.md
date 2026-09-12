@@ -577,7 +577,7 @@ Para cada módulo se aplica estrictamente la política de nombres definida en `d
 | **4** | `SecurityIp.bas` | `src/server/SecurityIp.hpp` | Mediano | Security / Anti-Flood (Parcial) | doctest + Multicliente VB6 |
 | **4** | `clsAntiMassClon.cls` | *Ninguno (Excluido)* | Chico | **EXCLUIDO (Código Muerto)** | Documentado en [`02b-antimassclon-detalle.md`](../audit/02b-antimassclon-detalle.md) |
 | **4** | `TCP.bas` (standalone Asio) | `src/server/TCP.hpp` | Grande | 🚨 **CRÍTICO 2: Multi-Conexión**| **Completado (Asio Monohilo)** (24 tests en `test_tcp.cpp`, ver [`17-tcp.md`](17-tcp.md)) |
-| **4** | `modSendData.bas` | `src/server/modSendData.hpp` | Mediano | 🚨 **CRÍTICO 2: Broadcast** | Broadcast a cliente VB6 real |
+| **4** | `modSendData.bas` | `src/server/modSendData.hpp` | Mediano | 🚨 **CRÍTICO 2: Broadcast** | **Completado (Zero-Copy)** (12 tests en `test_modsenddata.cpp`, ver [`modSendData-breakdown.md`](modSendData-breakdown.md)) |
 | **4** | `Protocol.bas` | `src/server/Protocol.hpp` | Grande | 🚨 **CRÍTICO 2: Opcodes** | Login / Movimiento cliente VB6 |
 | **5** | `ModAreas.bas` | `src/server/ModAreas.hpp` | Mediano | Grilla de Visión | 2+ Clientes VB6 en mapa |
 | **6** | `Modulo_InventANDobj.bas` | `src/server/Modulo_InventANDobj.hpp` | Mediano | Objetos Mapa | Tirar/agarrar ítem cliente VB6 |
