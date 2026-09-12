@@ -18,8 +18,8 @@
  * 2. Límite de 100 elementos (Desviación Intencional Documentada):
  *    El código legacy VB6 tenía un arreglo estático con un cap rígido de 100 elementos (MAX_ELEM = 100).
  *    En C++ se utiliza std::unordered_map con std::vector para crecimiento dinámico sin tope artificial de 100.
- *    Esta omisión es una desviación intencional documentada (ver docs/implementation/01a-clsdicc-cgarbage.md
- *    y docs/implementation/04-clsdicc.md).
+ *    Esta omisión es una desviación intencional documentada (ver docs/implementation/03-clsdicc.md
+ *    y docs/implementation/KNOWN-LEGACY-BUGS.md Entrada #03).
  *
  * 3. Preservación del orden de inserción y comportamiento de empates en MayorValor:
  *    El método MayorValor recorre los elementos en su ORDEN DE INSERCIÓN original.

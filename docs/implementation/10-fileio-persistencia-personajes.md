@@ -50,7 +50,7 @@ Este documento detalla la migración a C++ de las funciones de persistencia de p
 
 ### 2. Integración de `IntervaloParalizado` (Forward Reference)
 - **Evidencia Legacy**: `IntervaloParalizado` está declarado globalmente en `Admin.bas:58` y es consumido en `FileIO.bas:1121` (`user.Counters.Paralisis = IntervaloParalizado`).
-- **Solución**: Se declaró como `extern std::int16_t IntervaloParalizado;` en `Declares.hpp` / `Declares.cpp` a modo de *forward-reference* para evitar dependencias circulares. Esta decisión fue propagada a `docs/implementation/00-port-plan.md` (sección `Admin.bas` — Capa 10) y a `docs/implementation/02-declares.md`.
+- **Solución**: Se declaró como `extern std::int16_t IntervaloParalizado;` en `Declares.hpp` / `Declares.cpp` a modo de *forward-reference* para evitar dependencias circulares. Esta decisión fue propagada a `docs/implementation/00-port-plan.md` (sección `Admin.bas` — Capa 10) y a `docs/implementation/09-declares.md`.
 
 ### 3. Desviación Deliberada de Seguridad de Memoria (`CheckUserIndexBounds`)
 - **Motivación**: Reemplazar cualquier redimensionamiento dinámico implícito de `UserList` en funciones de entrada/salida por una verificación de límites determinista que arroja `std::out_of_range` cuando el índice es inválido.

@@ -88,7 +88,7 @@ Este documento presenta la auditoría técnica detallada de los módulos de **Ca
 
 ---
 
-- **Especificación de Migración a C++**: Para ver las decisiones de diseño C++, la regla de nombres, la estrategia de comparación case-insensitive y las notas de implementación de `cGarbage` y `clsdicc`, consultá [`docs/implementation/01a-clsdicc-cgarbage.md`](../implementation/01a-clsdicc-cgarbage.md).
+- **Especificación de Migración a C++**: Para ver las decisiones de diseño C++, la regla de nombres, la estrategia de comparación case-insensitive y las notas de implementación de `cGarbage` y `clsdicc`, consultá [`03-clsdicc.md`](../implementation/03-clsdicc.md) y [`05-cgarbage.md`](../implementation/05-cgarbage.md).
 
 ---
 

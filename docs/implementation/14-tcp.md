@@ -28,7 +28,7 @@ En total, aproximadamente **3.276 líneas legacy** fueron analizadas y portadas 
 
 ## Alcance Implementado por Grupo Funcional
 
-La implementación se organizó y ejecutó siguiendo las 7 fases delimitadas en [`docs/implementation/TCP-breakdown.md`](TCP-breakdown.md):
+La implementación se organizó y ejecutó siguiendo las 7 fases delimitadas en [`docs/implementation/14-tcp-breakdown.md`](14-tcp-breakdown.md):
 
 1. **G1 — Utilidades de IP y Auxiliares de Red**:
    - `TCP::IsValidIP`: Validación sintáctica exhaustiva de cadenas IPv4 en formato decimal punteado (`"a.b.c.d"`).
@@ -134,8 +134,8 @@ La suite de pruebas en [`tests/test_tcp.cpp`](../../tests/test_tcp.cpp) comprend
 
 - [Normas de Arquitectura y Convenciones — `docs/CONVENTIONS.md`](../CONVENTIONS.md)
 - [Plan Maestro de Porting C++ — `docs/implementation/00-port-plan.md`](00-port-plan.md)
-- [Desglose Metodológico de `TCP.bas` — `docs/implementation/TCP-breakdown.md`](TCP-breakdown.md)
+- [Desglose Metodológico de `TCP.bas` — `docs/implementation/14-tcp-breakdown.md`](14-tcp-breakdown.md)
 - [Registro Maestro de Bugs Históricos — `docs/implementation/KNOWN-LEGACY-BUGS.md`](KNOWN-LEGACY-BUGS.md) (Entradas #13, #14, #19 y #20)
 - [Auditoría Exhaustiva de Red y TCP — `docs/audit/02c-tcp-detalle.md`](../audit/02c-tcp-detalle.md)
-- [Especificación de `SecurityIp.bas` — `docs/implementation/16-securityip.md`](16-securityip.md)
-- [Bugs de `SecurityIp.bas` — `docs/implementation/16a-securityip-known-bugs.md`](16a-securityip-known-bugs.md)
+- [Especificación de `SecurityIp.bas` — `docs/implementation/12-securityip.md`](12-securityip.md)
+- [Bugs de `SecurityIp.bas` — `docs/implementation/KNOWN-LEGACY-BUGS.md`](KNOWN-LEGACY-BUGS.md#entradas-11-a-16--securityip)

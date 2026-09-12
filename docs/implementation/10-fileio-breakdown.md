@@ -60,7 +60,7 @@ En lugar de tratar a `FileIO` como un único paso de porting atómico y masivo e
 ---
 
 ### Grupo 3: Configuración del Servidor y Roles Administrativos (`Server.ini` & Roles) — ✅ COMPLETADO
-- **Estado**: **Completado** (Implementado en `FileIO.hpp`/`FileIO.cpp` — `LoadSini`, `EsAdmin`, `EsDios`, `EsSemiDios`, `EsConsejero`, `EsRolesMaster`, `LoadMotd`, ver [`11-fileio-configuracion-servidor.md`](11-fileio-configuracion-servidor.md)).
+- **Estado**: **Completado** (Implementado en `FileIO.hpp`/`FileIO.cpp` — `LoadSini`, `EsAdmin`, `EsDios`, `EsSemiDios`, `EsConsejero`, `EsRolesMaster`, `LoadMotd`, ver [`10-fileio-configuracion-servidor.md`](10-fileio-configuracion-servidor.md)).
 - **Funciones y Procedimientos**:
   - `LoadSini()`: Lee `Server.ini` y puebla variables globales (puerto, límites, banderas de testing, intervalos, IDs de armaduras faccionarias).
   - `EsAdmin(name)`: Verifica si el nick figura en `[Admines]` de `Server.ini`.
@@ -79,7 +79,7 @@ En lugar de tratar a `FileIO` como un único paso de porting atómico y masivo e
 ---
 
 ### Grupo 4: Carga y Guardado de Mapas Binarios e INI (`.map`, `.inf`, `.dat`) — ✅ COMPLETADO
-- **Estado**: **Completado** (Implementado en `FileIO.hpp`/`FileIO.cpp` — `CargarMapa`, `GrabarMapa`, `LoadMapData`, `generateMatrix`, `setDistance`, `getLimit`, ver [`13-fileio-mapas.md`](13-fileio-mapas.md)).
+- **Estado**: **Completado** (Implementado en `FileIO.hpp`/`FileIO.cpp` — `CargarMapa`, `GrabarMapa`, `LoadMapData`, `generateMatrix`, `setDistance`, `getLimit`, ver [`10-fileio-mapas.md`](10-fileio-mapas.md)).
 - **Funciones y Procedimientos**:
   - `CargarMapa(Map, MAPFl)`: Lee geometría/capas binarias (`.map`), triggers/spawns binarios (`.inf`) y metadatos INI (`.dat`).
   - `GrabarMapa(Map, MAPFILE)`: Serializador binario de `.map` (cabecera `tCabecera` 263b + registros de tiles por bitfield `ByFlags`), `.inf` (cabecera 10b + triggers `TileExit` y `NpcIndex`) y `.dat` (propiedades del mapa).
@@ -101,7 +101,7 @@ En lugar de tratar a `FileIO` como un único paso de porting atómico y masivo e
 ---
 
 ### Grupo 5: Tablas de Datos de Juego y Balance (Game Data & Balance Tables Loading) — ✅ COMPLETADO
-- **Estado**: **Completado** (Implementado en `FileIO.hpp`/`FileIO.cpp` — `LoadOBJData`, `CargarHechizos`, `LoadBalance`, etc., ver [`12-fileio-tablas-datos.md`](12-fileio-tablas-datos.md)).
+- **Estado**: **Completado** (Implementado en `FileIO.hpp`/`FileIO.cpp` — `LoadOBJData`, `CargarHechizos`, `LoadBalance`, etc., ver [`10-fileio-tablas-datos.md`](10-fileio-tablas-datos.md)).
 - **Funciones y Procedimientos**:
   - `LoadOBJData()`: Lee `Dat/Obj.dat` (catálogo de ítems y propiedades) usando `clsIniReader`.
   - `CargarHechizos()`: Lee `Dat/Hechizos.dat` (catálogo de hechizos) mediante `GetVar`.
@@ -123,7 +123,7 @@ En lugar de tratar a `FileIO` como un único paso de porting atómico y masivo e
 ---
 
 ### Grupo 6: Sistema de Respaldos de Mundo (World Backup System) — ✅ COMPLETADO
-- **Estado**: **Completado** (Implementado en `FileIO.hpp`/`FileIO.cpp` — `DoBackUp`, `CargarBackUp`, `BackUPnPc`, `CargarNpcBackUp`, ver [`14-fileio-backup-logging.md`](14-fileio-backup-logging.md)).
+- **Estado**: **Completado** (Implementado en `FileIO.hpp`/`FileIO.cpp` — `DoBackUp`, `CargarBackUp`, `BackUPnPc`, `CargarNpcBackUp`, ver [`10-fileio-backup-logging.md`](10-fileio-backup-logging.md)).
 - **Funciones y Procedimientos**:
   - `DoBackUp()`: Orquesta el respaldo de mapas modificados y NPCs activos a disco, registrando timestamp en `logs/BackUps.log` (sin tocar archivos `.chr`).
   - `CargarBackUp()`: Restaura el estado del mundo desde `WorldBackUp/` con fallback automático a mapas base.
@@ -139,7 +139,7 @@ En lugar de tratar a `FileIO` como un único paso de porting atómico y masivo e
 ---
 
 ### Grupo 7: Logging Administrativo y Sanciones (Logs & Bans) — ✅ COMPLETADO
-- **Estado**: **Completado** (Implementado en `FileIO.hpp`/`FileIO.cpp` — `LogBan`, `LogBanFromName`, `Ban`, ver [`14-fileio-backup-logging.md`](14-fileio-backup-logging.md)).
+- **Estado**: **Completado** (Implementado en `FileIO.hpp`/`FileIO.cpp` — `LogBan`, `LogBanFromName`, `Ban`, ver [`10-fileio-backup-logging.md`](10-fileio-backup-logging.md)).
 - **Funciones y Procedimientos**:
   - `LogBan(BannedIndex, UserIndex, motivo)`: Escribe el detalle del ban en `logs/BanDetail.log` (INI) y agrega el nick en `logs/GenteBanned.log` (append plano).
   - `LogBanFromName(BannedName, UserIndex, motivo)`: Escribe en `logs/BanDetail.dat` y `logs/GenteBanned.log`.

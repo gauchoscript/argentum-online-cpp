@@ -4,8 +4,8 @@ source_files:
   - legacy/server/Codigo/clsClan.cls
   - legacy/server/Codigo/modGuilds.bas
   - docs/audit/06-formatos-de-datos.md
-  - docs/implementation/04-clsdicc.md
-  - docs/implementation/08-csolicitud.md
+  - docs/implementation/03-clsdicc.md
+  - docs/implementation/07-csolicitud.md
 tags: [clsclan, modguilds, persistencia, clanes, elecciones, desglose, plan, dependencias]
 last_updated: 2026-09-10
 ---

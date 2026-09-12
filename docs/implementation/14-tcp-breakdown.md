@@ -266,7 +266,7 @@ graph TD
   - `src/server/TCP.cpp`
   - `tests/test_tcp.cpp`
 - **Funciones y Procedimientos a Implementar**:
-  - `void SecurityIp::DumpTables()`: Itera los elementos activos de `IpTables` y formatea la salida de diagnóstico llamando a `TCP::GetAscIP(ip)`, resolviendo la dependencia pendiente documentada en [`docs/implementation/16-securityip.md`](16-securityip.md).
+  - `void SecurityIp::DumpTables()`: Itera los elementos activos de `IpTables` y formatea la salida de diagnóstico llamando a `TCP::GetAscIP(ip)`, resolviendo la dependencia pendiente documentada en [`docs/implementation/12-securityip.md`](12-securityip.md).
   - `void WSApiReiniciarSockets()`: Cierra todas las conexiones activas, resetea la totalidad de los slots de usuario, reinicia el acceptor de Asio y restablece el estado de red a cero.
 - **Dependencias Previas**:
   - Todos los pasos previos (G1 a G6).
@@ -303,6 +303,6 @@ graph TD
 - [Auditoría del Protocolo de Red — `docs/audit/02-protocolo-de-red.md`](../audit/02-protocolo-de-red.md)
 - [Auditoría Exhaustiva de Red y TCP — `docs/audit/02c-tcp-detalle.md`](../audit/02c-tcp-detalle.md)
 - [Registro Maestro de Bugs Históricos — `docs/implementation/KNOWN-LEGACY-BUGS.md`](KNOWN-LEGACY-BUGS.md)
-- [Especificación de `SecurityIp.bas` — `docs/implementation/16-securityip.md`](16-securityip.md)
-- [Desglose Metodológico de `FileIO.bas` — `docs/implementation/FileIO-breakdown.md`](FileIO-breakdown.md)
-- [Desglose Metodológico de `clsClan.cls` — `docs/implementation/clsClan-breakdown.md`](clsClan-breakdown.md)
+- [Especificación de `SecurityIp.bas` — `docs/implementation/12-securityip.md`](12-securityip.md)
+- [Desglose Metodológico de `FileIO.bas` — `docs/implementation/10-fileio-breakdown.md`](10-fileio-breakdown.md)
+- [Desglose Metodológico de `clsClan.cls` — `docs/implementation/11-clsclan-breakdown.md`](11-clsclan-breakdown.md)

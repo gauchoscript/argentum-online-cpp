@@ -91,7 +91,7 @@ Si existe tal referencia cruzada, **debés agregar una nota explícita en la ent
 Durante el porteo del módulo `FileIO.bas`, se consolidaron cinco patrones observados de manera recurrente. Estas directivas quedan establecidas como **reglas proactivas permanentes** para todos los módulos futuros (especialmente para módulos de gran envergadura como el próximo `Protocol.bas`):
 
 ### 1. Umbral de Desglose para Módulos Grandes (*Large Module Breakdown Threshold*)
-Todo módulo cuya estimación supere aproximadamente las **500-800 líneas**, o que esté marcado como **"Grande"** en [`00-port-plan.md`](implementation/00-port-plan.md), requiere obligatoriamente su propio archivo `<modulo>-breakdown.md` en `docs/implementation/`.
+Todo módulo cuya estimación supere aproximadamente las **500-800 líneas**, o que esté marcado como **"Grande"** en [`00-port-plan.md`](implementation/00-port-plan.md), requiere obligatoriamente su propio archivo `<numero>-<modulo>-breakdown.md` en `docs/implementation/` (por ejemplo, `10-fileio-breakdown.md`, `11-clsclan-breakdown.md`, `14-tcp-breakdown.md`, `15-modsenddata-breakdown.md`).
 - **Planificación previa obligatoria**: Este desglose debe redactarse y acordarse **ANTES de escribir una sola línea de código C++** para el módulo en cuestión. Debe dividirlo en grupos lógicos e independientemente portables, secuenciados estrictamente por árbol de dependencias internas y nivel de riesgo.
 - **Prohibición**: Queda prohibido encarar un módulo grande de manera monolítica y desglosarlo de forma reactiva recién cuando se vuelva inmanejable a mitad del desarrollo.
 
@@ -118,6 +118,8 @@ Descubrir datos de validación más sólidos y autoritativos (archivos reales de
 
 ## Documentation & Numbering Policy
 Numbering schemes across different doc folders may diverge when they serve different purposes, but any divergence must be stated explicitly near the top of the relevant index file, not left implicit.
+
+- **Regla Estricta de Numeración por ID de Módulo**: Todos los archivos de implementación, anexos y desgloses en `docs/implementation/` deben llevar obligatoriamente como prefijo el ID del módulo correspondiente definido en el Port Plan (ej. `14-tcp.md`, `14-tcp-breakdown.md`, `15-modsenddata-breakdown.md`). Esto mantiene la correspondencia atada al archivo físico que se está migrando y evita la dispersión cronológica.
 
 
 ## Known necessary exception

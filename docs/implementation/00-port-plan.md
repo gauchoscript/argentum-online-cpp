@@ -24,8 +24,7 @@ El criterio de ordenamiento es **secuencial por árbol de dependencias**: los m�
 > Es fundamental distinguir los tres sistemas de numeración independientes utilizados en la documentación de este proyecto para evitar confusiones y no asumir erróneamente que se corresponden entre sí:
 > 
 > 1. **`docs/audit/` (01 al 10, más profundizaciones como 01a, 06a, 11a)**: Numerados por **ÁREA TEMÁTICA DE AUDITORÍA**, fijos desde la fase de auditoría inicial. Esta numeración responde únicamente a los temas auditados y **no tiene relación alguna con el orden de implementación** ni debe intentarse alinear con nada más.
-> 2. **`docs/implementation/00-port-plan.md` (este documento)**: Contiene su propia numeración interna de módulos (del 1 al ~43), la cual refleja el **ORDEN TEÓRICO PLANIFICADO POR CAPAS DE DEPENDENCIA** (Capa 0 a Capa 11). Es la referencia maestra de qué debe construirse y en qué orden según la arquitectura de dependencias.
-> 3. **`docs/implementation/0X-nombremodulo.md` (documentos individuales de módulo)**: Numerados por **ORDEN DE COMPLETITUD REAL** — la secuencia cronológica real en la que los módulos fueron migrados y documentados. Este orden puede diferir de la secuencia teórica del plan cuando se descubre un ajuste de dependencias durante el desarrollo (por ejemplo, `Declares` se completó como el documento de implementación `#02`, a pesar de ser el módulo `#9` en la numeración interna del plan de port, debido a la corrección de dependencias de `WorldPos`).
+> 2. **`docs/implementation/` (todos los documentos de implementación, breakdowns y anexos)**: Los documentos en `docs/implementation/` utilizan SIEMPRE como prefijo el ID de Módulo oficial asignado en este plan, agrupando visual y lógicamente todos los archivos (implementación, breakdowns, anexos) de un mismo componente físico heredado del legacy (ej. `10-fileio-*.md`, `11-clsclan-*.md`, `12-securityip.md`, `14-tcp.md`, `15-modsenddata-*.md`). Se elimina por completo el orden cronológico para evitar divergencias y dispersión documental.
 
 ---
 
@@ -126,7 +125,7 @@ Para cada módulo se aplica estrictamente la política de nombres definida en `d
 - **Dependencias**: *Ninguna*.
 - **Estimación**: **Chico** (~150 líneas).
 - **Estrategia de Verificación**: Pruebas unitarias en C++ con **doctest**.
-- **Nota de Auditoría / Migración**: Cobertura completada en [`docs/audit/01a-clsdicc-cgarbage.md`](../audit/01a-clsdicc-cgarbage.md). Especificaciones C++ en [`docs/implementation/01a-clsdicc-cgarbage.md`](01a-clsdicc-cgarbage.md).
+- **Nota de Auditoría / Migración**: Cobertura completada en [`docs/audit/01a-clsdicc-cgarbage.md`](../audit/01a-clsdicc-cgarbage.md). Especificaciones C++ en [`docs/implementation/03-clsdicc.md`](03-clsdicc.md).
 
 #### 4. `ModCola` y `Queue` (`cColaArray` EXCLUIDO)
 - **Archivos Legacy**: `legacy/server/Codigo/ModCola.cls`, `Queue.bas` (`legacy/server/Codigo/cColaArray.cls` **EXCLUIDO**)
@@ -151,7 +150,7 @@ Para cada módulo se aplica estrictamente la política de nombres definida en `d
 - **Archivos Legacy**: `legacy/server/Codigo/modHexaStrings.bas`
 - **Propósito**: Conversiones de cadenas a formato hexadecimal y viceversa (utilizado en seguridad y hashes).
 - **Archivo C++ Propuesto**: `src/server/modHexaStrings.hpp` / `src/server/modHexaStrings.cpp`
-- **Estado**: **Completado** (Ver [`07-modhexastrings.md`](07-modhexastrings.md)).
+- **Estado**: **Completado** (Ver [`06-modhexastrings.md`](06-modhexastrings.md)).
 - **Dependencias**: *Ninguna*.
 - **Estimación**: **Chico** (~80 líneas).
 - **Estrategia de Verificación**: Pruebas unitarias en C++ con **doctest**.
@@ -160,7 +159,7 @@ Para cada módulo se aplica estrictamente la política de nombres definida en `d
 - **Archivos Legacy**: `legacy/server/Codigo/cSolicitud.cls`
 - **Propósito**: Clase contenedora de datos para las solicitudes de ingreso a clanes (`UserName`, `desc`).
 - **Archivo C++ Propuesto**: `src/server/cSolicitud.hpp` (`struct cSolicitud`)
-- **Estado**: **Completado (Parcial / DTO)** (Ver [`08-csolicitud.md`](08-csolicitud.md)).
+- **Estado**: **Completado (Parcial / DTO)** (Ver [`07-csolicitud.md`](07-csolicitud.md)).
 - **Dependencias**: *Ninguna*.
 - **Estimación**: **Chico** (~15 líneas).
 - **Estrategia de Verificación**: Verificación de compilación limpia (verificación de integración diferida a `clsClan` / `modGuilds`).
@@ -173,7 +172,7 @@ Para cada módulo se aplica estrictamente la política de nombres definida en `d
 - **Archivos Legacy**: `legacy/server/Codigo/clsByteQueue.cls`
 - **Propósito**: Cola circular de bytes FIFO responsable del empaquetado binario little-endian, lectura/escritura de enteros, floats, cadenas con prefijo de longitud de 2 bytes y booleans de 1 byte.
 - **Archivo C++ Propuesto**: `src/server/clsByteQueue.hpp` / `src/server/clsByteQueue.cpp`
-- **Estado**: **Completado** (Documentación en [`09-clsbytequeue.md`](09-clsbytequeue.md)).
+- **Estado**: **Completado** (Documentación en [`08-clsbytequeue.md`](08-clsbytequeue.md)).
 - **Dependencias**: *Ninguna* (manipulación pura de buffer de bytes).
 - **Estimación**: **Mediano** (~600 líneas).
 - **Estrategia de Verificación**: **Pruebas unitarias de alineación binaria de bytes con doctest y pruebas de sockets contra cliente VB6 real**. Pass 8/8 test cases.
@@ -186,11 +185,11 @@ Para cada módulo se aplica estrictamente la política de nombres definida en `d
 - **Archivos Legacy**: `legacy/server/Codigo/Declares.bas`
 - **Propósito**: Cabecera maestra que define todos los tipos globales (`User`, `UserStats`, `WorldPos`, `tCabecera`, `OBJDAT`, `NPCs`, `MapData`), arrays globales (`UserList`, `NpcList`, `MapData`) y constantes del mundo (`MaxUsers`, `MAXMAPS`).
 - **Archivo C++ Propuesto**: `src/server/Declares.hpp` / `src/server/Declares.cpp`
-- **Estado**: **Completado** (Documentación en [`02-declares.md`](02-declares.md)).
+- **Estado**: **Completado** (Documentación en [`09-declares.md`](09-declares.md)).
 - **Dependencias**: *Ninguna* (Al confirmarse que no posee código ejecutable `Sub`/`Function`, se clasificó como módulo declarativo base).
 - **Estimación**: **Grande** (~1.594 líneas).
 - **Estrategia de Verificación**: Compilación limpia en C++ (`server_core`).
-- **Nota de Auditoría / Migración (`cGarbage` / `TrashCollector`)**: Se incluyó la declaración de la colección global `TrashCollector` (para encolar objetos temporales del mapa como fogatas), según lo especificado en [`docs/implementation/01a-clsdicc-cgarbage.md`](01a-clsdicc-cgarbage.md) y [`docs/audit/01a-clsdicc-cgarbage.md`](../audit/01a-clsdicc-cgarbage.md).
+- **Nota de Auditoría / Migración (`cGarbage` / `TrashCollector`)**: Se incluyó la declaración de la colección global `TrashCollector` (para encolar objetos temporales del mapa como fogatas), según lo especificado en [`05-cgarbage.md`](05-cgarbage.md) y [`docs/audit/01a-clsdicc-cgarbage.md`](../audit/01a-clsdicc-cgarbage.md).
 
 ---
 
@@ -200,10 +199,10 @@ Para cada módulo se aplica estrictamente la política de nombres definida en `d
 - **Archivos Legacy**: `legacy/server/Codigo/FileIO.bas`
 - **Propósito**: Persistencia de archivos de personaje (`.chr`), mapas binarios (`.map`, `.inf`), tablas de datos (`OBJ.dat`, `NPCs.dat`, `Hechizos.dat`), configuración `Server.ini` y backups `DoBackUp`.
 - **Archivo C++ Propuesto**: `src/server/FileIO.hpp` / `src/server/FileIO.cpp`
-- **Estado**: **Completado** (Documentación en [`10-fileio-persistencia-personajes.md`](10-fileio-persistencia-personajes.md), [`11-fileio-configuracion-servidor.md`](11-fileio-configuracion-servidor.md), [`12-fileio-tablas-datos.md`](12-fileio-tablas-datos.md), [`13-fileio-mapas.md`](13-fileio-mapas.md) y [`14-fileio-backup-logging.md`](14-fileio-backup-logging.md)).
+- **Estado**: **Completado** (Documentación en [`10-fileio-persistencia-personajes.md`](10-fileio-persistencia-personajes.md), [`10-fileio-configuracion-servidor.md`](10-fileio-configuracion-servidor.md), [`10-fileio-tablas-datos.md`](10-fileio-tablas-datos.md), [`10-fileio-mapas.md`](10-fileio-mapas.md) y [`10-fileio-backup-logging.md`](10-fileio-backup-logging.md)).
 - **Dependencias**: `Declares`, `clsIniReader`, `Matematicas`.
 - **Estimación**: **Grande** (~2.246 líneas, 38 rutinas).
-- **Estrategia de Desglose y Verificación**: **Desglosado en 7 grupos lógicos secuenciales** (ver especificación detallada en [`FileIO-breakdown.md`](FileIO-breakdown.md)):
+- **Estrategia de Desglose y Verificación**: **Desglosado en 7 grupos lógicos secuenciales** (ver especificación detallada en [`10-fileio-breakdown.md`](10-fileio-breakdown.md)):
   1. *Paso 1 (G1 — Base)*: Utilidades base de archivos e INI (`GetVar`, `WriteVar`, `TxtDimension`, `ReadField`) — **✅ COMPLETADO**.
   2. *Paso 2 (G2 — Crítico)*: Persistencia de personajes `.chr` (`SaveUser`, `LoadUserInit`, etc.) — **✅ COMPLETADO** (Verificación byte a byte contra fixtures en `tests/fixtures/charfile/` con doctest, 7/7 casos pasados).
   3. *Paso 3 (G3 — Config)*: Configuración del servidor (`LoadSini`, `EsAdmin`, etc. en `Server.ini`) — **✅ COMPLETADO**.
@@ -216,7 +215,7 @@ Para cada módulo se aplica estrictamente la política de nombres definida en `d
 - **Archivos Legacy**: `legacy/server/Codigo/clsClan.cls`, `legacy/server/Codigo/modGuilds.bas`
 - **Propósito**: Administración de clanes, lista global de clanes y persistencia en disco de archivos de clanes (`guildsinfo.inf`, `.mem`, `.sol`, `.rel`).
 - **Archivo C++ Implementado**: `src/server/clsClan.hpp` / `src/server/clsClan.cpp`, `src/server/modGuilds.hpp` / `src/server/modGuilds.cpp`
-- **Estado**: **Completado** (Documentación en [`clsClan-breakdown.md`](clsClan-breakdown.md) y [`15-clsclan-modguilds.md`](15-clsclan-modguilds.md)).
+- **Estado**: **Completado** (Documentación en [`11-clsclan-breakdown.md`](11-clsclan-breakdown.md) y [`11-clsclan-modguilds.md`](11-clsclan-modguilds.md)).
 - **Dependencias**: `Declares`, `FileIO`, `clsIniReader`, `cSolicitud`, `clsdicc`.
 - **Estimación**: **Grande** (~2.503 líneas combinadas, desglosado en 7 grupos lógicos).
 - **Estrategia de Verificación**: **Verificación byte a byte contra fixtures reales en `tests/fixtures/guilds/real/` (`guildsinfo.inf`, `Game Masters-members.mem`, `Game Masters-solicitudes.sol`) con pruebas en doctest** (6/6 casos dedicados en `tests/test_clsclan.cpp`, 69/69 casos totales pasados).
@@ -231,7 +230,7 @@ Para cada módulo se aplica estrictamente la política de nombres definida en `d
 - **Archivos Legacy**: `legacy/server/Codigo/SecurityIp.bas`
 - **Propósito**: Filtrado de IPs, control anti-flood, límites de conexiones por IP (`MaxConnectionsPerIP`) y baneo de IP.
 - **Archivo C++ Implementado**: `src/server/SecurityIp.hpp` / `src/server/SecurityIp.cpp`
-- **Estado**: **Parcial** (Detalle completo en [`docs/implementation/16-securityip.md`](16-securityip.md)).
+- **Estado**: **Parcial** (Detalle completo en [`docs/implementation/12-securityip.md`](12-securityip.md)).
 - **Dependencias**: *Ninguna* (en el subconjunto anti-flood implementado; las dependencias de red y logging corresponden a las rutinas diferidas).
 - **Estimación**: **Mediano** (~350 líneas).
 - **Implementado**:
@@ -244,8 +243,8 @@ Para cada módulo se aplica estrictamente la política de nombres definida en `d
   - `IPSecuritySuperaLimiteConexiones` e `IpRestarConexion`: Ambas rutinas constituyen código muerto en el servidor de producción 0.13.0 (comentadas con apóstrofe en todos sus puntos de invocación en `wskapiAO.bas:433`, `wskapiAO.bas:466` y `TCP.bas:626` según la auditoría [`docs/audit/02a-securityip-detalle.md`](../audit/02a-securityip-detalle.md) §7 y [`02c-tcp-detalle.md`](../audit/02c-tcp-detalle.md)). Quedaron formalmente **excluidas por código muerto** en la etapa de TCP.
   - `DumpTables`: Comando administrativo de diagnóstico (`SecurityIp.bas:314-327`). **Completado** en el Paso 7 de TCP mediante `SecurityIp::DumpTables(log_sink)`, consumiendo `TCP::GetAscIP` para formatear las direcciones IP de `IpTables` y ofreciendo un sink inyectable para el logging.
 - **Registro de Bugs y Quirks Históricos**:
-  - Consultar [`docs/implementation/16-securityip.md`](16-securityip.md) para la documentación exhaustiva del módulo.
-  - Entradas del ledger maestro (#11 a #16) documentadas en [`docs/implementation/16a-securityip-known-bugs.md`](16a-securityip-known-bugs.md) y [`docs/implementation/KNOWN-LEGACY-BUGS.md`](KNOWN-LEGACY-BUGS.md).
+  - Consultar [`docs/implementation/12-securityip.md`](12-securityip.md) para la documentación exhaustiva del módulo.
+  - Entradas del ledger maestro (#11 a #16) documentadas en [`docs/implementation/KNOWN-LEGACY-BUGS.md`](KNOWN-LEGACY-BUGS.md).
 - **Estrategia de Verificación**: Pruebas unitarias en C++ con **doctest** en [`tests/test_securityip.cpp`](../../tests/test_securityip.cpp) (traza manual del bug de inserción desordenada, validación de anti-flood con reloj determinista, y reproducción fiel del Error 6 con invariancia absoluta de estado).
 
 #### 13. `clsAntiMassClon` (EXCLUIDO - Código Muerto)
@@ -258,7 +257,7 @@ Para cada módulo se aplica estrictamente la política de nombres definida en `d
 - **Archivos Legacy**: `legacy/server/Codigo/TCP.bas` (absorbe la totalidad de `wsksock.bas` y `wskapiAO.bas`)
 - **Propósito**: Capa de red multijugador basada en **standalone Asio Monohilo** (`io_context.poll()`). Maneja la asignación y blanqueo de slots en `UserList`, escucha y aceptación asíncrona, filtrado anti-flood síncrono (Bug #20 mitigado), recepción y despacho seguro con cola saliente (Bug #19 mitigado), ciclo de desconexión y retención de entidad Anti-CombatLog por 10 segundos en zonas PK.
 - **Archivo C++ Implementado**: `src/server/TCP.hpp` / `src/server/TCP.cpp`
-- **Estado**: **✅ COMPLETADO** (Ver documentación técnica en [`17-tcp.md`](17-tcp.md) y desglose por fases en [`TCP-breakdown.md`](TCP-breakdown.md)).
+- **Estado**: **✅ COMPLETADO** (Ver documentación técnica en [`14-tcp.md`](14-tcp.md) y desglose por fases en [`14-tcp-breakdown.md`](14-tcp-breakdown.md)).
 - **Dependencias**: `Declares`, `clsByteQueue`, `SecurityIp`.
 - **Estimación**: **Grande** (~3.276 líneas legacy unificadas).
 - **Estrategia de Verificación**: 24 tests unitarios específicos con **doctest** en [`tests/test_tcp.cpp`](../../tests/test_tcp.cpp) cubriendo los 7 grupos funcionales (G1 a G7) con sockets de loopback y avance temporal determinista.
@@ -268,14 +267,19 @@ Para cada módulo se aplica estrictamente la política de nombres definida en `d
   - *Mitigación de Socket Leak (Bug #20)*: El cierre RAII explícito de `asio::ip::tcp::socket` ante rechazos de `SecurityIp` previene descriptores huérfanos.
   - *Mecánica Anti-CombatLog*: `CloseSocketSL` destruye el socket TCP pero retiene la entidad en mapa durante 10 segundos antes del volcado a disco y reseteo definitivo del slot con `CloseSocket`.
 
-#### 15. `modSendData` *(CATEGORÍA CRÍTICA 2 - PROTOCOLO DE RED)*
+#### 15. `modSendData` *(CATEGORÍA CRÍTICA 2 - PROTOCOLO DE RED)* — **✅ COMPLETADO**
 - **Archivos Legacy**: `legacy/server/Codigo/modSendData.bas`
 - **Propósito**: Despacho y broadcast de paquetes de red (`SendData`, `SendToAll`, `SendToArea`, `SendToUserArea`).
-- **Archivo C++ Propuesto**: `src/server/modSendData.hpp` / `src/server/modSendData.cpp`
+- **Archivo C++ Implementado**: `src/server/modSendData.hpp` / `src/server/modSendData.cpp`
+- **Estado**: **Completado** (Documentación en [`15-modsenddata.md`](15-modsenddata.md) y desglose en [`15-modsenddata-breakdown.md`](15-modsenddata-breakdown.md)).
 - **Dependencias**: `Declares`, `clsByteQueue`, `TCP`.
-- **Estimación**: **Mediano** (~650 líneas).
-- **Estrategia de Verificación**: **Pruebas de broadcast de paquetes recibidos por el cliente VB6 real**.
-- **Nota de Migración (`clsByteQueue` y `TCP`)**: `modSendData` vuelca los datos en la cola `outgoingData` del usuario objetivo usando `WriteBlock` / `Write*`. Para el despacho inmediato de tramas completas, la transmisión hacia la red se canaliza invocando `TCP::EnviarDatosASlot(user_index, datos)`. Ver [`09-clsbytequeue.md`](09-clsbytequeue.md) y [`17-tcp.md`](17-tcp.md).
+- **Estimación**: **Mediano** (~650 líneas, 22 rutinas).
+- **Estrategia de Verificación**: 12 pruebas unitarias y 54 assertions en `tests/test_modsenddata.cpp` bajo **doctest**.
+- **Aspectos Clave de Implementación**:
+  - *Zero-Copy Broadcasting*: Despacho de paquetes mediante `std::span<const uint8_t>` y sobrecargas de `std::string_view` sin copias redundantes.
+  - *Bypass de `outgoingData`*: Despacho directo a `TCP::EnviarDatosASlot`, evitando sobrecargar las colas individuales de usuario.
+  - *Corrección de Bitmasks*: Exponenciaciones de punto flotante `2 ^ (X \ 9)` reemplazadas por desplazamientos de bits enteros `1 << (X / 9)`.
+  - *Mitigación de Bugs*: Erradicación de `SendTarget.ToGM` (código muerto huérfano, Bug #21) y verificación obligatoria de `flags.UserLogged` en difusiones globales y faccionarias para prevenir fugas de paquetes en pre-login (Bug #22).
 
 #### 16. `Protocol` *(CATEGORÍA CRÍTICA 2 - DECODIFICADOR Y ENCODIFICADOR)*
 - **Archivos Legacy**: `legacy/server/Codigo/Protocol.bas`
@@ -284,8 +288,8 @@ Para cada módulo se aplica estrictamente la política de nombres definida en `d
 - **Dependencias**: `Declares`, `clsByteQueue`, `modSendData`, `TCP`.
 - **Estimación**: **Grande** (~8.500 líneas).
 - **Estrategia de Verificación**: **Pruebas binarias con cliente VB6 autenticando, caminando y enviando comandos al servidor C++**.
-- **Nota de Migración (`clsByteQueue` y transacciones con `CopyBuffer`)**: `Protocol.bas` utiliza `buffer.CopyBuffer(incomingData)` para simular lectura transaccional de paquetes con strings variables. Si salta la excepción `NotEnoughDataException` (`NOT_ENOUGH_DATA`), el paquete está incompleto y la cola `incomingData` principal permanece inalterada hasta recibir el paquete completo TCP. Ver [`09-clsbytequeue.md`](09-clsbytequeue.md).
-- **Nota de Auditoría / Migración (`FlushBuffer` y Erradicación del Bug #19)**: La función `FlushBuffer(UserIndex)` delega directamente en `TCP::FlushBuffer(user_index)`. En C++ **no debe reproducirse el patrón legacy de captura de `NOT_ENOUGH_SPACE` con `Resume`**, dado que la protección contra saturación fue resuelta a nivel de transporte en `TCP::EnviarDatosASlot` con búferes salientes asíncronos y backpressure seguro (ver [`17-tcp.md`](17-tcp.md) y [`KNOWN-LEGACY-BUGS.md`](KNOWN-LEGACY-BUGS.md) Entrada #19).
+- **Nota de Migración (`clsByteQueue` y transacciones con `CopyBuffer`)**: `Protocol.bas` utiliza `buffer.CopyBuffer(incomingData)` para simular lectura transaccional de paquetes con strings variables. Si salta la excepción `NotEnoughDataException` (`NOT_ENOUGH_DATA`), el paquete está incompleto y la cola `incomingData` principal permanece inalterada hasta recibir el paquete completo TCP. Ver [`08-clsbytequeue.md`](08-clsbytequeue.md).
+- **Nota de Auditoría / Migración (`FlushBuffer` y Erradicación del Bug #19)**: La función `FlushBuffer(UserIndex)` delega directamente en `TCP::FlushBuffer(user_index)`. En C++ **no debe reproducirse el patrón legacy de captura de `NOT_ENOUGH_SPACE` con `Resume`**, dado que la protección contra saturación fue resuelta a nivel de transporte en `TCP::EnviarDatosASlot` con búferes salientes asíncronos y backpressure seguro (ver [`14-tcp.md`](14-tcp.md) y [`KNOWN-LEGACY-BUGS.md`](KNOWN-LEGACY-BUGS.md) Entrada #19).
 - **Nota de Auditoría / Migración (`clsAntiMassClon` / Anti-Clon)**: La comprobación `aClon.MaxPersonajes(UserList(UserIndex).ip)` en `HandleLoginNewChar` (`Protocol.bas:1502`) no debe invocarse por tratarse de código muerto omitido (ver [`docs/audit/02b-antimassclon-detalle.md`](../audit/02b-antimassclon-detalle.md)).
 
 ---
@@ -374,7 +378,7 @@ Para cada módulo se aplica estrictamente la política de nombres definida en `d
 - **Nota de Auditoría / Propagación Cruzada (Variables de Vestimentas, Armaduras Faccionarias y Recompensas de Facción)**:
   1. **Túnicas e Ítems Faccionarios (Grupo 3 FileIO)**: Las 24 variables globales de ítems de armaduras y túnicas faccionarias declaradas originalmente en `ModFacciones.bas:34-58` (`ArmaduraImperial1..3`, `TunicaMagoImperial`, `TunicaMagoImperialEnanos`, `ArmaduraCaos1..3`, `TunicaMagoCaos`, `TunicaMagoCaosEnanos`, `VestimentaImperialHumano`, `VestimentaImperialEnano`, `TunicaConspicuaHumano`, `TunicaConspicuaEnano`, `ArmaduraNobilisimaHumano`, `ArmaduraNobilisimaEnano`, `ArmaduraGranSacerdote`, `VestimentaLegionHumano`, `VestimentaLegionEnano`, `TunicaLobregaHumano`, `TunicaLobregaEnano`, `TunicaEgregiaHumano`, `TunicaEgregiaEnano`, `SacerdoteDemoniaco`) son pobladas desde `Server.ini` durante el arranque por `FileIO.cpp` (`LoadSini()`).
   2. **Defensas de Armaduras Faccionarias y Recompensas por Rango (Grupo 5 FileIO)**: La estructura `tFaccionArmaduras`, la enumeración `eTipoDefArmors`, la constante `NUM_RANGOS_FACCION` (15), el arreglo 2D/3D `ArmadurasFaccion(1 To NUMCLASES, 1 To NUMRAZAS)` y el arreglo de experiencia `RecompensaFacciones(NUM_RANGOS_FACCION)` declarados originalmente en `ModFacciones.bas:63,72-81` son poblados desde `Dat/ArmadurasFaccionarias.dat` (`LoadArmadurasFaccion()`) y `Dat/Balance.dat` (`LoadBalance()`) por `FileIO.cpp`.
-  Todas estas variables ya se encuentran declaradas e instanciadas en `Declares.hpp` / `Declares.cpp`. Al portar `ModFacciones`, deben consumirse desde `Declares.hpp` sin volver a declararlas. Ver [`11-fileio-configuracion-servidor.md`](11-fileio-configuracion-servidor.md) y [`12-fileio-tablas-datos.md`](12-fileio-tablas-datos.md).
+  Todas estas variables ya se encuentran declaradas e instanciadas en `Declares.hpp` / `Declares.cpp`. Al portar `ModFacciones`, deben consumirse desde `Declares.hpp` sin volver a declararlas. Ver [`10-fileio-configuracion-servidor.md`](10-fileio-configuracion-servidor.md) y [`10-fileio-tablas-datos.md`](10-fileio-tablas-datos.md).
 
 #### 26. `Trabajo` *(Falta auditoría detallada)*
 - **Archivos Legacy**: `legacy/server/Codigo/Trabajo.bas`
@@ -393,7 +397,7 @@ Para cada módulo se aplica estrictamente la política de nombres definida en `d
 - **Propósito**: Algoritmos de búsqueda de caminos (BFS) para movimiento de NPCs esquivando obstáculos en la grilla.
 - **Archivo C++ Propuesto**: `src/server/PathFinding.hpp` / `src/server/PathFinding.cpp`
 - **Dependencias**: `Declares`.
-- **Nota de Migración (`Queue.bas`)**: Al portar este módulo, la funcionalidad de `Queue.bas` (de la cual depende `PathFinding.bas`) ya quedó resuelta en la auditoría de Capa 0: no debe crearse una estructura ni módulo global/estático `Queue`. Debe implementarse como un `std::queue<tVertice>` local circunscrito al ámbito de la función `SeekPath`, en consonancia con el modelo de ejecución monohilo monobúsqueda confirmado en [`docs/implementation/06-modcola-queue-colaarray.md`](06-modcola-queue-colaarray.md). La estructura plana `tVertice` ya reside en `Declares.hpp`.
+- **Nota de Migración (`Queue.bas`)**: Al portar este módulo, la funcionalidad de `Queue.bas` (de la cual depende `PathFinding.bas`) ya quedó resuelta en la auditoría de Capa 0: no debe crearse una estructura ni módulo global/estático `Queue`. Debe implementarse como un `std::queue<tVertice>` local circunscrito al ámbito de la función `SeekPath`, en consonancia con el modelo de ejecución monohilo monobúsqueda confirmado en [`docs/implementation/04-modcola-queue-colaarray.md`](04-modcola-queue-colaarray.md). La estructura plana `tVertice` ya reside en `Declares.hpp`.
 - **Estimación**: **Mediano** (~300 líneas).
 - **Estrategia de Verificación**: Pruebas unitarias en C++ con **doctest** y pruebas con cliente VB6.
 
@@ -406,7 +410,7 @@ Para cada módulo se aplica estrictamente la política de nombres definida en `d
 - **Estrategia de Verificación**: Pruebas con cliente VB6 (aparición y muerte de NPCs).
 - **Nota de Auditoría / Propagación Cruzada (Carga y Guardado de NPCs en Mapas)**:
   En el archivo binario `.inf`, el registro de NPC persiste el número de plantilla/tipo (`NpcNumber`, ej. 502, 536). En el legacy (`FileIO.bas:1410-1434`), `CargarMapa` lee temporalmente dicho número e invoca `OpenNPC(.NpcIndex)` para instanciar el NPC en el arreglo `Npclist(1 To MAXNPCS)`, asignando `Orig` y `Pos` y llamando a `MakeNPCChar`. Al serializar el mapa (`FileIO.bas:518-520`), `GrabarMapa` recupera y escribe el número de plantilla original mediante `Npclist(.NpcIndex).Numero`.
-  En la Capa 2 / 3 (`FileIO.cpp`), para mantener el módulo desacoplado antes de la migración de `MODULO_NPCs`, se almacena directamente el número en `MapData[...].NpcIndex` y se replica en `Npclist`. Al implementar `MODULO_NPCs`, se debe conectar `OpenNPC` con la deserialización de mapas asegurando la correspondencia exacta entre el índice de runtime de `Npclist` y el número de plantilla en disco. Ver [`docs/implementation/13-fileio-mapas.md`](13-fileio-mapas.md).
+  En la Capa 2 / 3 (`FileIO.cpp`), para mantener el módulo desacoplado antes de la migración de `MODULO_NPCs`, se almacena directamente el número en `MapData[...].NpcIndex` y se replica en `Npclist`. Al implementar `MODULO_NPCs`, se debe conectar `OpenNPC` con la deserialización de mapas asegurando la correspondencia exacta entre el índice de runtime de `Npclist` y el número de plantilla en disco. Ver [`docs/implementation/10-fileio-mapas.md`](10-fileio-mapas.md).
 
 
 #### 29. `AI_NPC`
@@ -424,7 +428,7 @@ Para cada módulo se aplica estrictamente la política de nombres definida en `d
 - **Dependencias**: `Declares`, `AI_NPC`, `MODULO_NPCs`, `ModFacciones`.
 - **Estimación**: **Grande** (~2.100 líneas).
 - **Estrategia de Verificación**: Pruebas con cliente VB6 interactuando con guardias de ciudad.
-- **Nota de Auditoría / Propagación Cruzada (`MAPA_PRETORIANO`)**: La constante/variable global `MAPA_PRETORIANO` (declarada originalmente en `praetorians.bas:40` para identificar el mapa de la fortaleza de los guardias pretorianos) es cargada desde `Server.ini` (`MapaPretoriano`) por `FileIO.cpp` (`LoadSini()`). Ya fue declarada e instanciada en `Declares.hpp` / `Declares.cpp`. Al portar `praetorians`, reutilizar `MAPA_PRETORIANO` desde `Declares.hpp` sin volver a declararla. Ver [`docs/implementation/11-fileio-configuracion-servidor.md`](11-fileio-configuracion-servidor.md).
+- **Nota de Auditoría / Propagación Cruzada (`MAPA_PRETORIANO`)**: La constante/variable global `MAPA_PRETORIANO` (declarada originalmente en `praetorians.bas:40` para identificar el mapa de la fortaleza de los guardias pretorianos) es cargada desde `Server.ini` (`MapaPretoriano`) por `FileIO.cpp` (`LoadSini()`). Ya fue declarada e instanciada en `Declares.hpp` / `Declares.cpp`. Al portar `praetorians`, reutilizar `MAPA_PRETORIANO` desde `Declares.hpp` sin volver a declararla. Ver [`docs/implementation/10-fileio-configuracion-servidor.md`](10-fileio-configuracion-servidor.md).
 
 ---
 
@@ -445,7 +449,7 @@ Para cada módulo se aplica estrictamente la política de nombres definida en `d
 - **Dependencias**: `Declares`, `modSendData`, `Matematicas`.
 - **Estimación**: **Mediano** (~900 líneas combinadas).
 - **Estrategia de Verificación**: Pruebas con múltiples clientes VB6 en party.
-- **Nota de Auditoría / Propagación Cruzada (Variable de Balance ExponenteNivelParty)**: La variable `ExponenteNivelParty` declarada originalmente en `mdParty.bas:67` (`Public ExponenteNivelParty As Single`) es poblada desde `Dat/Balance.dat` por `FileIO.cpp` (`LoadBalance()`). Ya se encuentra declarada e instanciada en `Declares.hpp` / `Declares.cpp`. Al portar `mdParty`, debe consumirse desde `Declares.hpp` sin volver a declararla. Ver [`12-fileio-tablas-datos.md`](12-fileio-tablas-datos.md).
+- **Nota de Auditoría / Propagación Cruzada (Variable de Balance ExponenteNivelParty)**: La variable `ExponenteNivelParty` declarada originalmente en `mdParty.bas:67` (`Public ExponenteNivelParty As Single`) es poblada desde `Dat/Balance.dat` por `FileIO.cpp` (`LoadBalance()`). Ya se encuentra declarada e instanciada en `Declares.hpp` / `Declares.cpp`. Al portar `mdParty`, debe consumirse desde `Declares.hpp` sin volver a declararla. Ver [`10-fileio-tablas-datos.md`](10-fileio-tablas-datos.md).
 
 #### 33. `Acciones`
 - **Archivos Legacy**: `legacy/server/Codigo/Acciones.bas`
@@ -481,8 +485,9 @@ Para cada módulo se aplica estrictamente la política de nombres definida en `d
   3. **Intervalos de Servidor**: Los 24 contadores e intervalos globales de refresco y combate (`SanaIntervaloSinDescansar`, `StaminaIntervaloSinDescansar`, `SanaIntervaloDescansar`, `StaminaIntervaloDescansar`, `IntervaloSed`, `IntervaloHambre`, `IntervaloVeneno`, `IntervaloParalizado`, `IntervaloInvisible`, `IntervaloFrio`, `IntervaloWavFx`, `IntervaloInvocacion`, `IntervaloParaConexion`, `IntervaloPuedeSerAtacado`, `IntervaloAtacable`, `IntervaloOwnedNpc`, `IntervaloUserPuedeCastear`, `IntervaloUserPuedeTrabajar`, `IntervaloUserPuedeAtacar`, `IntervaloMagiaGolpe`, `IntervaloGolpeMagia`, `IntervaloGolpeUsar`, `MinutosWs`, `IntervaloCerrarConexion`, `IntervaloUserPuedeUsar`, `IntervaloFlechasCazadores`, `IntervaloOculto`), declarados en `Admin.bas:51-85`, son poblados desde `Server.ini` (`[INTERVALOS]`) por `FileIO.cpp` (`LoadSini()`).
   4. **Balance y Apuestas (Grupo 5 FileIO)**: La variable `PorcentajeRecuperoMana` (declarada en `Admin.bas:83`) y la estructura/global `tAPuestas` / `Apuestas` (declaradas en `Admin.bas:40-45`) son pobladas desde `Dat/Balance.dat` (`LoadBalance()`) y `Dat/apuestas.dat` (`CargaApuestas()`) por `FileIO.cpp`.
   5. **Bans de IPs y WorldSave (Grupos 6 y 7 FileIO)**: La persistencia de `Dat/BanIps.dat` (`GuardarBanIps`, `CargarBanIps`) y la colección global `BanIps` pertenecen a `Admin.bas`, no a `FileIO`. Asimismo, la orquestación interna de `WorldSave` (`Admin.bas:134`) durante el proceso `DoBackUp` invoca directamente `FileIO::GrabarMapa` para los mapas con `BackUp = 1` y `FileIO::BackUPnPc` para los NPCs con `flags.BackUp = 1`.
-  Todas estas variables ya se encuentran declaradas e instanciadas en `Declares.hpp` / `Declares.cpp`. Al portar `Admin`, deben reutilizarse desde `Declares.hpp` en lugar de volver a declararlas. Ver [`10-fileio-persistencia-personajes.md`](10-fileio-persistencia-personajes.md), [`11-fileio-configuracion-servidor.md`](11-fileio-configuracion-servidor.md), [`12-fileio-tablas-datos.md`](12-fileio-tablas-datos.md) y [`14-fileio-backup-logging.md`](14-fileio-backup-logging.md).
-- **Nota de Auditoría / Migración (`modHexaStrings` / `MD5sCarga`)**: Al portar `MD5sCarga` y la validación `MD5ok`, recordar que `MD5s(LoopC) = txtOffset(hexMd52Asc(MD5s(LoopC)), 55)` depende de la conversión case-insensitive de `hexMd52Asc` sobre las entradas hexadecimales de `Server.ini` (`MD5AceptadoX`), la cual se compara sensible a mayúsculas/minúsculas con el buffer de 16 bytes recibido del cliente (`buffer.ReadASCIIStringFixed(16)`). Ver [`07-modhexastrings.md`](07-modhexastrings.md).
+  Todas estas variables ya se encuentran declaradas e instanciadas en `Declares.hpp` / `Declares.cpp`. Al portar `Admin`, deben reutilizarse desde `Declares.hpp` en lugar de volver a declararlas. Ver [`10-fileio-persistencia-personajes.md`](10-fileio-persistencia-personajes.md), [`10-fileio-configuracion-servidor.md`](10-fileio-configuracion-servidor.md), [`10-fileio-tablas-datos.md`](10-fileio-tablas-datos.md) y [`10-fileio-backup-logging.md`](10-fileio-backup-logging.md).
+- **Nota de Auditoría / Migración (`modHexaStrings` / `MD5sCarga`)**: Al portar `MD5sCarga` y la validación `MD5ok`, recordar que `MD5s(LoopC) = txtOffset(hexMd52Asc(MD5s(LoopC)), 55)` depende de la conversión case-insensitive de `hexMd52Asc` sobre las entradas hexadecimales de `Server.ini` (`MD5AceptadoX`), la cual se compara sensible a mayúsculas/minúsculas con el buffer de 16 bytes recibido del cliente (`buffer.ReadASCIIStringFixed(16)`). Ver [`06-modhexastrings.md`](06-modhexastrings.md).
+
 
 #### 36. `modCentinela` *(Falta auditoría detallada)*
 - **Archivos Legacy**: `legacy/server/Codigo/modCentinela.bas`
@@ -545,7 +550,7 @@ Para cada módulo se aplica estrictamente la política de nombres definida en `d
 - **Estimación**: **Grande** (~1.200 líneas combinadas).
 - **Estrategia de Verificación**: Pruebas de tiempo de ejecución del servidor C++ y cliente VB6 real.
 - **Nota de Auditoría / Migración (`clsAntiMassClon` / AutoSave)**: La llamada periódica `aClon.VaciarColeccion` en el timer de autoguardado (`AutoSave_Timer` / `DoBackUp`, `frmMain.frm:405`) no debe implementarse por haber sido excluido el módulo como código muerto (ver [`docs/audit/02b-antimassclon-detalle.md`](../audit/02b-antimassclon-detalle.md)).
-- **Nota de Migración (`TCP` / Game Loop)**: El bucle central de ejecución debe invocar `TCP::PollRed()` al inicio de cada frame para procesar de forma no bloqueante todos los eventos asíncronos de E/S de Asio. Asimismo, en el temporizador de 1 segundo (`General.PasarSegundo`) se debe invocar `TCP::PasarSegundoUsuarios()` para gestionar la cuenta regresiva de logout y la mecánica Anti-CombatLog. Ver [`17-tcp.md`](17-tcp.md).
+- **Nota de Migración (`TCP` / Game Loop)**: El bucle central de ejecución debe invocar `TCP::PollRed()` al inicio de cada frame para procesar de forma no bloqueante todos los eventos asíncronos de E/S de Asio. Asimismo, en el temporizador de 1 segundo (`General.PasarSegundo`) se debe invocar `TCP::PasarSegundoUsuarios()` para gestionar la cuenta regresiva de logout y la mecánica Anti-CombatLog. Ver [`14-tcp.md`](14-tcp.md).
 
 #### 43. `General`
 - **Archivos Legacy**: `legacy/server/Codigo/General.bas`
@@ -555,7 +560,7 @@ Para cada módulo se aplica estrictamente la política de nombres definida en `d
 - **Estimación**: **Grande** (~1.467 líneas).
 - **Estrategia de Verificación**: Ejecución del servidor completo en C++ (`ArgentumServer.exe`) recibiendo conexiones del cliente VB6 real.
 - **Nota de Auditoría / Migración (`cGarbage` / `LimpiarMundo`)**: Al portar el procedimiento de mantenimiento `LimpiarMundo`, acordate de incluir la rutina de recorrido y descolado de la colección `TrashCollector` para remover del mapa los objetos `cGarbage` (fogatas) (must include integration test coverage for TrashCollector/cGarbage cleanup behavior when this module is ported — see docs/audit/01a-clsdicc-cgarbage.md and docs/implementation/05-cgarbage.md).
-- **Nota de Migración (`TCP` / Bootstrap y Shutdown)**: El procedimiento `Main` arranca la escucha de red invocando `TCP::IniciaServidor(Puerto, bind_ip)`, y `ShutdownServer` cierra ordenadamente todos los sockets y libera descriptores mediante `TCP::DetenerServidor()`. Ver [`17-tcp.md`](17-tcp.md).
+- **Nota de Migración (`TCP` / Bootstrap y Shutdown)**: El procedimiento `Main` arranca la escucha de red invocando `TCP::IniciaServidor(Puerto, bind_ip)`, y `ShutdownServer` cierra ordenadamente todos los sockets y libera descriptores mediante `TCP::DetenerServidor()`. Ver [`14-tcp.md`](14-tcp.md).
 
 ---
 
@@ -572,12 +577,12 @@ Para cada módulo se aplica estrictamente la política de nombres definida en `d
 | **0** | `cSolicitud.cls` | `src/server/cSolicitud.hpp` | Chico | Solicitudes Clan | doctest + Fixtures `.sol` |
 | **1** | `clsByteQueue.cls` | `src/server/clsByteQueue.hpp` | Mediano | 🚨 **CRÍTICO 2: Red Binaria** | doctest + Socket VB6 |
 | **0** | `Declares.bas` | `src/server/Declares.hpp` | Grande | Estado Global (Completado) | Compilación C++ (`server_core`) |
-| **3** | `FileIO.bas` | `src/server/FileIO.hpp` | Grande | 🚨 **CRÍTICO 1: Persistencia** (7 pasos lógicos) | **Ver [`FileIO-breakdown.md`](FileIO-breakdown.md)** (doctest + Fixtures `charfile/`) |
+| **3** | `FileIO.bas` | `src/server/FileIO.hpp` | Grande | 🚨 **CRÍTICO 1: Persistencia** (7 pasos lógicos) | **Ver [`10-fileio-breakdown.md`](10-fileio-breakdown.md)** (doctest + Fixtures `charfile/`) |
 | **3** | `clsClan.cls` / `modGuilds.bas` | `src/server/modGuilds.hpp` | Grande | 🚨 **CRÍTICO 1: Clanes** | **doctest + Fixtures Byte-Exact `guilds/`** |
 | **4** | `SecurityIp.bas` | `src/server/SecurityIp.hpp` | Mediano | Security / Anti-Flood (Parcial) | doctest + Multicliente VB6 |
 | **4** | `clsAntiMassClon.cls` | *Ninguno (Excluido)* | Chico | **EXCLUIDO (Código Muerto)** | Documentado en [`02b-antimassclon-detalle.md`](../audit/02b-antimassclon-detalle.md) |
-| **4** | `TCP.bas` (standalone Asio) | `src/server/TCP.hpp` | Grande | 🚨 **CRÍTICO 2: Multi-Conexión**| **Completado (Asio Monohilo)** (24 tests en `test_tcp.cpp`, ver [`17-tcp.md`](17-tcp.md)) |
-| **4** | `modSendData.bas` | `src/server/modSendData.hpp` | Mediano | 🚨 **CRÍTICO 2: Broadcast** | **Completado (Zero-Copy)** (12 tests en `test_modsenddata.cpp`, ver [`modSendData-breakdown.md`](modSendData-breakdown.md)) |
+| **4** | `TCP.bas` (standalone Asio) | `src/server/TCP.hpp` | Grande | 🚨 **CRÍTICO 2: Multi-Conexión**| **Completado (Asio Monohilo)** (24 tests en `test_tcp.cpp`, ver [`14-tcp.md`](14-tcp.md)) |
+| **4** | `modSendData.bas` | `src/server/modSendData.hpp` | Mediano | 🚨 **CRÍTICO 2: Broadcast** | **Completado (Zero-Copy)** (12 tests en `test_modsenddata.cpp`, ver [`15-modsenddata.md`](15-modsenddata.md) y [`15-modsenddata-breakdown.md`](15-modsenddata-breakdown.md)) |
 | **4** | `Protocol.bas` | `src/server/Protocol.hpp` | Grande | 🚨 **CRÍTICO 2: Opcodes** | Login / Movimiento cliente VB6 |
 | **5** | `ModAreas.bas` | `src/server/ModAreas.hpp` | Mediano | Grilla de Visión | 2+ Clientes VB6 en mapa |
 | **6** | `Modulo_InventANDobj.bas` | `src/server/Modulo_InventANDobj.hpp` | Mediano | Objetos Mapa | Tirar/agarrar ítem cliente VB6 |

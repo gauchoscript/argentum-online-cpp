@@ -75,7 +75,7 @@ void InitIpTables(std::int32_t OptCountersValue) {
     // La asignación y administración de MaxConTables y MaxConTablesEntry pertenecen a las
     // rutinas IPSecuritySuperaLimiteConexiones e IpRestarConexion, las cuales se encontraban
     // comentadas en el servidor de producción 0.13.0 y cuyo análisis está diferido al porteo
-    // del módulo TCP.bas (ver docs/implementation/16a-securityip-known-bugs.md, entradas #3 y #4).
+    // del módulo TCP.bas (ver docs/implementation/KNOWN-LEGACY-BUGS.md, entradas #13 y #14).
 }
 
 void IpSecurityMantenimientoLista() {
@@ -92,7 +92,7 @@ void IpSecurityMantenimientoLista() {
     MaxValue = 0;
 
     // QUIRK HISTÓRICO (#5): Nótese que esta rutina no reinicia MaxConTables ni MaxConTablesEntry.
-    // Dicha asimetría se preserva conforme a docs/implementation/16a-securityip-known-bugs.md #5.
+    // Dicha asimetría se preserva conforme a docs/implementation/KNOWN-LEGACY-BUGS.md Entrada #15.
 }
 
 bool IpSecurityAceptarNuevaConexion(std::int32_t ip) {
@@ -147,7 +147,7 @@ std::int32_t FindTableIp(std::int32_t ip) {
     // Port transliterado literal de SecurityIp.bas líneas 271-291 (rama IP_INTERVALOS)
     std::int32_t First = 0;
 
-    // LEGACY QUIRK (SecurityIp.bas:278, see docs/implementation/16a-securityip-known-bugs.md #2):
+    // LEGACY QUIRK (SecurityIp.bas:278, see docs/implementation/KNOWN-LEGACY-BUGS.md Entrada #12):
     // La cota superior se inicializa en Last = MaxValue (off-by-one en tablas vacías y con elementos).
     std::int32_t Last = MaxValue;
     std::int32_t Middle = 0;
@@ -165,7 +165,7 @@ std::int32_t FindTableIp(std::int32_t ip) {
         }
     }
 
-    // LEGACY BUG (SecurityIp.bas:291, see docs/implementation/16a-securityip-known-bugs.md #1):
+    // LEGACY BUG (SecurityIp.bas:291, see docs/implementation/KNOWN-LEGACY-BUGS.md Entrada #11):
     // Retorna Not (Middle * 2) usando el Middle residual de la última iteración,
     // en lugar de Not (First * 2), provocando inserciones fuera de orden.
     return ~(Middle * 2);

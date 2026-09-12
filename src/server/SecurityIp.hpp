@@ -16,7 +16,7 @@
  * anti-flood (IpTables, intervalos mínimos entre conexiones y mantenimiento horario).
  * Todo lo relativo a MaxConTables, límites de concurrencia x IP (IPSecuritySuperaLimiteConexiones /
  * IpRestarConexion) y baneo permanente de IP está explícitamente postergado para etapas posteriores
- * (TCP.bas y Admin.bas). Ver docs/implementation/16a-securityip-known-bugs.md.
+ * (TCP.bas y Admin.bas). Ver docs/implementation/KNOWN-LEGACY-BUGS.md.
  */
 namespace SecurityIp {
 
@@ -88,7 +88,7 @@ void InitIpTables(std::int32_t OptCountersValue = 1000);
  *
  * QUIRK HISTÓRICO:
  * Restablece EntrysCounter dividiendo por el factor acumulado de Multiplicado y purga
- * únicamente IpTables, dejando intacta la tabla MaxConTables (ver docs/implementation/16a-securityip-known-bugs.md #5).
+ * únicamente IpTables, dejando intacta la tabla MaxConTables (ver docs/implementation/KNOWN-LEGACY-BUGS.md Entrada #15).
  */
 void IpSecurityMantenimientoLista();
 
@@ -134,9 +134,9 @@ void DumpTables(std::function<void(std::string_view)> log_sink = nullptr);
  * @brief Búsqueda binaria literal sobre IpTables (SecurityIp.bas líneas 265-292).
  *
  * PRESERVA VERBATIM LOS SIGUIENTES DEFECTOS HISTÓRICOS DEL LEGACY:
- * 1. LEGACY BUG (SecurityIp.bas:291, see docs/implementation/16a-securityip-known-bugs.md #1):
+ * 1. LEGACY BUG (SecurityIp.bas:291, see docs/implementation/KNOWN-LEGACY-BUGS.md Entrada #11):
  *    Retorno de ~(Middle * 2) en lugar de ~(First * 2), causando inserciones desordenadas.
- * 2. LEGACY QUIRK (SecurityIp.bas:278, see docs/implementation/16a-securityip-known-bugs.md #2):
+ * 2. LEGACY QUIRK (SecurityIp.bas:278, see docs/implementation/KNOWN-LEGACY-BUGS.md Entrada #12):
  *    Cota superior Last = MaxValue (off-by-one en tablas vacías y con elementos).
  *
  * @param ip Dirección IP en formato entero con signo de 32 bits (Long en VB6).

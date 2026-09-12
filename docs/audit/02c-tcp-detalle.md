@@ -20,7 +20,7 @@ last_updated: 2026-09-11
 
 Este informe documenta la auditoría técnica e investigación exhaustiva del subsistema de red del servidor legacy de Argentum Online v0.13.0, comprendiendo los módulos [`legacy/server/Codigo/TCP.bas`](../../legacy/server/Codigo/TCP.bas), [`legacy/server/Codigo/wskapiAO.bas`](../../legacy/server/Codigo/wskapiAO.bas), [`legacy/server/Codigo/wsksock.bas`](../../legacy/server/Codigo/wsksock.bas), y sus articulaciones directas en [`legacy/server/Codigo/Protocol.bas`](../../legacy/server/Codigo/Protocol.bas), [`legacy/server/Codigo/Declares.bas`](../../legacy/server/Codigo/Declares.bas), [`legacy/server/Codigo/Modulo_UsUaRiOs.bas`](../../legacy/server/Codigo/Modulo_UsUaRiOs.bas) y [`legacy/server/Codigo/General.bas`](../../legacy/server/Codigo/General.bas).
 
-El objetivo de esta investigación es fijar con absoluta precisión el comportamiento, ciclo de vida, flujos de buffers, puntos de contacto con seguridad perimetral y modelo de ejecución de la arquitectura original en Visual Basic 6, sentando las bases empíricas para el futuro desglose por fases (`TCP-breakdown.md`) y la posterior implementación del subsistema de red en C++20 utilizando **standalone Asio**.
+El objetivo de esta investigación es fijar con absoluta precisión el comportamiento, ciclo de vida, flujos de buffers, puntos de contacto con seguridad perimetral y modelo de ejecución de la arquitectura original en Visual Basic 6, sentando las bases empíricas para el futuro desglose por fases (`14-tcp-breakdown.md`) y la posterior implementación del subsistema de red en C++20 utilizando **standalone Asio**.
 
 ---
 

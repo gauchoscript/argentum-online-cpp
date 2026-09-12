@@ -24,7 +24,7 @@ Este documento describe la arquitectura C++, decisiones de diseño y comportamie
 En la implementación VB6, todas las claves se pasan por `UCase$` al insertar (`AtPut`) y buscar (`At`). En C++, el adaptador realiza esta normalización a mayúsculas implícitamente antes de operar sobre `std::unordered_map`. Esto garantiza que búsquedas con `"perez"`, `"PEREZ"` o `"PeReZ"` accedan a la misma entrada.
 
 ### 2. Eliminación del Cap de 100 Elementos (*Desviación Intencional Documentada*)
-El código legacy VB6 definía una constante `MAX_ELEM = 100` sobre un arreglo estático. En C++ se omitió este límite arbitrario, permitiendo un crecimiento dinámico según los elementos agregados. Esta decisión fue acordada y documentada previamente en [`docs/audit/01a-clsdicc-cgarbage.md`](../audit/01a-clsdicc-cgarbage.md) y [`docs/implementation/01a-clsdicc-cgarbage.md`](01a-clsdicc-cgarbage.md).
+El código legacy VB6 definía una constante `MAX_ELEM = 100` sobre un arreglo estático. En C++ se omitió este límite arbitrario, permitiendo un crecimiento dinámico según los elementos agregados. Esta decisión fue acordada y documentada previamente en [`docs/audit/01a-clsdicc-cgarbage.md`](../audit/01a-clsdicc-cgarbage.md).
 
 ### 3. Preservación del Orden de Inserción y Comportamiento de Empates en `MayorValor`
 > [!IMPORTANT]
