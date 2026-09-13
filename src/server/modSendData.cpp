@@ -1,4 +1,4 @@
-#include "modSendData.hpp"
+﻿#include "modSendData.hpp"
 #include "Declares.hpp"
 #include "FileIO.hpp"
 #include "modGuilds.hpp"
@@ -21,7 +21,7 @@ namespace {
 // Paso 1: Helpers de Validación de Mapa
 // ============================================================================
 
-bool is_valid_map_index(int map) noexcept {
+bool IsValidMapIndex(int map) noexcept {
     return map > 0 && map <= NumMaps;
 }
 
@@ -29,13 +29,13 @@ bool is_valid_map_index(int map) noexcept {
 // Paso 2: Ruteo Geográfico (Áreas y Mapas)
 // ============================================================================
 
-void send_to_user_area(int user_index, std::span<const std::uint8_t> data) {
+void SendToUserArea(int user_index, std::span<const std::uint8_t> data) {
     if (user_index <= 0 || static_cast<std::size_t>(user_index) >= UserList.size()) {
         return;
     }
 
     const int map = UserList[user_index].Pos.Map;
-    if (!is_valid_map_index(map) || static_cast<std::size_t>(map) >= ConnGroups.size()) {
+    if (!IsValidMapIndex(map) || static_cast<std::size_t>(map) >= ConnGroups.size()) {
         return;
     }
 
@@ -62,13 +62,13 @@ void send_to_user_area(int user_index, std::span<const std::uint8_t> data) {
     }
 }
 
-void send_to_user_area_but_index(int user_index, std::span<const std::uint8_t> data) {
+void SendToUserAreaButIndex(int user_index, std::span<const std::uint8_t> data) {
     if (user_index <= 0 || static_cast<std::size_t>(user_index) >= UserList.size()) {
         return;
     }
 
     const int map = UserList[user_index].Pos.Map;
-    if (!is_valid_map_index(map) || static_cast<std::size_t>(map) >= ConnGroups.size()) {
+    if (!IsValidMapIndex(map) || static_cast<std::size_t>(map) >= ConnGroups.size()) {
         return;
     }
 
@@ -97,13 +97,13 @@ void send_to_user_area_but_index(int user_index, std::span<const std::uint8_t> d
     }
 }
 
-void send_to_dead_user_area(int user_index, std::span<const std::uint8_t> data) {
+void SendToDeadUserArea(int user_index, std::span<const std::uint8_t> data) {
     if (user_index <= 0 || static_cast<std::size_t>(user_index) >= UserList.size()) {
         return;
     }
 
     const int map = UserList[user_index].Pos.Map;
-    if (!is_valid_map_index(map) || static_cast<std::size_t>(map) >= ConnGroups.size()) {
+    if (!IsValidMapIndex(map) || static_cast<std::size_t>(map) >= ConnGroups.size()) {
         return;
     }
 
@@ -133,8 +133,8 @@ void send_to_dead_user_area(int user_index, std::span<const std::uint8_t> data) 
     }
 }
 
-void send_to_area_by_pos(int map, int area_x, int area_y, std::span<const std::uint8_t> data) {
-    if (!is_valid_map_index(map) || static_cast<std::size_t>(map) >= ConnGroups.size()) {
+void SendToAreaByPos(int map, int area_x, int area_y, std::span<const std::uint8_t> data) {
+    if (!IsValidMapIndex(map) || static_cast<std::size_t>(map) >= ConnGroups.size()) {
         return;
     }
 
@@ -161,8 +161,8 @@ void send_to_area_by_pos(int map, int area_x, int area_y, std::span<const std::u
     }
 }
 
-void send_to_map(int map, std::span<const std::uint8_t> data) {
-    if (!is_valid_map_index(map) || static_cast<std::size_t>(map) >= ConnGroups.size()) {
+void SendToMap(int map, std::span<const std::uint8_t> data) {
+    if (!IsValidMapIndex(map) || static_cast<std::size_t>(map) >= ConnGroups.size()) {
         return;
     }
 
@@ -184,13 +184,13 @@ void send_to_map(int map, std::span<const std::uint8_t> data) {
     }
 }
 
-void send_to_map_but_index(int user_index, std::span<const std::uint8_t> data) {
+void SendToMapButIndex(int user_index, std::span<const std::uint8_t> data) {
     if (user_index <= 0 || static_cast<std::size_t>(user_index) >= UserList.size()) {
         return;
     }
 
     const int map = UserList[user_index].Pos.Map;
-    if (!is_valid_map_index(map) || static_cast<std::size_t>(map) >= ConnGroups.size()) {
+    if (!IsValidMapIndex(map) || static_cast<std::size_t>(map) >= ConnGroups.size()) {
         return;
     }
 
@@ -212,13 +212,13 @@ void send_to_map_but_index(int user_index, std::span<const std::uint8_t> data) {
     }
 }
 
-void send_to_npc_area(int npc_index, std::span<const std::uint8_t> data) {
+void SendToNpcArea(int npc_index, std::span<const std::uint8_t> data) {
     if (npc_index <= 0 || static_cast<std::size_t>(npc_index) >= Npclist.size()) {
         return;
     }
 
     const int map = Npclist[npc_index].Pos.Map;
-    if (!is_valid_map_index(map) || static_cast<std::size_t>(map) >= ConnGroups.size()) {
+    if (!IsValidMapIndex(map) || static_cast<std::size_t>(map) >= ConnGroups.size()) {
         return;
     }
 
@@ -249,7 +249,7 @@ void send_to_npc_area(int npc_index, std::span<const std::uint8_t> data) {
 // Paso 3: Ruteo Social e Iteradores de Clanes y Parties
 // ============================================================================
 
-void send_to_guild_members(int guild_index, std::span<const std::uint8_t> data) {
+void SendToGuildMembers(int guild_index, std::span<const std::uint8_t> data) {
     if (guild_index <= 0) {
         return;
     }
@@ -266,7 +266,7 @@ void send_to_guild_members(int guild_index, std::span<const std::uint8_t> data) 
     }
 }
 
-void send_to_dioses_y_clan(int guild_index, std::span<const std::uint8_t> data) {
+void SendToDiosesYclan(int guild_index, std::span<const std::uint8_t> data) {
     if (guild_index <= 0) {
         return;
     }
@@ -293,7 +293,7 @@ void send_to_dioses_y_clan(int guild_index, std::span<const std::uint8_t> data) 
     }
 }
 
-void send_to_user_guild_area(int user_index, std::span<const std::uint8_t> data) {
+void SendToUserGuildArea(int user_index, std::span<const std::uint8_t> data) {
     if (user_index <= 0 || static_cast<std::size_t>(user_index) >= UserList.size()) {
         return;
     }
@@ -304,7 +304,7 @@ void send_to_user_guild_area(int user_index, std::span<const std::uint8_t> data)
     }
 
     const int map = UserList[user_index].Pos.Map;
-    if (!is_valid_map_index(map) || static_cast<std::size_t>(map) >= ConnGroups.size()) {
+    if (!IsValidMapIndex(map) || static_cast<std::size_t>(map) >= ConnGroups.size()) {
         return;
     }
 
@@ -332,7 +332,7 @@ void send_to_user_guild_area(int user_index, std::span<const std::uint8_t> data)
     }
 }
 
-void send_to_user_party_area(int user_index, std::span<const std::uint8_t> data) {
+void SendToUserPartyArea(int user_index, std::span<const std::uint8_t> data) {
     if (user_index <= 0 || static_cast<std::size_t>(user_index) >= UserList.size()) {
         return;
     }
@@ -343,7 +343,7 @@ void send_to_user_party_area(int user_index, std::span<const std::uint8_t> data)
     }
 
     const int map = UserList[user_index].Pos.Map;
-    if (!is_valid_map_index(map) || static_cast<std::size_t>(map) >= ConnGroups.size()) {
+    if (!IsValidMapIndex(map) || static_cast<std::size_t>(map) >= ConnGroups.size()) {
         return;
     }
 
@@ -374,7 +374,7 @@ void send_to_user_party_area(int user_index, std::span<const std::uint8_t> data)
 // Paso 4: Ruteo de Privilegios y Facciones (con Parche Pre-Login Bug #22)
 // ============================================================================
 
-void send_to_all(std::span<const std::uint8_t> data) {
+void SendToAll(std::span<const std::uint8_t> data) {
     const auto view = to_string_view(data);
     const int limit = std::min<int>(LastUser, static_cast<int>(UserList.size()) - 1);
 
@@ -386,7 +386,7 @@ void send_to_all(std::span<const std::uint8_t> data) {
     }
 }
 
-void send_to_all_but_index(int user_index, std::span<const std::uint8_t> data) {
+void SendToAllButIndex(int user_index, std::span<const std::uint8_t> data) {
     const auto view = to_string_view(data);
     const int limit = std::min<int>(LastUser, static_cast<int>(UserList.size()) - 1);
 
@@ -400,7 +400,7 @@ void send_to_all_but_index(int user_index, std::span<const std::uint8_t> data) {
     }
 }
 
-void send_to_admins(std::span<const std::uint8_t> data) {
+void SendToAdmins(std::span<const std::uint8_t> data) {
     const auto view = to_string_view(data);
     const int limit = std::min<int>(LastUser, static_cast<int>(UserList.size()) - 1);
 
@@ -415,7 +415,7 @@ void send_to_admins(std::span<const std::uint8_t> data) {
     }
 }
 
-void send_to_higher_admins(std::span<const std::uint8_t> data) {
+void SendToHigherAdmins(std::span<const std::uint8_t> data) {
     const auto view = to_string_view(data);
     const int limit = std::min<int>(LastUser, static_cast<int>(UserList.size()) - 1);
 
@@ -430,7 +430,7 @@ void send_to_higher_admins(std::span<const std::uint8_t> data) {
     }
 }
 
-void send_to_consejo(std::span<const std::uint8_t> data) {
+void SendToConsejo(std::span<const std::uint8_t> data) {
     const auto view = to_string_view(data);
     const int limit = std::min<int>(LastUser, static_cast<int>(UserList.size()) - 1);
 
@@ -445,7 +445,7 @@ void send_to_consejo(std::span<const std::uint8_t> data) {
     }
 }
 
-void send_to_consejo_caos(std::span<const std::uint8_t> data) {
+void SendToConsejoCaos(std::span<const std::uint8_t> data) {
     const auto view = to_string_view(data);
     const int limit = std::min<int>(LastUser, static_cast<int>(UserList.size()) - 1);
 
@@ -460,7 +460,7 @@ void send_to_consejo_caos(std::span<const std::uint8_t> data) {
     }
 }
 
-void send_to_roles_masters(std::span<const std::uint8_t> data) {
+void SendToRolesMasters(std::span<const std::uint8_t> data) {
     const auto view = to_string_view(data);
     const int limit = std::min<int>(LastUser, static_cast<int>(UserList.size()) - 1);
 
@@ -475,7 +475,7 @@ void send_to_roles_masters(std::span<const std::uint8_t> data) {
     }
 }
 
-void send_to_ciudadanos(std::span<const std::uint8_t> data) {
+void SendToCiudadanos(std::span<const std::uint8_t> data) {
     const auto view = to_string_view(data);
     const int limit = std::min<int>(LastUser, static_cast<int>(UserList.size()) - 1);
 
@@ -490,7 +490,7 @@ void send_to_ciudadanos(std::span<const std::uint8_t> data) {
     }
 }
 
-void send_to_criminales(std::span<const std::uint8_t> data) {
+void SendToCriminales(std::span<const std::uint8_t> data) {
     const auto view = to_string_view(data);
     const int limit = std::min<int>(LastUser, static_cast<int>(UserList.size()) - 1);
 
@@ -505,7 +505,7 @@ void send_to_criminales(std::span<const std::uint8_t> data) {
     }
 }
 
-void send_to_real(std::span<const std::uint8_t> data) {
+void SendToReal(std::span<const std::uint8_t> data) {
     const auto view = to_string_view(data);
     const int limit = std::min<int>(LastUser, static_cast<int>(UserList.size()) - 1);
 
@@ -520,7 +520,7 @@ void send_to_real(std::span<const std::uint8_t> data) {
     }
 }
 
-void send_to_caos(std::span<const std::uint8_t> data) {
+void SendToCaos(std::span<const std::uint8_t> data) {
     const auto view = to_string_view(data);
     const int limit = std::min<int>(LastUser, static_cast<int>(UserList.size()) - 1);
 
@@ -535,7 +535,7 @@ void send_to_caos(std::span<const std::uint8_t> data) {
     }
 }
 
-void send_to_ciudadanos_y_rms(std::span<const std::uint8_t> data) {
+void SendToCiudadanosYRMs(std::span<const std::uint8_t> data) {
     const auto view = to_string_view(data);
     const int limit = std::min<int>(LastUser, static_cast<int>(UserList.size()) - 1);
 
@@ -550,7 +550,7 @@ void send_to_ciudadanos_y_rms(std::span<const std::uint8_t> data) {
     }
 }
 
-void send_to_criminales_y_rms(std::span<const std::uint8_t> data) {
+void SendToCriminalesYRMs(std::span<const std::uint8_t> data) {
     const auto view = to_string_view(data);
     const int limit = std::min<int>(LastUser, static_cast<int>(UserList.size()) - 1);
 
@@ -565,7 +565,7 @@ void send_to_criminales_y_rms(std::span<const std::uint8_t> data) {
     }
 }
 
-void send_to_real_y_rms(std::span<const std::uint8_t> data) {
+void SendToRealYRMs(std::span<const std::uint8_t> data) {
     const auto view = to_string_view(data);
     const int limit = std::min<int>(LastUser, static_cast<int>(UserList.size()) - 1);
 
@@ -580,7 +580,7 @@ void send_to_real_y_rms(std::span<const std::uint8_t> data) {
     }
 }
 
-void send_to_caos_y_rms(std::span<const std::uint8_t> data) {
+void SendToCaosYRMs(std::span<const std::uint8_t> data) {
     const auto view = to_string_view(data);
     const int limit = std::min<int>(LastUser, static_cast<int>(UserList.size()) - 1);
 
@@ -595,13 +595,13 @@ void send_to_caos_y_rms(std::span<const std::uint8_t> data) {
     }
 }
 
-void send_to_admins_but_consejeros_area(int user_index, std::span<const std::uint8_t> data) {
+void SendToAdminsButConsejerosArea(int user_index, std::span<const std::uint8_t> data) {
     if (user_index <= 0 || static_cast<std::size_t>(user_index) >= UserList.size()) {
         return;
     }
 
     const int map = UserList[user_index].Pos.Map;
-    if (!is_valid_map_index(map) || static_cast<std::size_t>(map) >= ConnGroups.size()) {
+    if (!IsValidMapIndex(map) || static_cast<std::size_t>(map) >= ConnGroups.size()) {
         return;
     }
 
@@ -630,13 +630,13 @@ void send_to_admins_but_consejeros_area(int user_index, std::span<const std::uin
     }
 }
 
-void send_to_gms_area_but_rms_or_counselors(int user_index, std::span<const std::uint8_t> data) {
+void SendToGMsAreaButRmsOrCounselors(int user_index, std::span<const std::uint8_t> data) {
     if (user_index <= 0 || static_cast<std::size_t>(user_index) >= UserList.size()) {
         return;
     }
 
     const int map = UserList[user_index].Pos.Map;
-    if (!is_valid_map_index(map) || static_cast<std::size_t>(map) >= ConnGroups.size()) {
+    if (!IsValidMapIndex(map) || static_cast<std::size_t>(map) >= ConnGroups.size()) {
         return;
     }
 
@@ -667,13 +667,13 @@ void send_to_gms_area_but_rms_or_counselors(int user_index, std::span<const std:
     }
 }
 
-void send_to_users_area_but_gms(int user_index, std::span<const std::uint8_t> data) {
+void SendToUsersAreaButGMs(int user_index, std::span<const std::uint8_t> data) {
     if (user_index <= 0 || static_cast<std::size_t>(user_index) >= UserList.size()) {
         return;
     }
 
     const int map = UserList[user_index].Pos.Map;
-    if (!is_valid_map_index(map) || static_cast<std::size_t>(map) >= ConnGroups.size()) {
+    if (!IsValidMapIndex(map) || static_cast<std::size_t>(map) >= ConnGroups.size()) {
         return;
     }
 
@@ -702,13 +702,13 @@ void send_to_users_area_but_gms(int user_index, std::span<const std::uint8_t> da
     }
 }
 
-void send_to_users_and_rms_and_counselors_area_but_gms(int user_index, std::span<const std::uint8_t> data) {
+void SendToUsersAndRmsAndCounselorsAreaButGMs(int user_index, std::span<const std::uint8_t> data) {
     if (user_index <= 0 || static_cast<std::size_t>(user_index) >= UserList.size()) {
         return;
     }
 
     const int map = UserList[user_index].Pos.Map;
-    if (!is_valid_map_index(map) || static_cast<std::size_t>(map) >= ConnGroups.size()) {
+    if (!IsValidMapIndex(map) || static_cast<std::size_t>(map) >= ConnGroups.size()) {
         return;
     }
 
@@ -741,133 +741,133 @@ void send_to_users_and_rms_and_counselors_area_but_gms(int user_index, std::span
 // Paso 5: Dispatcher Maestro SendData y AlertarFaccionarios
 // ============================================================================
 
-void send_data(SendTarget route, int index, std::span<const std::uint8_t> data) {
+void SendData(SendTarget route, int index, std::span<const std::uint8_t> data) {
     switch (route) {
         case SendTarget::ToAll:
-            send_to_all(data);
+            SendToAll(data);
             break;
 
         case SendTarget::ToMap:
-            send_to_map(index, data);
+            SendToMap(index, data);
             break;
 
         case SendTarget::ToPCArea:
-            send_to_user_area(index, data);
+            SendToUserArea(index, data);
             break;
 
         case SendTarget::ToAllButIndex:
-            send_to_all_but_index(index, data);
+            SendToAllButIndex(index, data);
             break;
 
         case SendTarget::ToMapButIndex:
-            send_to_map_but_index(index, data);
+            SendToMapButIndex(index, data);
             break;
 
         case SendTarget::ToNPCArea:
-            send_to_npc_area(index, data);
+            SendToNpcArea(index, data);
             break;
 
         case SendTarget::ToGuildMembers:
-            send_to_guild_members(index, data);
+            SendToGuildMembers(index, data);
             break;
 
         case SendTarget::ToAdmins:
-            send_to_admins(data);
+            SendToAdmins(data);
             break;
 
         case SendTarget::ToPCAreaButIndex:
-            send_to_user_area_but_index(index, data);
+            SendToUserAreaButIndex(index, data);
             break;
 
         case SendTarget::ToAdminsAreaButConsejeros:
-            send_to_admins_but_consejeros_area(index, data);
+            SendToAdminsButConsejerosArea(index, data);
             break;
 
         case SendTarget::ToDiosesYclan:
-            send_to_dioses_y_clan(index, data);
+            SendToDiosesYclan(index, data);
             break;
 
         case SendTarget::ToConsejo:
-            send_to_consejo(data);
+            SendToConsejo(data);
             break;
 
         case SendTarget::ToClanArea:
-            send_to_user_guild_area(index, data);
+            SendToUserGuildArea(index, data);
             break;
 
         case SendTarget::ToConsejoCaos:
-            send_to_consejo_caos(data);
+            SendToConsejoCaos(data);
             break;
 
         case SendTarget::ToRolesMasters:
-            send_to_roles_masters(data);
+            SendToRolesMasters(data);
             break;
 
         case SendTarget::ToDeadArea:
-            send_to_dead_user_area(index, data);
+            SendToDeadUserArea(index, data);
             break;
 
         case SendTarget::ToCiudadanos:
-            send_to_ciudadanos(data);
+            SendToCiudadanos(data);
             break;
 
         case SendTarget::ToCriminales:
-            send_to_criminales(data);
+            SendToCriminales(data);
             break;
 
         case SendTarget::ToPartyArea:
-            send_to_user_party_area(index, data);
+            SendToUserPartyArea(index, data);
             break;
 
         case SendTarget::ToReal:
-            send_to_real(data);
+            SendToReal(data);
             break;
 
         case SendTarget::ToCaos:
-            send_to_caos(data);
+            SendToCaos(data);
             break;
 
         case SendTarget::ToCiudadanosYRMs:
-            send_to_ciudadanos_y_rms(data);
+            SendToCiudadanosYRMs(data);
             break;
 
         case SendTarget::ToCriminalesYRMs:
-            send_to_criminales_y_rms(data);
+            SendToCriminalesYRMs(data);
             break;
 
         case SendTarget::ToRealYRMs:
-            send_to_real_y_rms(data);
+            SendToRealYRMs(data);
             break;
 
         case SendTarget::ToCaosYRMs:
-            send_to_caos_y_rms(data);
+            SendToCaosYRMs(data);
             break;
 
         case SendTarget::ToHigherAdmins:
-            send_to_higher_admins(data);
+            SendToHigherAdmins(data);
             break;
 
         case SendTarget::ToGMsAreaButRmsOrCounselors:
-            send_to_gms_area_but_rms_or_counselors(index, data);
+            SendToGMsAreaButRmsOrCounselors(index, data);
             break;
 
         case SendTarget::ToUsersAreaButGMs:
-            send_to_users_area_but_gms(index, data);
+            SendToUsersAreaButGMs(index, data);
             break;
 
         case SendTarget::ToUsersAndRmsAndCounselorsAreaButGMs:
-            send_to_users_and_rms_and_counselors_area_but_gms(index, data);
+            SendToUsersAndRmsAndCounselorsAreaButGMs(index, data);
             break;
     }
 }
 
-void alertar_faccionarios(int user_index) {
+void AlertarFaccionarios(int user_index) {
     if (user_index <= 0 || static_cast<std::size_t>(user_index) >= UserList.size()) {
         return;
     }
 
     const int map = UserList[user_index].Pos.Map;
-    if (!is_valid_map_index(map) || static_cast<std::size_t>(map) >= ConnGroups.size()) {
+    if (!IsValidMapIndex(map) || static_cast<std::size_t>(map) >= ConnGroups.size()) {
         return;
     }
 
