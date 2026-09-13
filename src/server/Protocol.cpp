@@ -1272,12 +1272,13 @@ void WriteUserCharIndexInServer(std::int16_t UserIndex) {
     queue->WriteInteger(UserList[UserIndex].char_appearance.CharIndex);
 }
 
-void WriteAreaChanged(std::int16_t UserIndex, std::uint8_t X, std::uint8_t Y) {
+void WriteAreaChanged(std::int16_t UserIndex) {
     auto* queue = get_user_outgoing(UserIndex);
     if (!queue) return;
+    if (UserIndex <= 0 || static_cast<std::size_t>(UserIndex) >= UserList.size()) return;
     queue->WriteByte(static_cast<std::uint8_t>(ServerPacketID::AreaChanged));
-    queue->WriteByte(X);
-    queue->WriteByte(Y);
+    queue->WriteByte(static_cast<std::uint8_t>(UserList[UserIndex].Pos.X));
+    queue->WriteByte(static_cast<std::uint8_t>(UserList[UserIndex].Pos.Y));
 }
 
 void WriteUpdateUserStats(std::int16_t UserIndex) {

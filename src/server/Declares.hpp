@@ -63,7 +63,7 @@ struct AreaInfo {
 struct ConnGroup {
     std::int32_t CountEntrys{0};
     std::int32_t OptValue{0};
-    std::vector<std::int32_t> UserEntrys;
+    std::vector<std::int16_t> UserEntrys;
 };
 
 struct tCOmercioUsuario {
