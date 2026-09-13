@@ -1,4 +1,4 @@
-﻿---
+---
 area: sistema-de-areas
 status: completed
 module: ModAreas
@@ -21,6 +21,12 @@ Este documento formaliza la arquitectura, decisiones de diseño de bajo nivel y 
 2. Determina el campo de visión de 9 cuadrantes (27x27 tiles) que rodea a cada entidad.
 3. Notifica selectivamente la aparición y actualización de jugadores, criaturas y objetos cuando cruzan fronteras de área.
 4. Mantiene los grupos de conexiones de usuarios activos por mapa (`ConnGroups`) consumidos por el sistema de difusión multicasting [`modSendData`](15-modsenddata.md).
+
+### Estado de Cierre Formal: `Completado (Aislado / Cableado Pendiente)`
+
+Conforme a la taxonomía definida en [`docs/CONVENTIONS.md`](../CONVENTIONS.md#definición-formal-de-los-tres-estados-de-cierre-de-módulo-module-closure-states), este módulo se encuentra en estado **`Completado (Aislado / Cableado Pendiente)`**:
+- **Código C++ Cerrado**: La transliteración de [`ModAreas.hpp`](../../src/server/ModAreas.hpp) y [`ModAreas.cpp`](../../src/server/ModAreas.cpp) está 100% finalizada y testeada (25 subcasos doctest). No requiere ediciones internas futuras.
+- **Cableado Pendiente en Capas Superiores**: Su integración productiva en el bucle de juego depende de conectar los hooks de desacoplamiento (`SetMakeUserCharHook`, `SetMakeNPCCharHook` y `SetBloquearHook`) a sus implementaciones definitivas en `Modulo_UsUaRiOs` (Capa 9) y `MODULO_NPCs` (Capa 8).
 
 ---
 

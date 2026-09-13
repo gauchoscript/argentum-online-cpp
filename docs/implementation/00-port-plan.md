@@ -300,11 +300,11 @@ Para cada módulo se aplica estrictamente la política de nombres definida en `d
 
 ### Capa 5: Sistema de Áreas de Mapa
 
-#### 17. `ModAreas` *(CATEGORÍA CRÍTICA 2 - GRILLA DE VISIÓN ESPACIAL)* — **✅ COMPLETADO**
+#### 17. `ModAreas` *(CATEGORÍA CRÍTICA 2 - GRILLA DE VISIÓN ESPACIAL)* — **✅ COMPLETADO (Aislado / Cableado Pendiente en Capa 9)**
 - **Archivos Legacy**: `legacy/server/Codigo/ModAreas.bas`
 - **Propósito**: Partición espacial del mapa en grillas de franjas de 9 tiles (12x12 franjas, $100 \times 100$ celdas) y campo de visión de 9 cuadrantes ($27 \times 27$ tiles) para optimizar el despacho de paquetes de red a jugadores visibles. Gestión de membresía por mapa (`ConnGroups`) consumida por `modSendData`.
 - **Archivo C++ Implementado**: `src/server/ModAreas.hpp` / `src/server/ModAreas.cpp`
-- **Estado**: **Completado** (Documentación técnica en [`17-modareas.md`](17-modareas.md) y desglose por fases en [`17-modareas-breakdown.md`](17-modareas-breakdown.md)).
+- **Estado**: **Completado (Aislado / Cableado Pendiente)** (Documentación técnica en [`17-modareas.md`](17-modareas.md) y desglose por fases en [`17-modareas-breakdown.md`](17-modareas-breakdown.md)). El archivo fuente C++ está formalmente cerrado y 100% verificado, pero requiere cableado de hooks en capas posteriores.
 - **Dependencias**: `Declares`, `Protocol`, `TCP`.
 - **Estimación**: **Mediano** (~500 líneas).
 - **Estrategia de Verificación**: 25 subcasos unitarios en 4 suites doctest en [`tests/test_modareas.cpp`](../../tests/test_modareas.cpp) (tablas precalculadas, membresía lineal en `ConnGroups`, barrido emergente de jugadores y criaturas, y validación de asimetrías legacy).
@@ -316,21 +316,38 @@ Para cada módulo se aplica estrictamente la política de nombres definida en `d
   - *Exclusiones (Bug #26)*: Supresión de `AreasStats.dat` / `AreasOptimizacion` y del arreglo muerto `PosToArea`.
   - *Hooks de Desacoplamiento*: Inyección de espías configurables (`SetMakeUserCharHook`, `SetMakeNPCCharHook`, `SetBloquearHook`) para aislar la capa de áreas de las capas 8 y 9.
 - **Propagación Cruzada y Notas de Integración**:
-  - **`Modulo_UsUaRiOs` (Capa 9)**: Al portar `MoveUserChar`, debe invocarse `ModAreas::CheckUpdateNeededUser(user_index, heading)` para actualizar la visibilidad ante cada paso. Al loguear un usuario (`ConnectNewUser` / `ConnectUser`), debe invocarse `ModAreas::AgregarUser(user_index, map)`. Al desconectar o cambiar de mapa (`WarpUserChar`), debe ejecutarse `ModAreas::QuitarUser(user_index, old_map)`.
-  - **`MODULO_NPCs` (Capa 8)**: Al mover una criatura en `MoveNPCChar`, debe invocarse `ModAreas::CheckUpdateNeededNpc(npc_index, heading)`. Al spawnear una criatura (`CrearNPC`), debe convocarse `ModAreas::AgregarNpc(npc_index)`.
+  - **Estado del Código C++**: El archivo `src/server/ModAreas.cpp` está **formalmente cerrado y completo**; no requiere modificaciones internas futuras.
+  - **Cableado Pendiente de Hooks**: Los hooks funcionales `SetMakeUserCharHook`, `SetMakeNPCCharHook` y `SetBloquearHook` deben ser conectados a sus implementaciones reales cuando se desarrollen las capas superiores:
+    - **`Modulo_UsUaRiOs` (Capa 9)**: Conectar `SetMakeUserCharHook` a la rutina real de emisión de personajes de usuario (`MakeUserChar`). Asimismo, al portar `MoveUserChar`, debe invocarse `ModAreas::CheckUpdateNeededUser(user_index, heading)` para actualizar la visibilidad ante cada paso. Al loguear un usuario (`ConnectNewUser` / `ConnectUser`), debe invocarse `ModAreas::AgregarUser(user_index, map)`. Al desconectar o cambiar de mapa (`WarpUserChar`), debe ejecutarse `ModAreas::QuitarUser(user_index, old_map)`.
+    - **`MODULO_NPCs` (Capa 8)**: Conectar `SetMakeNPCCharHook` a la rutina real de emisión de criaturas (`MakeNPCChar`). Al mover una criatura en `MoveNPCChar`, debe invocarse `ModAreas::CheckUpdateNeededNpc(npc_index, heading)`. Al spawnear una criatura (`CrearNPC`), debe convocarse `ModAreas::AgregarNpc(npc_index)`.
+    - **`Acciones` / `General` (Capa 9)**: Conectar `SetBloquearHook` a la comprobación real de bloqueo de puertas (`Bloquear`).
   - **`modSendData` (Capa 4)**: `SendToAreaByPos` y difusiones por mapa ya consumen la estructura contigua `ConnGroups[map].UserEntrys` garantizada por `ModAreas`.
 
 ---
 
 ### Capa 6: Subsistemas de Objetos, Inventario y Bóveda
 
-#### 18. `Modulo_InventANDobj`
+#### 18. `Modulo_InventANDobj` — **✅ COMPLETADO (Aislado / Cableado Pendiente en Capas 6 y 9)**
 - **Archivos Legacy**: `legacy/server/Codigo/Modulo_InventANDobj.bas`
-- **Propósito**: Carga de la tabla `OBJ.dat`, instanciación de objetos en el mapa y tirado de ítems al suelo.
-- **Archivo C++ Propuesto**: `src/server/Modulo_InventANDobj.hpp` / `src/server/Modulo_InventANDobj.cpp`
-- **Dependencias**: `Declares`, `FileIO`, `ModAreas`, `modSendData`.
-- **Estimación**: **Mediano** (~300 líneas).
-- **Estrategia de Verificación**: Pruebas con cliente VB6 (agarrar y tirar ítems al suelo).
+- **Propósito**: Gestión del ciclo de inventario de NPCs (reabastecimiento, consulta, consumo), evaluación probabilística de drops al morir criaturas (`NPC_TIRAR_ITEMS`), fragmentación monetaria en lotes de 10.000 de oro (`TirarOroNpc`) y despacho espacial de objetos al suelo (`TirarItemAlPiso`).
+- **Archivo C++ Implementado**: `src/server/Modulo_InventANDobj.hpp` / `src/server/Modulo_InventANDobj.cpp`
+- **Estado**: **Completado (Aislado / Cableado Pendiente)** (Documentación técnica oficial en [`18-modulo-inventandobj.md`](18-modulo-inventandobj.md) y desglose por fases en [`18-modulo-inventandobj-breakdown.md`](18-modulo-inventandobj-breakdown.md)). El archivo fuente C++ está formalmente cerrado y 100% verificado, pero requiere cableado de hooks en capas posteriores.
+- **Dependencias**: `Declares`, `Matematicas`.
+- **Estimación**: **Mediano** (~345 líneas).
+- **Estrategia de Verificación**: 5 casos de prueba unitaria y 192 aserciones doctest en [`tests/test_modulo_inventandobj.cpp`](../../tests/test_modulo_inventandobj.cpp) cubriendo inicialización, reposición por ítem crucial, cascada geométrica de drops, fragmentación de oro, bypass de hooks y mitigación/replicación de bugs legacy.
+- **Aspectos Clave y Decisiones de Diseño**:
+  - *Mapeo Directo de Inventario*: Preservación de la estructura plana `Inventario` de `Declares.hpp` con indexación 1-based (`1..MAX_INVENTORY_SLOTS`), sin clases abstractas OOP compartidas con usuarios.
+  - *Replicación de Bug #27*: Preservación de la asimetría histórica donde únicamente las criaturas pretorianas evalúan y arrojan `.GiveGLD`, mientras que las criaturas regulares descartan dicho campo.
+  - *Replicación de Bug #28*: Manejo del retorno nulo `(0, 0)` de `Tilelibre` ante saturación del mapa, evaporando el drop silenciosamente sin arrojar excepciones ni alterar bucles llamadores.
+  - *Erradicación de I/O Síncrona*: Supresión total de lecturas a `NPCs.dat` (`GetVar`) en tiempo de ejecución en favor del hook de memoria `SetNPCTemplateLookupHook`.
+  - *Aislamiento Espacial*: Desacoplamiento de `Tilelibre` y `MakeObj` mediante `SetTilelibreHook` y `SetMakeObjHook`.
+- **Propagación Cruzada y Notas de Integración**:
+  - **Estado del Código C++**: Los archivos `src/server/Modulo_InventANDobj.hpp` y `src/server/Modulo_InventANDobj.cpp` están **formalmente cerrados y completos**; no requieren modificaciones internas futuras.
+  - **Cableado Pendiente de Hooks e Invocaciones**:
+    - **Módulo #19 (`InvUsuario.bas`, Capa 6)**: Proveerá la implementación real para `SetMakeObjHook` conectándola a la rutina de instanciación física de objetos en las celdas del mapa.
+    - **Módulo #21 (`Comercio.bas`, Capa 7)**: Invocará `QuitarNpcInvItem`, `ResetNpcInv` y `CargarInvent` durante las transacciones de compra/venta entre usuarios y comerciantes NPC.
+    - **Módulo #28 (`MODULO_NPCs.bas`, Capa 8)**: Invocará `NPC_TIRAR_ITEMS` dentro del procedimiento de muerte de criaturas (`MuereNpc`).
+    - **Módulo #34 (`Modulo_UsUaRiOs.bas`, Capa 9)**: Proveerá la implementación real para `SetTilelibreHook` conectándola al algoritmo de búsqueda de celdas libres adyacentes (`Tilelibre`).
 
 #### 19. `InvUsuario`
 - **Archivos Legacy**: `legacy/server/Codigo/InvUsuario.bas`
@@ -600,8 +617,8 @@ Para cada módulo se aplica estrictamente la política de nombres definida en `d
 | **4** | `TCP.bas` (standalone Asio) | `src/server/TCP.hpp` | Grande | 🚨 **CRÍTICO 2: Multi-Conexión**| **Completado (Asio Monohilo)** (24 tests en `test_tcp.cpp`, ver [`14-tcp.md`](14-tcp.md)) |
 | **4** | `modSendData.bas` | `src/server/modSendData.hpp` | Mediano | 🚨 **CRÍTICO 2: Broadcast** | **Completado (Zero-Copy)** (12 tests en `test_modsenddata.cpp`, ver [`15-modsenddata.md`](15-modsenddata.md) y [`15-modsenddata-breakdown.md`](15-modsenddata-breakdown.md)) |
 | **4** | `Protocol.bas` | `src/server/Protocol.hpp` | Grande | 🚨 **CRÍTICO 2: Opcodes** | **Completado (129 Opcodes + Transaccional)** (147 tests en `test_protocol.cpp`, ver [`16-protocol.md`](16-protocol.md) y [`16-protocol-breakdown.md`](16-protocol-breakdown.md)) |
-| **5** | `ModAreas.bas` | `src/server/ModAreas.hpp` | Mediano | 🚨 **CRÍTICO 2: Grilla de Visión Espacial** | **Completado (Grilla Espacial 3x3 / Hooks)** (25 tests en `test_modareas.cpp`, ver [`17-modareas.md`](17-modareas.md) y [`17-modareas-breakdown.md`](17-modareas-breakdown.md)) |
-| **6** | `Modulo_InventANDobj.bas` | `src/server/Modulo_InventANDobj.hpp` | Mediano | Objetos Mapa | Tirar/agarrar ítem cliente VB6 |
+| **5** | `ModAreas.bas` | `src/server/ModAreas.hpp` | Mediano | 🚨 **CRÍTICO 2: Grilla de Visión Espacial** | **Completado (Aislado / Hooks en Capa 9)** (25 tests en `test_modareas.cpp`, ver [`17-modareas.md`](17-modareas.md) y [`17-modareas-breakdown.md`](17-modareas-breakdown.md)) |
+| **6** | `Modulo_InventANDobj.bas` | `src/server/Modulo_InventANDobj.hpp` | Mediano | Objetos Mapa / Inventario NPC | **Completado (Aislado / Hooks en Capas 6 y 9)** (5 tests / 192 aserciones en `test_modulo_inventandobj.cpp`, ver [`18-modulo-inventandobj.md`](18-modulo-inventandobj.md)) |
 | **6** | `InvUsuario.bas` | `src/server/InvUsuario.hpp` | Grande | Inventario Jugador | Equipar y usar ítems cliente VB6 |
 | **6** | `modBanco.bas` | `src/server/modBanco.hpp` | Mediano | Bóveda | NPC Banquero cliente VB6 |
 | **6** | `Comercio.bas` / `mdlCOmercio...` | `src/server/Comercio.hpp` | Mediano | Comercio NPC / User | Ventana comercio cliente VB6 |

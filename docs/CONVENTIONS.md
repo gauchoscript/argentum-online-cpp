@@ -86,6 +86,24 @@ El porting o investigación de un módulo **NO se considera completo** hasta que
 
 Si existe tal referencia cruzada, **debés agregar una nota explícita en la entrada del módulo AFECTADO en `docs/implementation/00-port-plan.md`**, citando el documento donde reside la fundamentación completa. No consideres terminado el trabajo de un módulo hasta que este paso de propagación haya sido verificado y completado explícitamente — ya que un colaborador futuro trabajando en el módulo afectado no tiene motivos para revisar la documentación del módulo de origen.
 
+### Definición Formal de los Tres Estados de Cierre de Módulo (Module Closure States)
+
+Para evitar ambigüedades sobre el grado de autonomía y acoplamiento de cada subsistema porteado, la documentación central (`00-port-plan.md`, `README.md` y documentos de implementación) debe clasificar cada módulo finalizado bajo uno de los siguientes **tres estados de cierre formal**:
+
+1. **`Completado (Autónomo)`**:
+   - El archivo C++ está 100% transliterado, verificado exhaustivamente por pruebas unitarias y todas sus dependencias están completamente resueltas en capas inferiores o en el mismo módulo.
+   - Su lógica opera de punta a punta sin requerir cableado, hooks ni adaptadores futuros cuando se agreguen capas superiores.
+   - *Ejemplos*: `Matematicas`, `clsIniReader`, `clsDicc`, `clsByteQueue`, `TCP`, `modSendData`.
+
+2. **`Completado (Aislado / Cableado Pendiente)`**:
+   - El archivo C++ está 100% transliterado y probado exhaustivamente mediante contratos, hooks o stubs funcionales que garantizan que el archivo fuente (`.cpp` / `.hpp`) está **formalmente cerrado** (no requerirá modificaciones internas futuras).
+   - Sin embargo, su ejecución real en producción depende de rutinas que residen en capas superiores y deben ser cableadas mediante la inyección de callbacks o invocaciones directas cuando dichas capas sean implementadas.
+   - *Ejemplo*: `ModAreas` (el archivo `ModAreas.cpp` está cerrado y validado, pero sus hooks `SetMakeUserCharHook`, `SetMakeNPCCharHook` y `SetBloquearHook` deben conectarse a `Modulo_UsUaRiOs` en Capa 9 y `MODULO_NPCs` en Capa 8).
+
+3. **`Parcial (Diferido)`**:
+   - El módulo tiene funciones, ramas de control o estructuras deliberadamente postergadas que no pudieron ser aisladas mediante hooks y requieren **edición directa del archivo C++** en un paso futuro al llegar a la capa correspondiente.
+   - *Ejemplo*: `SecurityIp` (cuenta con control anti-flood completo, pero las rutinas vinculadas a `UserList` y desconexión formal de sockets quedaron diferidas a Capas 8 y 9).
+
 ## Aprendizajes de FileIO — Reglas Proactivas de Porting (Learnings from FileIO)
 
 Durante el porteo del módulo `FileIO.bas`, se consolidaron seis patrones observados de manera recurrente. Estas directivas quedan establecidas como **reglas proactivas permanentes** para todos los módulos futuros (especialmente para módulos de gran envergadura como el próximo `Protocol.bas`):
