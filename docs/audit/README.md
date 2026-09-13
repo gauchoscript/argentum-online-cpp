@@ -16,18 +16,24 @@ Este directorio contiene la documentación de auditoría histórica del código 
 | 08 | [08-recursos-y-multimedia.md](08-recursos-y-multimedia.md) | Sprites Bitmaps (`.bmp`), índices `.ind`, audio WAV, MIDI y MP3. | `recursos-y-multimedia` | 2026-09-06 |
 | 09 | [09-seguridad-y-autenticacion.md](09-seguridad-y-autenticacion.md) | Flujo de autenticación, contraseñas en texto plano y vulnerabilidades. | `seguridad-y-autenticacion` | 2026-09-06 |
 | 10 | [10-herramientas-de-gm.md](10-herramientas-de-gm.md) | Jerarquía de 5 rangos de GM (`Server.ini`), opcodes (`/BAN`, `/CI`) y paneles GUI. | `herramientas-de-gm` | 2026-09-06 |
+| 11 | [11-foros-y-comunicacion.md](11-foros-y-comunicacion.md) | Foros de juego, mensajería y tableros comunitarios (`modForum`). | `foros-y-comunicacion` | 2026-09-13 |
+| 12 | [12-objetos-inventario-comercio.md](12-objetos-inventario-comercio.md) | Manipulación de objetos en mapa, inventarios de NPC y usuario, equipamiento y comercio. | `objetos-inventario-comercio` | 2026-09-13 |
+| 13 | [13-criaturas-e-ia.md](13-criaturas-e-ia.md) | Ciclo de vida de criaturas (`MODULO_NPCs`), tablas de atributos, máquinas de estados e IA. | `criaturas-e-ia` | 2026-09-13 |
+| 14 | [14-magia-y-hechizos.md](14-magia-y-hechizos.md) | Lanzamiento de conjuros (`modHechizos`), fórmulas de daño/curación mágica y efectos. | `magia-y-hechizos` | 2026-09-13 |
+| 15 | [15-entidad-usuario-y-estado.md](15-entidad-usuario-y-estado.md) | Estructura central `UserList`, ciclo de vida de conexión, máquina de estados y clases. | `entidad-usuario-y-estado` | 2026-09-13 |
 
 ## Anexos y Documentos de Detalle / Código Muerto
 
-| Documento | Descripción Corta | Estado / Tipo | Última Actualización |
-| :--- | :--- | :--- | :---: |
-| [01a-clsdicc-cgarbage.md](01a-clsdicc-cgarbage.md) | Análisis de `clsdicc.cls` y `cGarbage.cls`. | Detalle Módulos Base | 2026-09-08 |
-| [02a-securityip-detalle.md](02a-securityip-detalle.md) | Auditoría de `SecurityIp.bas` (anti-flood e IP security). | Detalle Protocolo / Red | 2026-09-10 |
-| [02b-antimassclon-detalle.md](02b-antimassclon-detalle.md) | Auditoría de `clsAntiMassClon.cls` y exclusión por código muerto. | Exclusión (Código Muerto) | 2026-09-11 |
-| [02c-tcp-detalle.md](02c-tcp-detalle.md) | Auditoría de `TCP.bas`, `wskapiAO.bas` y `wsksock.bas` (red y Asio). | Detalle Protocolo / Red | 2026-09-11 |
-| [02d-modsenddata-detalle.md](02d-modsenddata-detalle.md) | Auditoría de `modSendData.bas` (despacho, broadcast y áreas). | Detalle Protocolo / Red | 2026-09-12 |
-| [02e-protocol-detalle.md](02e-protocol-detalle.md) | Auditoría de `Protocol.bas` (despachador de entrada, serialización y GM). | Detalle Protocolo / Red | 2026-09-12 |
-| [03-modareas-detalle.md](03-modareas-detalle.md) | Auditoría de `ModAreas.bas` (gestión espacial, cuadrículas y visibilidad). | Detalle Arquitectura Espacial | 2026-09-13 |
-| [04-inventario-objetos-detalle.md](04-inventario-objetos-detalle.md) | Auditoría de `Modulo_InventANDobj.bas` (inventario, suelo y drops). | Detalle Inventario y Objetos | 2026-09-13 |
-| [06a-colaarray-dead-code.md](06a-colaarray-dead-code.md) | Auditoría de `cColaArray.cls` y exclusión por código muerto. | Exclusión (Código Muerto) | 2026-09-08 |
-| [11a-modforum-detalle.md](11a-modforum-detalle.md) | Auditoría de `modForum.bas` (sistema de foros). | Detalle Sub-sistema | 2026-09-08 |
+| Documento | Descripción Corta | Macro-Área Padre | Estado / Tipo | Última Actualización |
+| :--- | :--- | :---: | :--- | :---: |
+| [01a-clsdicc-cgarbage.md](01a-clsdicc-cgarbage.md) | Análisis de `clsdicc.cls` y `cGarbage.cls`. | Área 01 | Detalle Módulos Base | 2026-09-08 |
+| [02a-securityip-detalle.md](02a-securityip-detalle.md) | Auditoría de `SecurityIp.bas` (anti-flood e IP security). | Área 02 | Detalle Protocolo / Red | 2026-09-10 |
+| [02b-antimassclon-detalle.md](02b-antimassclon-detalle.md) | Auditoría de `clsAntiMassClon.cls` y exclusión por código muerto. | Área 02 | Exclusión (Código Muerto) | 2026-09-11 |
+| [02c-tcp-detalle.md](02c-tcp-detalle.md) | Auditoría de `TCP.bas`, `wskapiAO.bas` y `wsksock.bas` (red y Asio). | Área 02 | Detalle Protocolo / Red | 2026-09-11 |
+| [02d-modsenddata-detalle.md](02d-modsenddata-detalle.md) | Auditoría de `modSendData.bas` (despacho, broadcast y áreas). | Área 02 | Detalle Protocolo / Red | 2026-09-12 |
+| [02e-protocol-detalle.md](02e-protocol-detalle.md) | Auditoría de `Protocol.bas` (despachador de entrada, serialización y GM). | Área 02 | Detalle Protocolo / Red | 2026-09-12 |
+| [03a-modareas-detalle.md](03a-modareas-detalle.md) | Auditoría de `ModAreas.bas` (gestión espacial, cuadrículas y visibilidad). | Área 03 | Detalle Movimiento / Espacial | 2026-09-13 |
+| [06a-colaarray-dead-code.md](06a-colaarray-dead-code.md) | Auditoría de `cColaArray.cls` y exclusión por código muerto. | Área 06 | Exclusión (Código Muerto) | 2026-09-08 |
+| [11a-modforum-detalle.md](11a-modforum-detalle.md) | Auditoría de `modForum.bas` (sistema de foros). | Área 11 | Detalle Foros / Comunicación | 2026-09-08 |
+| [12a-modulo-inventandobj-detalle.md](12a-modulo-inventandobj-detalle.md) | Auditoría de `Modulo_InventANDobj.bas` (inventario NPC, suelo y drops). | Área 12 | Detalle Inventario / Objetos | 2026-09-13 |
+| [12b-invusuario-detalle.md](12b-invusuario-detalle.md) | Auditoría de `InvUsuario.bas` (inventario usuario, equipamiento y exploits). | Área 12 | Detalle Inventario / Objetos | 2026-09-13 |

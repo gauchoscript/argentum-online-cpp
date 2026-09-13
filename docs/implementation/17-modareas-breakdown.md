@@ -1,9 +1,9 @@
-﻿---
+---
 area: arquitectura-espacial
 module_id: 17
 source_files:
   - legacy/server/Codigo/ModAreas.bas
-  - docs/audit/03-modareas-detalle.md
+  - docs/audit/03a-modareas-detalle.md
   - docs/CONVENTIONS.md
   - docs/implementation/KNOWN-LEGACY-BUGS.md
 tags: [modareas, areas, visibilidad, cuadrantes, bitmask, breakdown, plan, cpp20]
@@ -14,7 +14,7 @@ last_updated: 2026-09-13
 
 Este documento establece la planificación técnica detallada, las decisiones arquitectónicas y la estrategia de implementación progresiva en C++20 para el módulo [`legacy/server/Codigo/ModAreas.bas`](../../legacy/server/Codigo/ModAreas.bas) (~459 líneas en Visual Basic 6).
 
-Conforme a las directivas de porting institucional de [`docs/CONVENTIONS.md`](../CONVENTIONS.md), los hallazgos de la auditoría técnica ([`docs/audit/03-modareas-detalle.md`](../audit/03-modareas-detalle.md)) y los registros estratégicos del Master Bug Ledger ([`docs/implementation/KNOWN-LEGACY-BUGS.md`](KNOWN-LEGACY-BUGS.md)), este desglose define un plan de trabajo estructurado en **cuatro fases secuenciales e independientes**.
+Conforme a las directivas de porting institucional de [`docs/CONVENTIONS.md`](../CONVENTIONS.md), los hallazgos de la auditoría técnica ([`docs/audit/03a-modareas-detalle.md`](../audit/03a-modareas-detalle.md)) y los registros estratégicos del Master Bug Ledger ([`docs/implementation/KNOWN-LEGACY-BUGS.md`](KNOWN-LEGACY-BUGS.md)), este desglose define un plan de trabajo estructurado en **cuatro fases secuenciales e independientes**.
 
 ---
 

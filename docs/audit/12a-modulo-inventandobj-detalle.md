@@ -20,7 +20,7 @@ Este documento presenta la auditoría técnica exhaustiva del módulo [`legacy/s
 
 El objetivo de este análisis es desentrañar la lógica de manipulación de items tanto en entidades vivas (inventarios de NPCs y usuarios) como en celdas de mapa (`MapData.ObjInfo`), auditar los algoritmos de dispersión espacial de drops, detectar vulnerabilidades históricas de duplicación o desbordamiento entero (`Integer` de 16 bits en VB6) y sentar las bases arquitectónicas para el diseño de la Capa 6 en C++20, garantizando sincronización libre de fugas con el protocolo de red (`modSendData` y `Protocol`).
 
-Para consultar las directrices de arquitectura y nombrado, referite a [`CONVENTIONS.md`](../CONVENTIONS.md) y a la auditoría de visibilidad espacial en [`docs/audit/03-modareas-detalle.md`](03-modareas-detalle.md).
+Para consultar las directrices de arquitectura y nombrado, referite a [`CONVENTIONS.md`](../CONVENTIONS.md) y a la auditoría de visibilidad espacial en [`docs/audit/03a-modareas-detalle.md`](03a-modareas-detalle.md).
 
 ---
 

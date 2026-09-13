@@ -104,6 +104,14 @@ Para evitar ambigüedades sobre el grado de autonomía y acoplamiento de cada su
    - El módulo tiene funciones, ramas de control o estructuras deliberadamente postergadas que no pudieron ser aisladas mediante hooks y requieren **edición directa del archivo C++** en un paso futuro al llegar a la capa correspondiente.
    - *Ejemplo*: `SecurityIp` (cuenta con control anti-flood completo, pero las rutinas vinculadas a `UserList` y desconexión formal de sockets quedaron diferidas a Capas 8 y 9).
 
+### Política de Numeración y Jerarquía en Documentación de Auditoría (`docs/audit/`)
+
+Para mantener una estructura predecible y evitar colisiones numéricas entre visiones globales e informes profundos:
+- **Documentos Macro (Visión Arquitectónica)**: Llevan un prefijo entero secuencial de dos dígitos (`01-` a `15-`, e.g. `01-estructura-del-proyecto.md`, `02-protocolo-de-red.md`, `12-objetos-inventario-comercio.md`, `15-entidad-usuario-y-estado.md`). Están reservados exclusivamente para síntesis transversales de macro-áreas temáticas.
+- **Informes Detallados y Exclusiones de Módulos**: Todo análisis quirúrgico de un módulo individual (`.bas`, `.cls`, `.frm`) o descarte formal de código muerto **DEBE** llevar un sufijo alfabético subordinado a su macro-área correspondiente bajo el esquema estricto `NNa-` (ejemplos: `01a-clsdicc-cgarbage.md`, `02a-securityip-detalle.md`, `02c-tcp-detalle.md`, `03a-modareas-detalle.md`, `06a-colaarray-dead-code.md`, `11a-modforum-detalle.md`, `12a-modulo-inventandobj-detalle.md`, `12b-invusuario-detalle.md`).
+- Queda estrictamente prohibido asignar números enteros planos (`NN-`) a informes de módulos puntuales si ya existe o está prevista una macro-área con esa numeración.
+- **Prohibición de Anexos Huérfanos**: Queda estrictamente prohibido crear archivos de detalle (`NNa-`) sin la existencia previa del documento macro `NN-`. El catálogo temático de auditoría queda cerrado entre las áreas 01 y 15. Todo módulo legacy a auditar debe subordinarse obligatoriamente a una de estas 15 áreas según su dominio, sin excepciones.
+
 ## Aprendizajes de FileIO — Reglas Proactivas de Porting (Learnings from FileIO)
 
 Durante el porteo del módulo `FileIO.bas`, se consolidaron seis patrones observados de manera recurrente. Estas directivas quedan establecidas como **reglas proactivas permanentes** para todos los módulos futuros (especialmente para módulos de gran envergadura como el próximo `Protocol.bas`):
