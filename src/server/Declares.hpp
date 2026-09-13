@@ -7,6 +7,7 @@
 #include <memory>
 #include <chrono>
 #include <cstring>
+#include <span>
 
 #if defined(_WIN32)
 #include <windows.h>
@@ -20,7 +21,15 @@
 class clsAntiDoS {};
 // clsAntiMassClon excluido por tratarse de código muerto (ver docs/audit/02b-antimassclon-detalle.md)
 class cCola {};
-class clsParty {};
+constexpr std::uint8_t PARTY_MAXMEMBERS = 5;
+class clsParty {
+public:
+    virtual ~clsParty() = default;
+    virtual bool EsPartyLeader(std::int16_t /*userIndex*/) const { return false; }
+    virtual void ObtenerMiembrosOnline(std::span<std::int16_t> /*members*/) const {}
+    virtual double MiExperiencia(std::int16_t /*userIndex*/) const { return 0.0; }
+    virtual std::int32_t ObtenerExperienciaTotal() const { return 0; }
+};
 class ConsultasPopulares {};
 class SoundMapInfo {};
 
@@ -58,6 +67,7 @@ struct ConnGroup {
 };
 
 struct tCOmercioUsuario {
+    std::string DestNick;
     std::int32_t DestUsu{0};
     std::int32_t DestPos{0};
     std::int32_t SenderPos{0};
@@ -573,7 +583,20 @@ enum eMessages : std::int32_t {
     SafeModeOff,
     ResuscitationSafeOff,
     ResuscitationSafeOn,
-    NobilityLost
+    NobilityLost,
+    CantUseWhileMeditating,
+    NPCHitUser,
+    UserHitNPC,
+    UserAttackedSwing,
+    UserHittedByUser,
+    UserHittedUser,
+    WorkRequestTarget,
+    HaveKilledUser,
+    UserKill,
+    EarnExp,
+    Home,
+    CancelHome,
+    FinishHome
 };
 
 // ==========================================

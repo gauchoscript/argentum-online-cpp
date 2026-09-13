@@ -1,4 +1,4 @@
----
+﻿---
 area: auditoria-y-compatibilidad
 status: living_document
 title: Registro Centralizado de Bugs y Quirks Históricos del Legacy VB6
@@ -36,10 +36,11 @@ De acuerdo con la convención del proyecto ([`docs/CONVENTIONS.md`](../CONVENTIO
 | **16** | `SecurityIp` #6 | `SecurityIp.bas:111` | Error 6 ("Overflow") de VB6 tras ~24.85 días de uptime (`SERVER.VBP` `OverflowCheck=0`) | **Activo** | **Replicated (Excepción Tipada)**<br>[`SecurityIp::TickCountOverflowException`](src/server/SecurityIp.hpp)<br>Test: [`test_securityip.cpp:342`](tests/test_securityip.cpp#L342) | [Entrada #16](#entrada-16--securityip-error-6-overflow-de-vb6-por-desbordamiento-aritmético-en-ipsecurityaceptarnuevaconexion) |
 | **17** | `cColaArray` | `cColaArray.cls` | Clase de búfer circular de texto inalcanzable, bloqueada bajo `#If UsarQueSocket = 3` y sin campos en `User` | **Muerto / Inalcanzable** | **Excluded (dead code, not ported)** | [`docs/audit/06a-colaarray-dead-code.md`](../audit/06a-colaarray-dead-code.md) |
 | **18** | `clsAntiMassClon` | `clsAntiMassClon.cls:46-67, 58-63`<br>`SERVER.VBP:76` | Inserción de IPs inoperante por condicional `#If SeguridadAlkon` apagado y tipo inexistente `UserIpAdress` (bypass total en producción) | **Muerto / Inoperante** | **Excluded (dead code, not ported)** | [`docs/audit/02b-antimassclon-detalle.md`](../audit/02b-antimassclon-detalle.md) |
-| **19** | `TCP` / `wskapiAO` | `wskapiAO.bas:334-342`<br>`clsByteQueue.cls:196-199`<br>`Protocol.bas:858-863` | Congelamiento del servidor por bucle infinito ocupado (busy-loop) ante `WSAEWOULDBLOCK` en `WsApiEnviar` combinado con `NOT_ENOUGH_SPACE` y `Resume` | **Activo** | **Mitigated (Safe Backpressure)**<br>[`TCP::EnviarDatosASlot`](src/server/TCP.cpp)<br>Test: [`test_tcp.cpp:653`](tests/test_tcp.cpp#L653) | [`docs/audit/02c-tcp-detalle.md`](../audit/02c-tcp-detalle.md#54-umbrales-de-socket-os-y-la-trampa-de-bloqueo-wsaewouldblock)<br>[`14-tcp.md`](14-tcp.md#2-mitigación-de-backpressure-bug-19) |
+| **19** | `TCP` / `Protocol` | `wskapiAO.bas:334-342`<br>`clsByteQueue.cls:196-199`<br>`Protocol.bas:858-863` | Congelamiento del servidor por bucle infinito ocupado (busy-loop) ante `WSAEWOULDBLOCK` en `WsApiEnviar` combinado con `NOT_ENOUGH_SPACE` y `Resume` | **Activo** | **Mitigated (Safe Backpressure & Erradicación en Protocol)**<br>[`TCP::EnviarDatosASlot`](src/server/TCP.cpp)<br>Primitivas `Protocol::Write...`<br>Test: [`test_tcp.cpp:653`](tests/test_tcp.cpp#L653), `test_protocol.cpp` | [`docs/audit/02c-tcp-detalle.md`](../audit/02c-tcp-detalle.md#54-umbrales-de-socket-os-y-la-trampa-de-bloqueo-wsaewouldblock)<br>[`14-tcp.md`](14-tcp.md#2-mitigación-de-backpressure-bug-19)<br>[`16-protocol.md`](16-protocol.md#2-erradicación-del-patrón-resume-en-primitivas-write-bug-19) |
 | **20** | `TCP` / `wskapiAO` | `wskapiAO.bas:402-405, 420` | Fuga de descriptor de socket (*socket leak*) en rechazo anti-flood por invocar `WSApiCloseSocket(NuevoSock)` antes de asignar `NuevoSock = Ret` (cerrando descriptor 0) | **Activo** | **Mitigated (Safe RAII / Explicit Close)**<br>[`TCP::HandleAccept`](src/server/TCP.cpp)<br>Test: [`test_tcp.cpp:301`](tests/test_tcp.cpp#L301) | [`docs/audit/02c-tcp-detalle.md`](../audit/02c-tcp-detalle.md#c-procesamiento-del-evento-de-conexión-entrante-fd_accept)<br>[`14-tcp.md`](14-tcp.md#3-cierre-seguro-raii-en-aceptación-bug-20) |
 | **21** | `modSendData` | `modSendData.bas:39, 70-302` | Constante `SendTarget.ToGM` declarada en el Enum pero sin bloque de procesamiento en el `Select Case` de `SendData` (cae en el vacío) | **Muerto / Huérfano** | **Excluded (dead code, not ported)** | [`docs/audit/02d-modsenddata-detalle.md`](../audit/02d-modsenddata-detalle.md#61-sendtargettogm-huérfano) |
 | **22** | `modSendData` | `modSendData.bas:116-200` | Broadcasts administrativos y faccionarios no chequean `flags.UserLogged`, enviando paquetes de juego a sockets en pantalla de login | **Activo** | **Mitigated (Safe Logic)** | [`docs/audit/02d-modsenddata-detalle.md`](../audit/02d-modsenddata-detalle.md#62-ausencia-de-verificación-flagsuserlogged-en-broadcasts-globales)<br>[`15-modsenddata-breakdown.md`](15-modsenddata-breakdown.md#14-mitigación-de-bugs-legacy) |
+| **23** | Protocol | Protocol.bas:825-835 | Serialización de color RGB truncado a 3 bytes en red a pesar de declararse como Long (32 bits / 4 bytes) en VB6 | **Quirk / Riesgo** | **Preserved (Byte-Exact Parity)**<br>[Protocol::WriteChatOverHead](src/server/Protocol.cpp)<br>Test: 	est_protocol.cpp | [16-protocol.md](16-protocol.md#3-truncamiento-a-3-bytes-de-colores-rgb-en-tramas-salientes-long-de-vb6-vs-red) |
 
 ---
 
@@ -274,3 +275,17 @@ A continuación se documentan en detalle todas las entradas del registro maestro
 - **Estado en C++**: **Mitigated (Safe Logic)**. En la implementación en C++20, todas las funciones de filtrado global incorporan obligatoriamente la verificación de que la sesión se encuentre plenamente autenticada e ingresada al mundo (`is_logged_in()`), mitigando cualquier fuga o desincronización de paquetes durante la fase previa al login.
 - **Documentación Detallada**: [`docs/audit/02d-modsenddata-detalle.md`](../audit/02d-modsenddata-detalle.md#62-ausencia-de-verificación-flagsuserlogged-en-broadcasts-globales) y [`15-modsenddata-breakdown.md`](15-modsenddata-breakdown.md#14-mitigación-de-bugs-legacy).
 
+---
+
+### Entrada #23 — `Protocol`: Serialización de Color RGB Truncado a 3 Bytes (Long de VB6 vs. Payload de Red)
+- **Cita Legacy**: [`legacy/server/Codigo/Protocol.bas:825-835`](../../legacy/server/Codigo/Protocol.bas#L825-L835) (`WriteChatOverHead`).
+- **Descripción**: En la rutina `WriteChatOverHead`, el parámetro `color` se declara como `ByVal color As Long` (tipo de 32 bits, 4 bytes en memoria). Sin embargo, la serialización binaria en VB6 descompone y empaqueta únicamente 3 bytes individuales correspondientes a los canales R, G y B:
+  ```vb
+  Call .WriteByte(color And &HFF)
+  Call .WriteByte((color \ &H100) And &HFF)
+  Call .WriteByte((color \ &H10000) And &HFF)
+  ```
+  Descartando por completo el byte superior (`color \ &H1000000`). En una transliteración estándar en C++20, se tendería a serializar un `int32_t` completo (4 bytes), lo que rompería la alineación de lectura del cliente oficial de VB6 (que espera exactamente 3 lecturas `ReadByte` para recomponer el color RGB).
+- **Camino de Producción**: **Quirk / Riesgo de Desalineación**.
+- **Estado en C++**: **Preserved (Byte-Exact Parity)**. En `src/server/Protocol.cpp` (`PrepareMessageChatOverHead` y `WriteChatOverHead`), se preserva estrictamente la descomposición manual de los 3 bytes componentes individuales en Little-Endian, garantizando paridad binaria exacta a nivel de byte con el cliente original.
+- **Documentación Detallada**: [`16-protocol.md`](16-protocol.md#3-truncamiento-a-3-bytes-de-colores-rgb-en-tramas-salientes-long-de-vb6-vs-red).

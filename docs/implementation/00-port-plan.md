@@ -284,13 +284,17 @@ Para cada módulo se aplica estrictamente la política de nombres definida en `d
 #### 16. `Protocol` *(CATEGORÍA CRÍTICA 2 - DECODIFICADOR Y ENCODIFICADOR)*
 - **Archivos Legacy**: `legacy/server/Codigo/Protocol.bas`
 - **Propósito**: Decodificación binaria de paquetes entrantes (`ClientPacketID`) y serialización de paquetes salientes (`ServerPacketID`).
-- **Archivo C++ Propuesto**: `src/server/Protocol.hpp` / `src/server/Protocol.cpp`
+- **Archivo C++**: `src/server/Protocol.hpp` / `src/server/Protocol.cpp`
+- **Estado**: **Completado (Fase Infraestructura de Red / Stubs)** (147 tests en `tests/test_protocol.cpp`, ver [`16-protocol.md`](16-protocol.md) y [`16-protocol-breakdown.md`](16-protocol-breakdown.md)).
 - **Dependencias**: `Declares`, `clsByteQueue`, `modSendData`, `TCP`.
 - **Estimación**: **Grande** (~8.500 líneas).
-- **Estrategia de Verificación**: **Pruebas binarias con cliente VB6 autenticando, caminando y enviando comandos al servidor C++**.
-- **Nota de Migración (`clsByteQueue` y transacciones con `CopyBuffer`)**: `Protocol.bas` utiliza `buffer.CopyBuffer(incomingData)` para simular lectura transaccional de paquetes con strings variables. Si salta la excepción `NotEnoughDataException` (`NOT_ENOUGH_DATA`), el paquete está incompleto y la cola `incomingData` principal permanece inalterada hasta recibir el paquete completo TCP. Ver [`08-clsbytequeue.md`](08-clsbytequeue.md).
-- **Nota de Auditoría / Migración (`FlushBuffer` y Erradicación del Bug #19)**: La función `FlushBuffer(UserIndex)` delega directamente en `TCP::FlushBuffer(user_index)`. En C++ **no debe reproducirse el patrón legacy de captura de `NOT_ENOUGH_SPACE` con `Resume`**, dado que la protección contra saturación fue resuelta a nivel de transporte en `TCP::EnviarDatosASlot` con búferes salientes asíncronos y backpressure seguro (ver [`14-tcp.md`](14-tcp.md) y [`KNOWN-LEGACY-BUGS.md`](KNOWN-LEGACY-BUGS.md) Entrada #19).
-- **Nota de Auditoría / Migración (`clsAntiMassClon` / Anti-Clon)**: La comprobación `aClon.MaxPersonajes(UserList(UserIndex).ip)` en `HandleLoginNewChar` (`Protocol.bas:1502`) no debe invocarse por tratarse de código muerto omitido (ver [`docs/audit/02b-antimassclon-detalle.md`](../audit/02b-antimassclon-detalle.md)).
+- **Estrategia de Verificación**: **Pruebas binarias de serialización/deserialización, desfragmentación TCP con doctest y conexión del cliente VB6**.
+- **Nota de Migración (`clsByteQueue` y transacciones con `ByteQueueTransaction`)**: Se encapsuló la semántica del `CopyBuffer` de VB6 en la clase RAII `ByteQueueTransaction` dentro de `src/server/Protocol.cpp`. Ante cualquier fragmentación que dispare `NotEnoughDataException`, el destructor revierte automáticamente la cola a su snapshot inicial, garantizando rollback atómico sin desalinear el stream TCP. Ruta futura diferida: optimización a cursor `read_offset` para cargas masivas (ver [`16-protocol.md`](16-protocol.md)).
+- **Nota de Auditoría / Migración (`FlushBuffer` y Erradicación del Bug #19)**: La función `FlushBuffer(UserIndex)` delega directamente en `TCP::EnviarDatosASlot(UserIndex, data)`. En C++ **se erradicó formalmente el patrón legacy de captura de `NOT_ENOUGH_SPACE` con `Resume`**, resolviendo la protección contra saturación a nivel de transporte en `TCP::EnviarDatosASlot` con búferes salientes asíncronos y backpressure seguro (ver [`14-tcp.md`](14-tcp.md), [`16-protocol.md`](16-protocol.md) y [`KNOWN-LEGACY-BUGS.md`](KNOWN-LEGACY-BUGS.md) Entrada #19).
+- **Nota de Auditoría / Migración (`clsAntiMassClon` / Anti-Clon)**: La comprobación `aClon.MaxPersonajes(UserList(UserIndex).ip)` en `HandleLoginNewChar` (`Protocol.bas:1502`) no se invoca por tratarse de código muerto omitido (ver [`docs/audit/02b-antimassclon-detalle.md`](../audit/02b-antimassclon-detalle.md)).
+- **Contratos y Dependencias para Capas Posteriores (6 a 10)**:
+  - Los 129 stubs de `DispatchPacket` (`Handle...Stub` en `src/server/Protocol.cpp`) desacoplan completamente la red de las capas de lógica pendientes.
+  - Cuando se porten la **Capa 6** (Usuarios, Inventario, Hechizos), **Capa 7** (Combate), **Capa 8** (Comercio, Clanes, NPCs) y **Capa 10** (Admin), cada stub deberá conectarse a las funciones del subsistema respectivo sin modificar la capa de red ni la extracción binaria de argumentos.
 
 ---
 
@@ -583,7 +587,7 @@ Para cada módulo se aplica estrictamente la política de nombres definida en `d
 | **4** | `clsAntiMassClon.cls` | *Ninguno (Excluido)* | Chico | **EXCLUIDO (Código Muerto)** | Documentado en [`02b-antimassclon-detalle.md`](../audit/02b-antimassclon-detalle.md) |
 | **4** | `TCP.bas` (standalone Asio) | `src/server/TCP.hpp` | Grande | 🚨 **CRÍTICO 2: Multi-Conexión**| **Completado (Asio Monohilo)** (24 tests en `test_tcp.cpp`, ver [`14-tcp.md`](14-tcp.md)) |
 | **4** | `modSendData.bas` | `src/server/modSendData.hpp` | Mediano | 🚨 **CRÍTICO 2: Broadcast** | **Completado (Zero-Copy)** (12 tests en `test_modsenddata.cpp`, ver [`15-modsenddata.md`](15-modsenddata.md) y [`15-modsenddata-breakdown.md`](15-modsenddata-breakdown.md)) |
-| **4** | `Protocol.bas` | `src/server/Protocol.hpp` | Grande | 🚨 **CRÍTICO 2: Opcodes** | Login / Movimiento cliente VB6 |
+| **4** | `Protocol.bas` | `src/server/Protocol.hpp` | Grande | 🚨 **CRÍTICO 2: Opcodes** | **Completado (129 Opcodes + Transaccional)** (147 tests en `test_protocol.cpp`, ver [`16-protocol.md`](16-protocol.md) y [`16-protocol-breakdown.md`](16-protocol-breakdown.md)) |
 | **5** | `ModAreas.bas` | `src/server/ModAreas.hpp` | Mediano | Grilla de Visión | 2+ Clientes VB6 en mapa |
 | **6** | `Modulo_InventANDobj.bas` | `src/server/Modulo_InventANDobj.hpp` | Mediano | Objetos Mapa | Tirar/agarrar ítem cliente VB6 |
 | **6** | `InvUsuario.bas` | `src/server/InvUsuario.hpp` | Grande | Inventario Jugador | Equipar y usar ítems cliente VB6 |
