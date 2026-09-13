@@ -33,6 +33,7 @@ add_library(server_core STATIC
     src/server/Protocol.cpp
     src/server/ModAreas.cpp
     src/server/Modulo_InventANDobj.cpp
+    src/server/InvUsuario.cpp
 )
 target_include_directories(server_core PUBLIC src)
 target_link_libraries(server_core PUBLIC asio::asio)
@@ -73,6 +74,7 @@ add_executable(unit_tests
     tests/test_protocol.cpp
     tests/test_modareas.cpp
     tests/test_modulo_inventandobj.cpp
+    tests/test_invusuario.cpp
 )
 target_include_directories(unit_tests PRIVATE src)
 target_link_libraries(unit_tests PRIVATE server_core doctest::doctest)
