@@ -300,13 +300,25 @@ Para cada módulo se aplica estrictamente la política de nombres definida en `d
 
 ### Capa 5: Sistema de Áreas de Mapa
 
-#### 17. `ModAreas`
+#### 17. `ModAreas` *(CATEGORÍA CRÍTICA 2 - GRILLA DE VISIÓN ESPACIAL)* — **✅ COMPLETADO**
 - **Archivos Legacy**: `legacy/server/Codigo/ModAreas.bas`
-- **Propósito**: Partición del mapa en grillas de 9 áreas para optimizar el envío de paquetes de red solo a jugadores visibles.
-- **Archivo C++ Propuesto**: `src/server/ModAreas.hpp` / `src/server/ModAreas.cpp`
-- **Dependencias**: `Declares`, `modSendData`.
-- **Estimación**: **Mediano** (~450 líneas).
-- **Estrategia de Verificación**: Pruebas con múltiples clientes VB6 observando el ingreso/egreso de personajes al área de visión.
+- **Propósito**: Partición espacial del mapa en grillas de franjas de 9 tiles (12x12 franjas, $100 \times 100$ celdas) y campo de visión de 9 cuadrantes ($27 \times 27$ tiles) para optimizar el despacho de paquetes de red a jugadores visibles. Gestión de membresía por mapa (`ConnGroups`) consumida por `modSendData`.
+- **Archivo C++ Implementado**: `src/server/ModAreas.hpp` / `src/server/ModAreas.cpp`
+- **Estado**: **Completado** (Documentación técnica en [`17-modareas.md`](17-modareas.md) y desglose por fases en [`17-modareas-breakdown.md`](17-modareas-breakdown.md)).
+- **Dependencias**: `Declares`, `Protocol`, `TCP`.
+- **Estimación**: **Mediano** (~500 líneas).
+- **Estrategia de Verificación**: 25 subcasos unitarios en 4 suites doctest en [`tests/test_modareas.cpp`](../../tests/test_modareas.cpp) (tablas precalculadas, membresía lineal en `ConnGroups`, barrido emergente de jugadores y criaturas, y validación de asimetrías legacy).
+- **Aspectos Clave y Decisiones de Diseño**:
+  - *Replicación de `AreaID` (Bug #24)*: Preservación de la fórmula literal `(x / 9 + 1) * (y / 9 + 1)` y sus colisiones numéricas originales bajo la Regla #4 de [`CONVENTIONS.md`](../CONVENTIONS.md).
+  - *Aritmética de Viewport (Bug #25)*: Persistencia de valores negativos (como `-9` en `USER_NUEVO`) en `AreaInfo.MinX` y `MinY` tipados en `int16_t` con signo para retener la escala asumida por los movimientos cardinales.
+  - *Membresía Contigua en `ConnGroups`*: Almacenamiento 1-based en `std::vector<int16_t>` con corrimiento lineal a la izquierda en `QuitarUser` (prohibición de swap-and-pop).
+  - *Asimetría de Red y Búfer*: Emisión de `WriteAreaChanged` sin `CharacterRemove` ante cruces de área, y despacho inmediato con `FlushBuffer` en interacción de usuarios frente a la omisión deliberada en criaturas.
+  - *Exclusiones (Bug #26)*: Supresión de `AreasStats.dat` / `AreasOptimizacion` y del arreglo muerto `PosToArea`.
+  - *Hooks de Desacoplamiento*: Inyección de espías configurables (`SetMakeUserCharHook`, `SetMakeNPCCharHook`, `SetBloquearHook`) para aislar la capa de áreas de las capas 8 y 9.
+- **Propagación Cruzada y Notas de Integración**:
+  - **`Modulo_UsUaRiOs` (Capa 9)**: Al portar `MoveUserChar`, debe invocarse `ModAreas::CheckUpdateNeededUser(user_index, heading)` para actualizar la visibilidad ante cada paso. Al loguear un usuario (`ConnectNewUser` / `ConnectUser`), debe invocarse `ModAreas::AgregarUser(user_index, map)`. Al desconectar o cambiar de mapa (`WarpUserChar`), debe ejecutarse `ModAreas::QuitarUser(user_index, old_map)`.
+  - **`MODULO_NPCs` (Capa 8)**: Al mover una criatura en `MoveNPCChar`, debe invocarse `ModAreas::CheckUpdateNeededNpc(npc_index, heading)`. Al spawnear una criatura (`CrearNPC`), debe convocarse `ModAreas::AgregarNpc(npc_index)`.
+  - **`modSendData` (Capa 4)**: `SendToAreaByPos` y difusiones por mapa ya consumen la estructura contigua `ConnGroups[map].UserEntrys` garantizada por `ModAreas`.
 
 ---
 
@@ -588,7 +600,7 @@ Para cada módulo se aplica estrictamente la política de nombres definida en `d
 | **4** | `TCP.bas` (standalone Asio) | `src/server/TCP.hpp` | Grande | 🚨 **CRÍTICO 2: Multi-Conexión**| **Completado (Asio Monohilo)** (24 tests en `test_tcp.cpp`, ver [`14-tcp.md`](14-tcp.md)) |
 | **4** | `modSendData.bas` | `src/server/modSendData.hpp` | Mediano | 🚨 **CRÍTICO 2: Broadcast** | **Completado (Zero-Copy)** (12 tests en `test_modsenddata.cpp`, ver [`15-modsenddata.md`](15-modsenddata.md) y [`15-modsenddata-breakdown.md`](15-modsenddata-breakdown.md)) |
 | **4** | `Protocol.bas` | `src/server/Protocol.hpp` | Grande | 🚨 **CRÍTICO 2: Opcodes** | **Completado (129 Opcodes + Transaccional)** (147 tests en `test_protocol.cpp`, ver [`16-protocol.md`](16-protocol.md) y [`16-protocol-breakdown.md`](16-protocol-breakdown.md)) |
-| **5** | `ModAreas.bas` | `src/server/ModAreas.hpp` | Mediano | Grilla de Visión | 2+ Clientes VB6 en mapa |
+| **5** | `ModAreas.bas` | `src/server/ModAreas.hpp` | Mediano | 🚨 **CRÍTICO 2: Grilla de Visión Espacial** | **Completado (Grilla Espacial 3x3 / Hooks)** (25 tests en `test_modareas.cpp`, ver [`17-modareas.md`](17-modareas.md) y [`17-modareas-breakdown.md`](17-modareas-breakdown.md)) |
 | **6** | `Modulo_InventANDobj.bas` | `src/server/Modulo_InventANDobj.hpp` | Mediano | Objetos Mapa | Tirar/agarrar ítem cliente VB6 |
 | **6** | `InvUsuario.bas` | `src/server/InvUsuario.hpp` | Grande | Inventario Jugador | Equipar y usar ítems cliente VB6 |
 | **6** | `modBanco.bas` | `src/server/modBanco.hpp` | Mediano | Bóveda | NPC Banquero cliente VB6 |

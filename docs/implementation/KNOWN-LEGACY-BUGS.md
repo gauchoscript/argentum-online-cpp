@@ -1,4 +1,4 @@
-﻿---
+---
 area: auditoria-y-compatibilidad
 status: living_document
 title: Registro Centralizado de Bugs y Quirks Históricos del Legacy VB6
@@ -40,7 +40,10 @@ De acuerdo con la convención del proyecto ([`docs/CONVENTIONS.md`](../CONVENTIO
 | **20** | `TCP` / `wskapiAO` | `wskapiAO.bas:402-405, 420` | Fuga de descriptor de socket (*socket leak*) en rechazo anti-flood por invocar `WSApiCloseSocket(NuevoSock)` antes de asignar `NuevoSock = Ret` (cerrando descriptor 0) | **Activo** | **Mitigated (Safe RAII / Explicit Close)**<br>[`TCP::HandleAccept`](src/server/TCP.cpp)<br>Test: [`test_tcp.cpp:301`](tests/test_tcp.cpp#L301) | [`docs/audit/02c-tcp-detalle.md`](../audit/02c-tcp-detalle.md#c-procesamiento-del-evento-de-conexión-entrante-fd_accept)<br>[`14-tcp.md`](14-tcp.md#3-cierre-seguro-raii-en-aceptación-bug-20) |
 | **21** | `modSendData` | `modSendData.bas:39, 70-302` | Constante `SendTarget.ToGM` declarada en el Enum pero sin bloque de procesamiento en el `Select Case` de `SendData` (cae en el vacío) | **Muerto / Huérfano** | **Excluded (dead code, not ported)** | [`docs/audit/02d-modsenddata-detalle.md`](../audit/02d-modsenddata-detalle.md#61-sendtargettogm-huérfano) |
 | **22** | `modSendData` | `modSendData.bas:116-200` | Broadcasts administrativos y faccionarios no chequean `flags.UserLogged`, enviando paquetes de juego a sockets en pantalla de login | **Activo** | **Mitigated (Safe Logic)** | [`docs/audit/02d-modsenddata-detalle.md`](../audit/02d-modsenddata-detalle.md#62-ausencia-de-verificación-flagsuserlogged-en-broadcasts-globales)<br>[`15-modsenddata-breakdown.md`](15-modsenddata-breakdown.md#14-mitigación-de-bugs-legacy) |
-| **23** | Protocol | Protocol.bas:825-835 | Serialización de color RGB truncado a 3 bytes en red a pesar de declararse como Long (32 bits / 4 bytes) en VB6 | **Quirk / Riesgo** | **Preserved (Byte-Exact Parity)**<br>[Protocol::WriteChatOverHead](src/server/Protocol.cpp)<br>Test: 	est_protocol.cpp | [16-protocol.md](16-protocol.md#3-truncamiento-a-3-bytes-de-colores-rgb-en-tramas-salientes-long-de-vb6-vs-red) |
+| **23** | `Protocol` | `Protocol.bas:825-835` | Serialización de color RGB truncado a 3 bytes en red a pesar de declararse como Long (32 bits / 4 bytes) en VB6 | **Quirk / Riesgo** | **Preserved (Byte-Exact Parity)**<br>[`Protocol::WriteChatOverHead`](src/server/Protocol.cpp)<br>Test: `test_protocol.cpp` | [`16-protocol.md`](16-protocol.md#3-truncamiento-a-3-bytes-de-colores-rgb-en-tramas-salientes-long-de-vb6-vs-red) |
+| **24** | `ModAreas` | `ModAreas.bas:84, 139` | Colisión de `AreaID` por multiplicación no inyectiva `(X\9 + 1) * (Y\9 + 1)` entre celdas distintas | **Quirk / Bug Lógico** | **Replicated (Strict Parity)**<br>Fórmula literal de VB6 preservada | [`../audit/03-modareas-detalle.md`](../audit/03-modareas-detalle.md#32-identificador-de-área-areaid-y-colisiones-matemáticas)<br>[`17-modareas.md`](17-modareas.md#1-replicación-estricta-de-la-fórmula-de-areaid-bug-24)<br>[Entrada #24](#entrada-24--modareas-colisión-de-areaid-por-producto-no-inyectivo) |
+| **25** | `ModAreas` | `ModAreas.bas:186-187, 330-331` | Persistencia de coordenadas negativas en `AreasInfo.MinX/MinY` (asignadas previo al clamp local) | **Quirk / Escala Desfasada** | **Replicated (Signed Int16)**<br>Tipado `int16_t` preservando aritmética literal | [`../audit/03-modareas-detalle.md`](../audit/03-modareas-detalle.md#34-condiciones-de-borde-y-aritmética-negativa-en-memoria)<br>[`17-modareas.md`](17-modareas.md#2-aritmética-de-viewport-y-persistencia-de-coordenadas-negativas-bug-25)<br>[Entrada #25](#entrada-25--modareas-persistencia-de-coordenadas-negativas-en-minx--miny) |
+| **26** | `ModAreas` | `ModAreas.bas:57, 78, 89-130` | Auto-optimización periódica a disco (`AreasStats.dat`) y matriz huérfana inoperante (`PosToArea`) | **Muerto / I/O Obsoleta** | **Excluded (dead code / obsolete I/O, not ported)** | [`../audit/03-modareas-detalle.md`](../audit/03-modareas-detalle.md#6-detección-de-quirks-bugs-históricos-y-código-muerto)<br>[`17-modareas.md`](17-modareas.md#6-exclusiones-por-código-muerto-e-io-obsoleta-bug-26)<br>[Entrada #26](#entrada-26--modareas-auto-optimización-obsoleta-areasstatsdat-y-arreglo-ocioso-postoarea) |
 
 ---
 
@@ -289,3 +292,38 @@ A continuación se documentan en detalle todas las entradas del registro maestro
 - **Camino de Producción**: **Quirk / Riesgo de Desalineación**.
 - **Estado en C++**: **Preserved (Byte-Exact Parity)**. En `src/server/Protocol.cpp` (`PrepareMessageChatOverHead` y `WriteChatOverHead`), se preserva estrictamente la descomposición manual de los 3 bytes componentes individuales en Little-Endian, garantizando paridad binaria exacta a nivel de byte con el cliente original.
 - **Documentación Detallada**: [`16-protocol.md`](16-protocol.md#3-truncamiento-a-3-bytes-de-colores-rgb-en-tramas-salientes-long-de-vb6-vs-red).
+
+---
+
+### Entrada #24 — `ModAreas`: Colisión de `AreaID` por Producto no Inyectivo
+- **Cita Legacy**: [`legacy/server/Codigo/ModAreas.bas:84, 139`](../../legacy/server/Codigo/ModAreas.bas#L84).
+- **Descripción**: La matriz `AreasInfo` precalcula el identificador de área mediante un producto simple de dos factores escalares en el rango $[1, 12]$:
+  $$\text{AreaID}(X, Y) = \left( \left\lfloor \frac{X}{9} \right\rfloor + 1 \right) \times \left( \left\lfloor \frac{Y}{9} \right\rfloor + 1 \right)$$
+  Al ser una multiplicación aritmética no inyectiva, múltiples pares de cuadrantes distintos comparten el mismo identificador numérico (ej. franjas (1,5), (2,3), (3,2), (5,1), (0,11) y (11,0) producen todas $\text{AreaID} = 12$). Si una entidad es teletransportada entre cuadrantes que comparten el mismo producto sin resetear `AreasInfo.AreaID = 0`, la instrucción de control:
+  ```vb
+  If UserList(UserIndex).AreasInfo.AreaID = AreasInfo(UserList(UserIndex).Pos.X, UserList(UserIndex).Pos.Y) Then Exit Sub
+  ```
+  asume falsamente que no hubo cambio de área y sale prematuramente sin despachar los paquetes de visibilidad.
+- **Camino de Producción**: **Activo / Quirk Lógico**.
+- **Estado en C++**: **Replicated**. Conforme a la política estricta de preservación histórica de [`docs/CONVENTIONS.md`](../CONVENTIONS.md#4-prohibición-estricta-de-optimizaciones-prematuras-y-corrección-de-bugs-lógicos-strict-prohibition-of-optimization--logic-bug-fixes), se replica exactamente la fórmula de VB6: `static_cast<uint8_t>((x / 9 + 1) * (y / 9 + 1))`. Queda prohibido sustituirla por fórmulas modernas o identificadores inyectivos.
+- **Documentación Detallada**: [`docs/audit/03-modareas-detalle.md`](../audit/03-modareas-detalle.md#32-identificador-de-área-areaid-y-colisiones-matemáticas) y [`17-modareas.md`](17-modareas.md#1-replicación-estricta-de-la-fórmula-de-areaid-bug-24).
+
+---
+
+### Entrada #25 — `ModAreas`: Persistencia de Coordenadas Negativas en `MinX` / `MinY`
+- **Cita Legacy**: [`legacy/server/Codigo/ModAreas.bas:186-187, 330-331`](../../legacy/server/Codigo/ModAreas.bas#L186-L187).
+- **Descripción**: En la inicialización de área para nuevas entidades (`Head = USER_NUEVO`), cuando $X < 9$ o $Y < 9$, la fórmula `MinX = ((.Pos.X \ 9) - 1) * 9` arroja el valor `-9`. Las líneas 186-187 ejecutan `.AreasInfo.MinX = CInt(MinX)` persistiendo el valor negativo en la estructura del usuario. Las cláusulas posteriores `If MinX < 1 Then MinX = 1` operan únicamente sobre las variables locales del bucle de barrido inmediato. Cuando la entidad posteriormente camina hacia el Este o Sur, el código recupera este `-9` base y le aplica offsets literales (`MinX + 27 = 18`, etc.).
+- **Camino de Producción**: **Activo / Escala Desfasada**.
+- **Estado en C++**: **Replicated**. Se preservan los campos `MinX` y `MinY` en `AreaInfo` tipados como enteros con signo (`int16_t`), manteniendo la aritmética literal y los offsets relativos originales sin forzar saneamientos ni clampleos que romperían la escala asumida por el algoritmo de barrido.
+- **Documentación Detallada**: [`docs/audit/03-modareas-detalle.md`](../audit/03-modareas-detalle.md#34-condiciones-de-borde-y-aritmética-negativa-en-memoria) y [`17-modareas.md`](17-modareas.md#2-aritmética-de-viewport-y-persistencia-de-coordenadas-negativas-bug-25).
+
+---
+
+### Entrada #26 — `ModAreas`: Auto-optimización Obsoleta (`AreasStats.dat`) y Arreglo Ocioso (`PosToArea`)
+- **Cita Legacy**: [`legacy/server/Codigo/ModAreas.bas:57, 78, 89-130`](../../legacy/server/Codigo/ModAreas.bas#L57).
+- **Descripción**: 
+  1. `ModAreas` declara el arreglo privado `PosToArea(1 To 100) As Byte` y lo inicializa en `InitAreas` con `LoopC \ 9`. Sin embargo, ninguna rutina del servidor ni del cliente lee jamás este arreglo (código muerto).
+  2. Las rutinas `InitAreas` y `AreasOptimizacion` abren y escriben un archivo INI en disco (`AreasStats.dat`) para promediar la concurrencia por día de semana y bloque horario, con el único fin de calcular el tamaño de reserva para `ReDim Preserve ConnGroups(Map).UserEntrys`.
+- **Camino de Producción**: **Muerto (`PosToArea`) / Obsoleto (`AreasStats.dat`)**.
+- **Estado en C++**: **Excluded (dead code / obsolete I/O, not ported)**. Clasificado bajo la *Única Excepción* de [`docs/CONVENTIONS.md`](../CONVENTIONS.md#4-prohibición-estricta-de-optimizaciones-prematuras-y-corrección-de-bugs-lógicos-strict-prohibition-of-optimization--logic-bug-fixes): `PosToArea` se omite por código formalmente muerto, y `AreasStats.dat` se descarta por ser una optimización arcaica de gestión de memoria de VB6 basada en I/O síncrona a disco. En C++, `ConnGroups` utiliza contenedores estándar en memoria sin persistencia bloqueante.
+- **Documentación Detallada**: [`docs/audit/03-modareas-detalle.md`](../audit/03-modareas-detalle.md#6-detección-de-quirks-bugs-históricos-y-código-muerto) y [`17-modareas.md`](17-modareas.md#6-exclusiones-por-código-muerto-e-io-obsoleta-bug-26).

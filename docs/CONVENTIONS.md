@@ -88,7 +88,7 @@ Si existe tal referencia cruzada, **debés agregar una nota explícita en la ent
 
 ## Aprendizajes de FileIO — Reglas Proactivas de Porting (Learnings from FileIO)
 
-Durante el porteo del módulo `FileIO.bas`, se consolidaron cinco patrones observados de manera recurrente. Estas directivas quedan establecidas como **reglas proactivas permanentes** para todos los módulos futuros (especialmente para módulos de gran envergadura como el próximo `Protocol.bas`):
+Durante el porteo del módulo `FileIO.bas`, se consolidaron seis patrones observados de manera recurrente. Estas directivas quedan establecidas como **reglas proactivas permanentes** para todos los módulos futuros (especialmente para módulos de gran envergadura como el próximo `Protocol.bas`):
 
 ### 1. Umbral de Desglose para Módulos Grandes (*Large Module Breakdown Threshold*)
 Todo módulo cuya estimación supere aproximadamente las **500-800 líneas**, o que esté marcado como **"Grande"** en [`00-port-plan.md`](implementation/00-port-plan.md), requiere obligatoriamente su propio archivo `<numero>-<modulo>-breakdown.md` en `docs/implementation/` (por ejemplo, `10-fileio-breakdown.md`, `11-clsclan-breakdown.md`, `14-tcp-breakdown.md`, `15-modsenddata-breakdown.md`).
@@ -105,13 +105,20 @@ Cuando el código VB6 original crashearía ante cierta entrada no contemplada (p
 - **Traducción segura y robusta**: El port a C++ jamás debe reproducir esto como comportamiento indefinido (*Undefined Behavior*), lecturas/escrituras fuera de rango descontroladas o corrupción de memoria.
 - **Desviación deliberada documentada**: Debe traducirse a una excepción explícita y tipada o a un camino de error seguro y controlado. Dicha decisión debe señalarse de forma clara y destacada en el documento de implementación correspondiente como una **desviación deliberada por motivos de seguridad (*DELIBERATE safety-motivated deviation*)** respecto al comportamiento literal del legacy, distinguiéndola tajantemente de una invención o descuido accidental.
 
-### 4. El Alcance Global Requiere Investigar Patrones de Acceso Verificados, No una Herencia Automática de VB6 (*Global Scope Requires Verified Access-Pattern Investigation, Not Default Inheritance from VB6*)
+### 4. Prohibición Estricta de Optimizaciones Prematuras y Corrección de Bugs Lógicos (Strict Prohibition of Optimization & Logic Bug Fixes)
+El porting a C++ es un proceso de transliteración y preservación histórica, no una auditoría de refactorización:
+- **Bugs Lógicos y Fórmulas Matemáticas**: Si una fórmula de VB6 contiene colisiones (como productos no inyectivos), asimetrías o quirks lógicos que NO provocan corrupción de memoria ni Undefined Behavior en C++, **DEBE replicarse exactamente igual (`Replicated`)**. Queda terminantemente prohibido "emprolijar" o reemplazar algoritmos legacy por fórmulas modernas.
+- **Preservación de Offsets y Cotas**: Si el código original opera con índices relativos negativos (ej. coordenadas que inician en `-9` antes de desplazarse), el port C++ debe utilizar tipos enteros con signo (`int16_t` / `int32_t`) preservando la aritmética literal. Queda prohibido clamplear o sanear rangos arbitrariamente si el resto del módulo asume la escala desfasada original.
+- **Cero Optimización de Estructuras**: No sustituir arrays contiguos o corrimientos lineales por contenedores complejos (tablas hash, swap-and-pop) para colecciones pequeñas (como listas de mapa). La preservación del orden de iteración y la simplicidad estructural prevalecen sobre micro-optimizaciones teóricas.
+- **Única Excepción**: Solo se permite divergir del código original ante crasheos comprobados de producción, llamadas a APIs bloqueantes obsoletas (Winsock), o código formalmente muerto/inoperante (`#If` apagados).
+
+### 5. El Alcance Global Requiere Investigar Patrones de Acceso Verificados, No una Herencia Automática de VB6 (*Global Scope Requires Verified Access-Pattern Investigation, Not Default Inheritance from VB6*)
 En VB6 era habitual declarar variables en `Declares.bas` como globales por conveniencia o limitaciones del lenguaje.
 - **Investigación de concurrencia**: Antes de portar cualquier variable global de VB6 como global en C++ (en `Declares.hpp`), investigá y confirmá explícitamente si el modelo de ejecución del servidor permite en algún momento accesos concurrentes o superpuestos a dicha variable.
 - **Preferencia por ámbito local**: Si se confirma que el acceso es estrictamente secuencial y de una única entidad a la vez (como ocurre con la cabecera `tCabecera` en `FileIO` o la cola de nodos en `Queue`/`PathFinding`), encapsulala como variable local al ámbito de la(s) función(es) pertinente(s) o estática interna a la unidad de traducción (`.cpp`). Esto preserva la restricción real del comportamiento sin el pasivo técnico de acarrear estado mutable global.
 - Documentá siempre la investigación y la decisión tomada (sea local o global) en el documento de implementación del módulo.
 
-### 5. Los Nuevos Datos de Fixtures se Propagan Hacia Atrás, No Solo Hacia Adelante (*New Fixture Data Propagates Backward, Not Just Forward*)
+### 6. Los Nuevos Datos de Fixtures se Propagan Hacia Atrás, No Solo Hacia Adelante (*New Fixture Data Propagates Backward, Not Just Forward*)
 Descubrir datos de validación más sólidos y autoritativos (archivos reales de producción del juego original) para un módulo que previamente solo contaba con validación sobre datos sintéticos constituye en sí mismo un **evento de Propagación de Decisiones Cruzadas (*Cross-Module Decision Propagation*)**.
 - **Reapertura y revalidación**: Exige reabrir y revalidar el módulo previamente considerado "completado" contra los nuevos datos reales de producción, garantizando que el comportamiento histórico no se degrade.
 - **Actualización de estatus documental**: Debe actualizarse la documentación de implementación del módulo afectado para reflejar el nuevo estatus de verificación alcanzado, en lugar de limitarse a utilizar los fixtures únicamente para los módulos futuros.
@@ -128,3 +135,4 @@ simultaneous player connections. Faithfully porting that existing capability
 (not redesigning it) remains a requirement of this port, even though the 
 underlying networking library (standalone Asio) is necessarily different from the 
 original Winsock implementation.
+

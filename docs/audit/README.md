@@ -1,4 +1,4 @@
-# Índice de Auditoría del Código de Argentum Online v0.13.0
+﻿# Índice de Auditoría del Código de Argentum Online v0.13.0
 
 Este directorio contiene la documentación de auditoría histórica del código fuente original en Visual Basic 6 de Argentum Online v0.13.0, incluyendo especificaciones de protocolo, fórmulas matemáticas, lógica de combate y estructura de subsistemas.
 
@@ -27,5 +27,6 @@ Este directorio contiene la documentación de auditoría histórica del código 
 | [02c-tcp-detalle.md](02c-tcp-detalle.md) | Auditoría de `TCP.bas`, `wskapiAO.bas` y `wsksock.bas` (red y Asio). | Detalle Protocolo / Red | 2026-09-11 |
 | [02d-modsenddata-detalle.md](02d-modsenddata-detalle.md) | Auditoría de `modSendData.bas` (despacho, broadcast y áreas). | Detalle Protocolo / Red | 2026-09-12 |
 | [02e-protocol-detalle.md](02e-protocol-detalle.md) | Auditoría de `Protocol.bas` (despachador de entrada, serialización y GM). | Detalle Protocolo / Red | 2026-09-12 |
+| [03-modareas-detalle.md](03-modareas-detalle.md) | Auditoría de `ModAreas.bas` (gestión espacial, cuadrículas y visibilidad). | Detalle Arquitectura Espacial | 2026-09-13 |
 | [06a-colaarray-dead-code.md](06a-colaarray-dead-code.md) | Auditoría de `cColaArray.cls` y exclusión por código muerto. | Exclusión (Código Muerto) | 2026-09-08 |
 | [11a-modforum-detalle.md](11a-modforum-detalle.md) | Auditoría de `modForum.bas` (sistema de foros). | Detalle Sub-sistema | 2026-09-08 |
