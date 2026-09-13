@@ -46,6 +46,8 @@ De acuerdo con la convención del proyecto ([`docs/CONVENTIONS.md`](../CONVENTIO
 | **26** | `ModAreas` | `ModAreas.bas:57, 78, 89-130` | Auto-optimización periódica a disco (`AreasStats.dat`) y matriz huérfana inoperante (`PosToArea`) | **Muerto / I/O Obsoleta** | **Excluded (dead code / obsolete I/O, not ported)** | [`../audit/03a-modareas-detalle.md`](../audit/03a-modareas-detalle.md#6-detección-de-quirks-bugs-históricos-y-código-muerto)<br>[`17-modareas.md`](17-modareas.md#6-exclusiones-por-código-muerto-e-io-obsoleta-bug-26)<br>[Entrada #26](#entrada-26--modareas-auto-optimización-obsoleta-areasstatsdat-y-arreglo-ocioso-postoarea) |
 | **27** | `Modulo_InventANDobj` | `Modulo_InventANDobj.bas:97-98`<br>`MODULO_NPCs.bas:219` | Descarte de `GiveGLD` en NPCs no pretorianos (`NPCTirarOro` comentada; solo pretorianos evalúan `GiveGLD`) | **Quirk / Asimetría** | **Replicated (Strict Parity)** | [`18-modulo-inventandobj.md`](18-modulo-inventandobj.md#2-replicación-del-bug-27-asimetría-de-givegld-en-npc_tirar_items)<br>[Entrada #27](#entrada-27--modulo_inventandobj-descarte-de-givegld-en-npcs-no-pretorianos) |
 | **28** | `Modulo_InventANDobj` | `Modulo_InventANDobj.bas:45-51`<br>`Modulo_UsUaRiOs.bas:1552-1585` | Destrucción silenciosa de ítems y oro ante saturación espacial en `Tilelibre` (radio > 15 sin celdas transitables) | **Quirk / Pérdida Silenciosa** | **Replicated (Strict Parity)** | [`18-modulo-inventandobj.md`](18-modulo-inventandobj.md#3-replicación-del-bug-28-destrucción-silenciosa-de-drops-ante-retorno-nulo-de-tilelibre)<br>[Entrada #28](#entrada-28--modulo_inventandobj-destrucción-silenciosa-de-ítems-y-oro-por-saturación-espacial-en-tilelibre) |
+| **29** | `InvUsuario` | `InvUsuario.bas:368-380` | Exploit histórico de duplicación en `DropObj` por desfase de cantidades (descuenta recortado pero crea íntegro) | **Activo / Exploit** | **Replicated (Strict Parity)** | [`19-invusuario-breakdown.md`](19-invusuario-breakdown.md#fase-1-g1--mutaciones-en-el-mundo-y-suelo)<br>[Entrada #29](#entrada-29--invusuario-exploit-histórico-de-duplicación-en-dropobj-por-desfase-de-cantidades)<br>Detalle: [`../audit/12b-invusuario-detalle.md`](../audit/12b-invusuario-detalle.md#41-exploit-de-duplicación-en-dropobj-bug-29) |
+| **30** | `InvUsuario` | `InvUsuario.bas:228-268` | Pérdida silenciosa de saldo excedente en `TirarOro (> 500k)` (deducción incondicional de `Extra` en billetera) | **Quirk / Pérdida Silenciosa** | **Replicated (Strict Parity)** | [`19-invusuario-breakdown.md`](19-invusuario-breakdown.md#fase-2-g2--gestión-base-de-inventario-y-descarte)<br>[Entrada #30](#entrada-30--invusuario-pérdida-silenciosa-de-saldo-excedente-en-tiraroro--500k)<br>Detalle: [`../audit/12b-invusuario-detalle.md`](../audit/12b-invusuario-detalle.md#42-pérdida-silenciosa-de-saldo-en-tiraroro-bug-30) |
 
 ---
 
@@ -354,3 +356,50 @@ A continuación se documentan en detalle todas las entradas del registro maestro
 - **Camino de Producción**: **Quirk / Pérdida Silenciosa**.
 - **Estado en C++**: **Replicated (Strict Parity)**. En la transliteración de `TirarItemAlPiso`, si el hook de búsqueda de celda libre devuelve `(0, 0)`, no se invoca `MakeObj` y se retorna `WorldPos{map, 0, 0}`, reproduciendo de forma idéntica la omisión del drop y la evaporación del excedente.
 - **Documentación Detallada**: [`18-modulo-inventandobj.md`](18-modulo-inventandobj.md#3-replicación-del-bug-28-destrucción-silenciosa-de-drops-ante-retorno-nulo-de-tilelibre) y [`docs/audit/12a-modulo-inventandobj-detalle.md`](../audit/12a-modulo-inventandobj-detalle.md#51-algoritmo-de-dispersión-de-celdas-libres-tilelibre).
+
+---
+
+### Entrada #29 — `InvUsuario`: Exploit Histórico de Duplicación en `DropObj` por Desfase de Cantidades
+- **Cita Legacy**: [`legacy/server/Codigo/InvUsuario.bas:368-380`](../../legacy/server/Codigo/InvUsuario.bas#L368-L380).
+- **Descripción**: Al arrojar un objeto al suelo mediante `DropObj`, la estructura `Obj` retiene en `Obj.Amount` la cantidad total pretendida por el usuario (asignada en la línea 363: `Obj.Amount = num`). Si la celda receptora ya contiene unidades del mismo ítem y la adición superaría el límite de acumulación (`MAX_INVENTORY_OBJS = 10000`), el código recorta la variable escalar `num`:
+  ```vb
+  If num + MapData(.Pos.Map, X, Y).ObjInfo.Amount > MAX_INVENTORY_OBJS Then
+      num = MAX_INVENTORY_OBJS - MapData(.Pos.Map, X, Y).ObjInfo.Amount
+  End If
+  
+  Call MakeObj(Obj, Map, X, Y)
+  Call QuitarUserInvItem(UserIndex, Slot, num)
+  Call UpdateUserInv(False, UserIndex, Slot)
+  ```
+  Sin embargo, la invocación `MakeObj(Obj, Map, X, Y)` recibe la estructura `Obj` cuyo campo `Obj.Amount` **no fue recortado** (conserva el valor original). Por lo tanto:
+  1. `MakeObj` suma la cantidad completa original a la celda del piso (desbordando incluso la cota máxima y acumulando por encima de 10.000).
+  2. `QuitarUserInvItem` descuenta del inventario del jugador únicamente la cantidad recortada `num`.
+  3. La diferencia entre la cantidad original y `num` se crea de la nada en el suelo sin ser retirada de la mochila del usuario, constituyendo un exploit severo de duplicación de ítems.
+- **Camino de Producción**: **Activo / Exploit de Duplicación**.
+- **Estado en C++**: **Replicated (Strict Parity)**. Conforme a las decisiones arquitectónicas del porting y la política de preservación histórica de [`docs/CONVENTIONS.md`](../CONVENTIONS.md), se replica 1:1 el comportamiento original: `Obj.Amount` retiene la cantidad original al invocar `MakeObj`, y `QuitarUserInvItem` descuenta la variable recortada. Queda prohibido aplicar parches o mitigaciones arbitrarias en el motor base.
+- **Documentación Detallada**: [`19-invusuario.md`](19-invusuario.md#4-replicación-del-bug-29-exploit-de-duplicación-en-dropobj), [`19-invusuario-breakdown.md`](19-invusuario-breakdown.md#fase-1-g1--mutaciones-en-el-mundo-y-suelo) y [`docs/audit/12b-invusuario-detalle.md`](../audit/12b-invusuario-detalle.md#41-exploit-de-duplicación-en-dropobj-bug-29).
+
+---
+
+### Entrada #30 — `InvUsuario`: Pérdida Silenciosa de Saldo Excedente en `TirarOro (> 500k)`
+- **Cita Legacy**: [`legacy/server/Codigo/InvUsuario.bas:228-268`](../../legacy/server/Codigo/InvUsuario.bas#L228-L268).
+- **Descripción**: La subrutina `TirarOro` implementa una salvaguarda para evitar saturación de entidades arrojadas cuando la cantidad solicitada supera las 500.000 monedas:
+  ```vb
+  Dim Extra As Long
+  Dim TeniaOro As Long
+  TeniaOro = .Stats.GLD
+  If Cantidad > 500000 Then 'Para evitar explotar demasiado
+      Extra = Cantidad - 500000
+      Cantidad = 500000
+  End If
+  ...
+  If TeniaOro = .Stats.GLD Then Extra = 0
+  If Extra > 0 Then
+      .Stats.GLD = .Stats.GLD - Extra
+  End If
+  ```
+  Si el jugador intenta tirar un monto superior a 500k (ej. 800k), el excedente `Extra = 300000` se resguarda en una variable local y `Cantidad` se trunca a 500k, arrojando hasta 50 pilas de 10k mediante `TirarItemAlPiso`. Al finalizar el bucle, si se arrojó al menos una pila, el saldo del jugador cambió (`TeniaOro <> .Stats.GLD`), por lo que la cláusula `If TeniaOro = .Stats.GLD Then Extra = 0` no se cumple. A continuación, el bloque `If Extra > 0 Then .Stats.GLD = .Stats.GLD - Extra` descuenta incondicionalmente las 300.000 monedas restantes de la billetera sin haberlas arrojado al suelo, evaporando el dinero en el limbo.
+- **Camino de Producción**: **Quirk / Pérdida Silenciosa de Saldo**.
+- **Estado en C++**: **Replicated (Strict Parity)**. Se preserva la deducción literal de `Extra` en la billetera del usuario tras concretar el arrojamiento de pilas, reproduciendo idénticamente la evaporación del excedente.
+- **Documentación Detallada**: [`19-invusuario.md`](19-invusuario.md#5-replicación-del-bug-30-evaporación-de-saldo-en-tiraroro--500k), [`19-invusuario-breakdown.md`](19-invusuario-breakdown.md#fase-2-g2--gestión-base-de-inventario-y-descarte) y [`docs/audit/12b-invusuario-detalle.md`](../audit/12b-invusuario-detalle.md#42-pérdida-silenciosa-de-saldo-en-tiraroro-bug-30).
+

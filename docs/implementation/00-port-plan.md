@@ -349,13 +349,30 @@ Para cada módulo se aplica estrictamente la política de nombres definida en `d
     - **Módulo #28 (`MODULO_NPCs.bas`, Capa 8)**: Invocará `NPC_TIRAR_ITEMS` dentro del procedimiento de muerte de criaturas (`MuereNpc`).
     - **Módulo #34 (`Modulo_UsUaRiOs.bas`, Capa 9)**: Proveerá la implementación real para `SetTilelibreHook` conectándola al algoritmo de búsqueda de celdas libres adyacentes (`Tilelibre`).
 
-#### 19. `InvUsuario`
+#### 19. `InvUsuario` — **✅ COMPLETADO (Aislado / Cableado Pendiente en Capas 7 y 9)**
 - **Archivos Legacy**: `legacy/server/Codigo/InvUsuario.bas`
-- **Propósito**: Gestión del inventario de cada jugador: equipar armas/armaduras/cascos/escudos, mover ítems de slot y usar objetos.
-- **Archivo C++ Propuesto**: `src/server/InvUsuario.hpp` / `src/server/InvUsuario.cpp`
+- **Propósito**: Gestión integral del inventario de cada jugador: mutaciones físicas en el suelo (`MakeObj`, `EraseObj`, `DropObj`, `GetObj`), inserción y descarte de ítems (`MeterItemEnInventario`, `QuitarUserInvItem`, `TirarTodo`, `TirarOro`), restricciones de equipamiento por clase, sexo, facción y raza (`EquiparInvItem`, `Desequipar`), máquina de consumo de ítems (`UseInvItem`) y despacho de paquetes de herrería y carpintería (`Enivar...`).
+- **Archivo C++ Implementado**: `src/server/InvUsuario.hpp` / `src/server/InvUsuario.cpp`
+- **Estado**: **Completado (Aislado / Cableado Pendiente)** (Documentación técnica oficial en [`19-invusuario.md`](19-invusuario.md) y desglose por fases en [`19-invusuario-breakdown.md`](19-invusuario-breakdown.md)). El archivo fuente C++ está formalmente cerrado y 100% verificado, pero requiere cableado de hooks en capas posteriores.
 - **Dependencias**: `Declares`, `Modulo_InventANDobj`, `modSendData`, `Protocol`.
-- **Estimación**: **Grande** (~1.600 líneas).
-- **Estrategia de Verificación**: Pruebas con cliente VB6 (equipamiento e interacción con inventario).
+- **Estimación**: **Grande** (~1.685 líneas legacy / 1.687 líneas C++).
+- **Estrategia de Verificación**: 187 casos de prueba unitaria y más de 4.100 aserciones doctest en [`tests/test_invusuario.cpp`](../../tests/test_invusuario.cpp) cubriendo mutaciones en suelo, grilla dispersa sin compactación, salvaguardas de mochila, bypass de privilegios GM, validaciones raciales/facción y paridad en Bugs #29 y #30.
+- **Aspectos Clave y Decisiones de Diseño**:
+  - *Modelo de Inventario Disperso (Sparse Grid)*: Preservación estricta de las 30 ranuras independientes sin corrimientos de memoria ni compactaciones a la izquierda (`no vector::erase`). Al agotarse un ítem, el slot se blanquea en su índice original y se decrementa `NroItems`.
+  - *Saneamiento Aritmético en `MakeObj`*: Promoción de sumas de cantidades a `std::int32_t` para evitar desbordamientos con signo (*Undefined Behavior*) al acumular ítems en el suelo.
+  - *Incoherencia de Parámetro en `DropObj`*: Lectura de ocupación de celda sobre el mapa actual del jugador (`user.Pos.Map`) respetando la asimetría original de VB6 frente al parámetro `Map` de destino.
+  - *Replicación de Bug #29 (Exploit de Duplicación)*: Preservación de la discrepancia de cantidades en `DropObj`: `Obj.Amount` retiene la cantidad original pretendida al llamar a `MakeObj`, mientras que `QuitarUserInvItem` descuenta la variable escalar `num` recortada.
+  - *Replicación de Bug #30 (Evaporación de Saldo)*: Deducción incondicional del remanente `Extra` (> 500k) de la billetera del jugador en `TirarOro` tras arrojar con éxito la primera tanda de monedas.
+  - *Preservación de Typos Legacy*: Retención literal de los nombres de catálogo `EnivarArmasConstruibles`, `EnivarObjConstruibles` y `EnivarArmadurasConstruibles`.
+  - *Aislamiento por Hooks*: Desacoplamiento de dependencias de Capa 7 (hechizos, trabajo/fundición) y Capa 9 (cambios corporales, navegación, `Tilelibre`).
+- **Propagación Cruzada y Notas de Integración**:
+  - **Estado del Código C++**: Los archivos `src/server/InvUsuario.hpp` y `src/server/InvUsuario.cpp` están **formalmente cerrados y completos**; no requieren modificaciones internas futuras.
+  - **Conexión con Módulo #18 (`Modulo_InventANDobj`)**: `InvUsuario::MakeObj` satisface plenamente el contrato de `Modulo_InventANDobj::SetMakeObjHook(InvUsuario::MakeObj)`.
+  - **Base para Capa 6**: Servirá de soporte directo para `modBanco.bas` (Módulo #20) y `Comercio.bas` / `mdlCOmercioConUsuario.bas` (Módulo #21).
+  - **Cableado Pendiente de Hooks e Invocaciones**:
+    - **Módulo #23 (`modHechizos.bas`, Capa 7)**: Conectar `SetLearnSpellHook` para registrar nuevos conjuros al leer pergaminos arcanos.
+    - **Módulo #26 (`Trabajo.bas`, Capa 7)**: Conectar `SetWorkRequestTargetHook` para la selección de objetivo al fundir minerales en fraguas.
+    - **Módulo #34 (`Modulo_UsUaRiOs.bas`, Capa 9)**: Conectar `SetTilelibreHook`, `SetChangeUserCharHook`, `SetDarCuerpoDesnudoHook` y `SetNavegaHook`. Asimismo, invocar `QuitarNewbieObj` al perder el estado de novato y `TirarTodo` ante la muerte del jugador.
 
 #### 20. `modBanco`
 - **Archivos Legacy**: `legacy/server/Codigo/modBanco.bas`
@@ -619,7 +636,7 @@ Para cada módulo se aplica estrictamente la política de nombres definida en `d
 | **4** | `Protocol.bas` | `src/server/Protocol.hpp` | Grande | 🚨 **CRÍTICO 2: Opcodes** | **Completado (129 Opcodes + Transaccional)** (147 tests en `test_protocol.cpp`, ver [`16-protocol.md`](16-protocol.md) y [`16-protocol-breakdown.md`](16-protocol-breakdown.md)) |
 | **5** | `ModAreas.bas` | `src/server/ModAreas.hpp` | Mediano | 🚨 **CRÍTICO 2: Grilla de Visión Espacial** | **Completado (Aislado / Hooks en Capa 9)** (25 tests en `test_modareas.cpp`, ver [`17-modareas.md`](17-modareas.md) y [`17-modareas-breakdown.md`](17-modareas-breakdown.md)) |
 | **6** | `Modulo_InventANDobj.bas` | `src/server/Modulo_InventANDobj.hpp` | Mediano | Objetos Mapa / Inventario NPC | **Completado (Aislado / Hooks en Capas 6 y 9)** (5 tests / 192 aserciones en `test_modulo_inventandobj.cpp`, ver [`18-modulo-inventandobj.md`](18-modulo-inventandobj.md)) |
-| **6** | `InvUsuario.bas` | `src/server/InvUsuario.hpp` | Grande | Inventario Jugador | Equipar y usar ítems cliente VB6 |
+| **6** | `InvUsuario.bas` | `src/server/InvUsuario.hpp` | Grande | Inventario Jugador / Suelo | **Completado (Aislado / Hooks en Capas 7 y 9)** (187 tests / 4170 aserciones en `test_invusuario.cpp`, ver [`19-invusuario.md`](19-invusuario.md)) |
 | **6** | `modBanco.bas` | `src/server/modBanco.hpp` | Mediano | Bóveda | NPC Banquero cliente VB6 |
 | **6** | `Comercio.bas` / `mdlCOmercio...` | `src/server/Comercio.hpp` | Mediano | Comercio NPC / User | Ventana comercio cliente VB6 |
 | **7** | `SistemaCombate.bas` | `src/server/SistemaCombate.hpp` | Grande | Fórmulas Combate | Ataque a NPC/User cliente VB6 |
