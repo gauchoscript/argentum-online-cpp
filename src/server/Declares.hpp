@@ -853,6 +853,10 @@ struct ObjData {
     std::int16_t DefensaMagicaMin{0};
     std::uint8_t Refuerzo{0};
     
+    std::uint8_t DosManos{0};
+    std::int16_t MinFuerza{0};
+    std::int16_t MinAgilidad{0};
+    
     std::uint8_t Log{0};
     std::uint8_t NoLog{0};
     std::int16_t Upgrade{0};
