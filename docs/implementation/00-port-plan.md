@@ -393,13 +393,29 @@ Para cada módulo se aplica estrictamente la política de nombres definida en `d
   - **Integración con Protocolo (`Protocol.bas`, Módulo #16)**: Los handlers de paquetes de red `HandleBankStart`, `HandleBankDeposit` y `HandleBankExtractItem` conectan directamente con `modBanco::IniciarDeposito`, `modBanco::UserDepositaItem` y `modBanco::UserRetiraItem`.
   - **Delimitación de Alcance (Oro Bancario y Desplazamiento de Ranuras)**: La lógica de extracción y depósito de saldo en oro (`UserList[user_index].Stats.Banco` en `HandleBankExtractGold` y `HandleBankDepositGold`) así como el intercambio manual de ranuras (`HandleMoveBank`) residen históricamente y se mantienen formalmente diferidos en `Protocol.bas`.
 
-#### 21. `Comercio` y `mdlCOmercioConUsuario`
+#### 21. `Comercio` y `mdlCOmercioConUsuario` — **✅ COMPLETADO (Aislado / Cableado Pendiente en Capas 7 y 9)**
 - **Archivos Legacy**: `legacy/server/Codigo/Comercio.bas`, `legacy/server/Codigo/mdlCOmercioConUsuario.bas`
 - **Propósito**: Comercio de objetos con comerciantes NPC (`Comercio.bas`) y comercio seguro directo entre dos jugadores (`mdlCOmercioConUsuario.bas`).
-- **Archivo C++ Propuesto**: `src/server/Comercio.hpp` / `src/server/Comercio.cpp`, `src/server/mdlCOmercioConUsuario.hpp` / `src/server/mdlCOmercioConUsuario.cpp`
-- **Dependencias**: `Declares`, `InvUsuario`, `modSendData`, `Modulo_InventANDobj`.
-- **Estimación**: **Mediano** (~800 líneas combinadas).
-- **Estrategia de Verificación**: Pruebas con cliente VB6 (compra/venta en NPC y comercio entre 2 usuarios).
+- **Archivo C++ Implementado**: `src/server/Comercio.hpp` / `src/server/Comercio.cpp`, `src/server/mdlCOmercioConUsuario.hpp` / `src/server/mdlCOmercioConUsuario.cpp`
+- **Estado**: **Completado (Aislado / Cableado Pendiente en Capas 7 y 9)** (Documentación técnica oficial en [`21-comercio.md`](21-comercio.md) y desglose por fases en [`21-comercio-breakdown.md`](21-comercio-breakdown.md)). Los archivos fuentes C++ están formalmente cerrados y 100% verificados con tests unitarios.
+- **Dependencias**: `Declares`, `InvUsuario`, `Modulo_InventANDobj`, `Protocol`.
+- **Estimación**: **Mediano** (~640 líneas legacy combinadas / ~608 líneas C++).
+- **Estrategia de Verificación**: 19 casos de prueba unitaria y 121 aserciones doctest distribuidos en [`tests/test_comercio.cpp`](../../tests/test_comercio.cpp) (8 tests / 28 aserciones) y [`tests/test_comercio_usuario.cpp`](../../tests/test_comercio_usuario.cpp) (11 tests / 93 aserciones).
+- **Aspectos Clave y Decisiones de Diseño**:
+  - *Replicación de Bug #33 (Asimetría en Mercaderes NPC)*: `EnviarNpcInv` transmite rígidamente hasta `MAX_NORMAL_INVENTORY_SLOTS = 20`, ocultando al cliente las ranuras 21 a 30 del NPC donde `SlotEnNPCInv` sí permite depositar ítems vendidos.
+  - *Replicación de Bug #34 (Evaporación Silenciosa en P2P)*: En `AceptarComercioUsu`, si el receptor tiene la mochila llena y el suelo saturado (`TileLibre` retorna `0, 0`), el ítem no se materializa en el mapa pero se invoca incondicionalmente el débito sobre el emisor, evaporando el objeto en el limbo.
+  - *Replicación de Bug #35 (Acreditación Previa al Débito en P2P)*: Entrega de ítems en el receptor antes de convocar la sustracción en el emisor. Para evitar desbordamientos aritméticos con signo (*Undefined Behavior*) al comerciar grandes lotes, se promueve a `std::int64_t`.
+  - *Replicación de Bug #36 (Omisión de MAXORO en P2P)*: La transferencia de oro entre jugadores no evalúa ni clamplea contra `MAXORO` (90M), permitiendo superar el tope histórico mediante intercambio bilateral.
+  - *Paridad Aritmética*: Tasación de compra en NPC con redondeo bancario hacia arriba (`+0.5f`) y venta con truncamiento estándar; precio 0 para ítems de novato (`Newbie = 1`).
+  - *Quirk de Distancia*: `PuedeSeguirComerciando` valida conexión, vida y nicks recíprocos pero omite la distancia física entre jugadores.
+  - *Blindaje Léxico*: Preservación estricta de PascalCase en los 12 procedimientos exportados según la Naming Policy de `CONVENTIONS.md`.
+  - *Aislamiento por Hooks*: Desacoplamiento mediante `KeyPurchaseHook`, `BanUserHook`, `SubirSkillHook`, `QuitarObjetosHook` y `TirarItemAlPisoHook`.
+- **Propagación Cruzada y Notas de Integración**:
+  - **Estado del Código C++**: Los archivos `src/server/Comercio.hpp`, `src/server/Comercio.cpp`, `src/server/mdlCOmercioConUsuario.hpp` y `src/server/mdlCOmercioConUsuario.cpp` están **formalmente cerrados y completos**; no requieren modificaciones internas futuras.
+  - **Integración con Protocolo (`Protocol.bas`, Módulo #16, Capa 7)**: Los handlers de paquetes de red (`CommerceInit`, `CommerceBuy`, `CommerceSell`, `CommerceEnd`, `UserCommerceInit`, `UserCommerceOffer`, `UserCommerceConfirm`, `UserCommerceEnd`, `UserCommerceOk`) conectan directamente con las funciones de este módulo.
+  - **Cableado Pendiente de Hooks e Invocaciones**:
+    - **Módulo #22 (`Trabajo.bas`, Capa 7)**: Proveerá la función de producción para `QuitarObjetos`, satisfaciendo el contrato de `SetQuitarObjetosHook`.
+    - **Módulo #34 (`Modulo_UsUaRiOs.bas`, Capa 9)**: Conectar `SetTirarItemAlPisoHook` con la rutina de resolución espacial `TileLibre`, y conectar `SetSubirSkillHook` y `SetBanUserHook`.
 
 ---
 
@@ -649,7 +665,7 @@ Para cada módulo se aplica estrictamente la política de nombres definida en `d
 | **6** | `Modulo_InventANDobj.bas` | `src/server/Modulo_InventANDobj.hpp` | Mediano | Objetos Mapa / Inventario NPC | **Completado (Aislado / Hooks en Capas 6 y 9)** (5 tests / 192 aserciones en `test_modulo_inventandobj.cpp`, ver [`18-modulo-inventandobj.md`](18-modulo-inventandobj.md)) |
 | **6** | `InvUsuario.bas` | `src/server/InvUsuario.hpp` | Grande | Inventario Jugador / Suelo | **Completado (Aislado / Hooks en Capas 7 y 9)** (187 tests / 4170 aserciones en `test_invusuario.cpp`, ver [`19-invusuario.md`](19-invusuario.md)) |
 | **6** | `modBanco.bas` | `src/server/modBanco.hpp` | Mediano | Bóveda Bancaria (Grilla Dispersa 40 slots) | **Completado (Autónomo)** (21 tests / 489 aserciones en `test_modbanco.cpp`, ver [`20-modbanco.md`](20-modbanco.md) y [`20-modbanco-breakdown.md`](20-modbanco-breakdown.md)) |
-| **6** | `Comercio.bas` / `mdlCOmercio...` | `src/server/Comercio.hpp` | Mediano | Comercio NPC / User | Ventana comercio cliente VB6 |
+| **6** | `Comercio.bas` / `mdlCOmercio...` | `src/server/Comercio.hpp` / `src/server/mdlCOmercioConUsuario.hpp` | Mediano | Comercio NPC / Comercio Seguro P2P | **Completado (Aislado / Hooks en Capas 7 y 9)** (19 tests / 121 aserciones en `test_comercio.cpp` y `test_comercio_usuario.cpp`, ver [`21-comercio.md`](21-comercio.md) y [`21-comercio-breakdown.md`](21-comercio-breakdown.md)) |
 | **7** | `SistemaCombate.bas` | `src/server/SistemaCombate.hpp` | Grande | Fórmulas Combate | Ataque a NPC/User cliente VB6 |
 | **7** | `modHechizos.bas` | `src/server/modHechizos.hpp` | Grande | Magia y Hechizos | Casteo hechizos cliente VB6 |
 | **7** | `modInvisibles.bas` | `src/server/modInvisibles.hpp` | Chico | Invisibilidad | Cliente VB6 real |

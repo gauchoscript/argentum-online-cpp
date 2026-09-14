@@ -1687,27 +1687,27 @@ void WriteShowSignal(std::int16_t UserIndex, std::string_view Texto, std::int16_
     queue->WriteInteger(Grh);
 }
 
-void WriteChangeNPCInventorySlot(std::int16_t UserIndex, std::uint8_t Slot, std::int16_t ObjIndex, std::int32_t Amount) {
+void WriteChangeNPCInventorySlot(std::int16_t UserIndex, std::uint8_t Slot, const Obj& obj, float price) {
     auto* queue = get_user_outgoing(UserIndex);
     if (!queue) return;
     queue->WriteByte(static_cast<std::uint8_t>(ServerPacketID::ChangeNPCInventorySlot));
     queue->WriteByte(Slot);
-    if (ObjIndex > 0 && static_cast<std::size_t>(ObjIndex) < ObjDataList.size()) {
-        const auto& obj = ObjDataList[ObjIndex];
-        queue->WriteASCIIString(obj.name);
-        queue->WriteInteger(static_cast<std::int16_t>(Amount));
-        queue->WriteLong(obj.Valor);
-        queue->WriteInteger(obj.GrhIndex);
-        queue->WriteInteger(ObjIndex);
-        queue->WriteByte(static_cast<std::uint8_t>(obj.OBJType));
-        queue->WriteInteger(obj.MaxHIT);
-        queue->WriteInteger(obj.MinHIT);
-        queue->WriteInteger(obj.MaxDef);
-        queue->WriteInteger(obj.MinDef);
+    if (obj.ObjIndex > 0 && static_cast<std::size_t>(obj.ObjIndex) < ObjDataList.size()) {
+        const auto& obj_info = ObjDataList[obj.ObjIndex];
+        queue->WriteASCIIString(obj_info.name);
+        queue->WriteInteger(obj.Amount);
+        queue->WriteSingle(price);
+        queue->WriteInteger(obj_info.GrhIndex);
+        queue->WriteInteger(obj.ObjIndex);
+        queue->WriteByte(static_cast<std::uint8_t>(obj_info.OBJType));
+        queue->WriteInteger(obj_info.MaxHIT);
+        queue->WriteInteger(obj_info.MinHIT);
+        queue->WriteInteger(obj_info.MaxDef);
+        queue->WriteInteger(obj_info.MinDef);
     } else {
         queue->WriteASCIIString("");
         queue->WriteInteger(0);
-        queue->WriteLong(0);
+        queue->WriteSingle(0.0f);
         queue->WriteInteger(0);
         queue->WriteInteger(0);
         queue->WriteByte(0);

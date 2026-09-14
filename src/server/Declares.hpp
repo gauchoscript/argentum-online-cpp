@@ -66,12 +66,17 @@ struct ConnGroup {
     std::vector<std::int16_t> UserEntrys;
 };
 
+constexpr std::int16_t MAX_OFFER_SLOTS = 30;
+constexpr std::int16_t GOLD_OFFER_SLOT = MAX_OFFER_SLOTS + 1;
+
 struct tCOmercioUsuario {
+    std::int16_t DestUsu{0};
     std::string DestNick;
-    std::int32_t DestUsu{0};
-    std::int32_t DestPos{0};
-    std::int32_t SenderPos{0};
-    std::uint8_t Estado{0};
+    std::int16_t Objeto[MAX_OFFER_SLOTS + 1]{};
+    std::int32_t GoldAmount{0};
+    std::int32_t cant[MAX_OFFER_SLOTS + 1]{};
+    bool Acepto{false};
+    bool Confirmo{false};
 };
 
 struct tVertice {

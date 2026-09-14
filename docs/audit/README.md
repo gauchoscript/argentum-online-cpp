@@ -38,3 +38,4 @@ Este directorio contiene la documentación de auditoría histórica del código 
 | [12a-modulo-inventandobj-detalle.md](12a-modulo-inventandobj-detalle.md) | Auditoría de `Modulo_InventANDobj.bas` (inventario NPC, suelo y drops). | Área 12 | Detalle Inventario / Objetos | 2026-09-13 |
 | [12b-invusuario-detalle.md](12b-invusuario-detalle.md) | Auditoría de `InvUsuario.bas` (inventario usuario, equipamiento y exploits). | Área 12 | Detalle Inventario / Objetos | 2026-09-13 |
 | [12c-modbanco-detalle.md](12c-modbanco-detalle.md) | Auditoría de `modBanco.bas` (bóveda bancaria, transacciones y exploits). | Área 12 | Detalle Inventario / Objetos | 2026-09-13 |
+| [12d-comercio-detalle.md](12d-comercio-detalle.md) | Auditoría de `Comercio.bas` y `mdlCOmercioConUsuario.bas` (comercio NPC y P2P seguro). | Área 12 | Detalle Inventario / Comercio | 2026-09-14 |

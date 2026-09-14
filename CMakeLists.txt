@@ -35,6 +35,8 @@ add_library(server_core STATIC
     src/server/Modulo_InventANDobj.cpp
     src/server/InvUsuario.cpp
     src/server/modBanco.cpp
+    src/server/Comercio.cpp
+    src/server/mdlCOmercioConUsuario.cpp
 )
 target_include_directories(server_core PUBLIC src)
 target_link_libraries(server_core PUBLIC asio::asio)
@@ -77,6 +79,8 @@ add_executable(unit_tests
     tests/test_modulo_inventandobj.cpp
     tests/test_invusuario.cpp
     tests/test_modbanco.cpp
+    tests/test_comercio.cpp
+    tests/test_comercio_usuario.cpp
 )
 target_include_directories(unit_tests PRIVATE src)
 target_link_libraries(unit_tests PRIVATE server_core doctest::doctest)

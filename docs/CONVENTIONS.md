@@ -17,6 +17,16 @@ Exception: if a legacy identifier collides with a reserved C++ keyword
 (e.g. New, Class, Public), skip directly to step 2/3 of this same chain — 
 do not fall back to English.
 
+### Regla de Superficie Legacy vs. Artefactos Internos C++
+- **Superficie Exportada (PascalCase Obligatorio)**: Toda función, procedimiento (`Sub`/`Function`), tipo estructurado (`Type`) o constante que tenga origen directo en el código de Visual Basic 6.0 DEBE conservar su nombre exacto en PascalCase en los archivos `.hpp` y `.cpp`. Queda terminantemente prohibido traducir estos identificadores a `snake_case`.
+- **Artefactos Internos C++ (`snake_case` Permitido)**: El uso de `snake_case` queda estrictamente restringido a:
+  1. Variables locales dentro del cuerpo de las funciones.
+  2. Parámetros formales de funciones.
+  3. Tipos y variables de hooks inyectables inexistentes en el legacy (`key_hook`, `ban_hook`, etc.).
+  4. Clases o adaptadores internos de infraestructura RAII no expuestos en la API legacy.
+- **Invalidez de Breakdowns**: Ningún plan de desglose modular (`XX-breakdown.md`) será considerado válido si describe firmas de funciones portadas en `snake_case`.
+- **Checklist de Verificación de Fase**: Antes de solicitar la revisión de una fase, el implementador debe cotejar que cada función pública declarada en el `.hpp` coincida letra por letra (salvo tipos C++) con la declaración del archivo `.bas` original.
+
 ## Structure Policy
 Mirror the legacy .bas/.cls/.frm module grouping as closely as possible — 
 one legacy module maps to one C++ file or file pair with the same name. 
