@@ -34,6 +34,7 @@ add_library(server_core STATIC
     src/server/ModAreas.cpp
     src/server/Modulo_InventANDobj.cpp
     src/server/InvUsuario.cpp
+    src/server/modBanco.cpp
 )
 target_include_directories(server_core PUBLIC src)
 target_link_libraries(server_core PUBLIC asio::asio)
