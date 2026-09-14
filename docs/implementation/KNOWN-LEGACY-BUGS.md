@@ -48,6 +48,8 @@ De acuerdo con la convención del proyecto ([`docs/CONVENTIONS.md`](../CONVENTIO
 | **28** | `Modulo_InventANDobj` | `Modulo_InventANDobj.bas:45-51`<br>`Modulo_UsUaRiOs.bas:1552-1585` | Destrucción silenciosa de ítems y oro ante saturación espacial en `Tilelibre` (radio > 15 sin celdas transitables) | **Quirk / Pérdida Silenciosa** | **Replicated (Strict Parity)** | [`18-modulo-inventandobj.md`](18-modulo-inventandobj.md#3-replicación-del-bug-28-destrucción-silenciosa-de-drops-ante-retorno-nulo-de-tilelibre)<br>[Entrada #28](#entrada-28--modulo_inventandobj-destrucción-silenciosa-de-ítems-y-oro-por-saturación-espacial-en-tilelibre) |
 | **29** | `InvUsuario` | `InvUsuario.bas:368-380` | Exploit histórico de duplicación en `DropObj` por desfase de cantidades (descuenta recortado pero crea íntegro) | **Activo / Exploit** | **Replicated (Strict Parity)** | [`19-invusuario-breakdown.md`](19-invusuario-breakdown.md#fase-1-g1--mutaciones-en-el-mundo-y-suelo)<br>[Entrada #29](#entrada-29--invusuario-exploit-histórico-de-duplicación-en-dropobj-por-desfase-de-cantidades)<br>Detalle: [`../audit/12b-invusuario-detalle.md`](../audit/12b-invusuario-detalle.md#41-exploit-de-duplicación-en-dropobj-bug-29) |
 | **30** | `InvUsuario` | `InvUsuario.bas:228-268` | Pérdida silenciosa de saldo excedente en `TirarOro (> 500k)` (deducción incondicional de `Extra` en billetera) | **Quirk / Pérdida Silenciosa** | **Replicated (Strict Parity)** | [`19-invusuario-breakdown.md`](19-invusuario-breakdown.md#fase-2-g2--gestión-base-de-inventario-y-descarte)<br>[Entrada #30](#entrada-30--invusuario-pérdida-silenciosa-de-saldo-excedente-en-tiraroro--500k)<br>Detalle: [`../audit/12b-invusuario-detalle.md`](../audit/12b-invusuario-detalle.md#42-pérdida-silenciosa-de-saldo-en-tiraroro-bug-30) |
+| **31** | `modBanco` | `modBanco.bas:168-172, 285-290` | Acreditación previa al débito en `UserDejaObj` y `UserReciveObj` (riesgo de duplicación neta si el débito aborta) | **Activo / Exploit** | **Replicated (Strict Parity)** | [`20-modbanco.md`](20-modbanco.md#2-replicación-del-bug-31-acreditación-previa-al-débito-item-dupe)<br>[`20-modbanco-breakdown.md`](20-modbanco-breakdown.md#fase-2-g2--retiro-y-depósito-de-objetos)<br>[Entrada #31](#entrada-31--modbanco-acreditación-previa-al-débito-en-userdejaobj-y-userreciveobj)<br>Detalle: [`../audit/12c-modbanco-detalle.md`](../audit/12c-modbanco-detalle.md#51-riesgos-de-desincronización-y-duplicación-de-ítems-item-dupe) |
+| **32** | `modBanco` | `modBanco.bas:216-245, 247-299` | Ausencia de restricciones de almacenamiento para barcos, objetos faccionarios e ítems de novato (`Newbie = 1`) | **Quirk / Exploit** | **Replicated (Strict Parity)** | [`20-modbanco.md`](20-modbanco.md#3-replicación-del-bug-32-ausencia-de-restricciones-de-almacenamiento)<br>[`20-modbanco-breakdown.md`](20-modbanco-breakdown.md#fase-2-g2--retiro-y-depósito-de-objetos)<br>[Entrada #32](#entrada-32--modbanco-ausencia-de-restricciones-de-almacenamiento-para-barcos-faccionarios-y-novatos)<br>Detalle: [`../audit/12c-modbanco-detalle.md`](../audit/12c-modbanco-detalle.md#55-restricciones-de-ítems-faccionarios-barcos-newbies) |
 
 ---
 
@@ -402,4 +404,39 @@ A continuación se documentan en detalle todas las entradas del registro maestro
 - **Camino de Producción**: **Quirk / Pérdida Silenciosa de Saldo**.
 - **Estado en C++**: **Replicated (Strict Parity)**. Se preserva la deducción literal de `Extra` en la billetera del usuario tras concretar el arrojamiento de pilas, reproduciendo idénticamente la evaporación del excedente.
 - **Documentación Detallada**: [`19-invusuario.md`](19-invusuario.md#5-replicación-del-bug-30-evaporación-de-saldo-en-tiraroro--500k), [`19-invusuario-breakdown.md`](19-invusuario-breakdown.md#fase-2-g2--gestión-base-de-inventario-y-descarte) y [`docs/audit/12b-invusuario-detalle.md`](../audit/12b-invusuario-detalle.md#42-pérdida-silenciosa-de-saldo-en-tiraroro-bug-30).
+
+---
+
+### Entrada #31 — `modBanco`: Acreditación Previa al Débito en `UserDejaObj` y `UserReciveObj`
+- **Cita Legacy**: [`legacy/server/Codigo/modBanco.bas:168-172, 285-290`](../../legacy/server/Codigo/modBanco.bas#L168-L172).
+- **Descripción**: En los flujos de depósito (`UserDejaObj`) y retiro (`UserReciveObj`) de la bóveda bancaria, la lógica histórica de VB6 invierte el orden natural de una transacción atómica:
+  1. Al depositar (`UserDejaObj`), primero se asigna e incrementa el objeto en el slot de la bóveda:
+     ```vb
+     .BancoInvent.Object(Slot).ObjIndex = obji
+     .BancoInvent.Object(Slot).Amount = .BancoInvent.Object(Slot).Amount + Cantidad
+     Call QuitarUserInvItem(UserIndex, CByte(ObjIndex), Cantidad)
+     ```
+     Si `QuitarUserInvItem` aborta silenciosamente (por ejemplo, ante un índice fuera de rango `Slot < 1 Or Slot > CurrentInventorySlots` o fallo en `Desequipar`), el objeto ya quedó acreditado en el banco sin haber sido retirado de la mochila del jugador, produciendo una duplicación neta (*item dupe*).
+  2. Al retirar (`UserReciveObj`), primero se incrementa el objeto en el inventario del usuario:
+     ```vb
+     .Invent.Object(Slot).ObjIndex = obji
+     .Invent.Object(Slot).Amount = .Invent.Object(Slot).Amount + Cantidad
+     Call QuitarBancoInvItem(UserIndex, CByte(ObjIndex), Cantidad)
+     ```
+     El ítem se materializa en la mochila del usuario antes de que se garantice o ejecute el débito en la bóveda bancaria.
+- **Camino de Producción**: **Activo / Exploit de Duplicación**.
+- **Estado en C++**: **Replicated (Strict Parity)**. Conforme a las decisiones arquitectónicas del porting y la directiva vinculante de preservación de asimetría histórica, queda prohibida cualquier alteración de la secuencia de operaciones o introducción de rollback automático transaccional. Se replica estrictamente el orden original de VB6 (acreditación en destino previa al débito en origen).
+- **Documentación Detallada**: [`20-modbanco.md`](20-modbanco.md#2-replicación-del-bug-31-acreditación-previa-al-débito-item-dupe), [`20-modbanco-breakdown.md`](20-modbanco-breakdown.md#fase-2-g2--retiro-y-depósito-de-objetos) y [`docs/audit/12c-modbanco-detalle.md`](../audit/12c-modbanco-detalle.md#51-riesgos-de-desincronización-y-duplicación-de-ítems-item-dupe).
+
+---
+
+### Entrada #32 — `modBanco`: Ausencia de Restricciones de Almacenamiento para Barcos, Faccionarios y Novatos
+- **Cita Legacy**: [`legacy/server/Codigo/modBanco.bas:216-245, 247-299`](../../legacy/server/Codigo/modBanco.bas#L216-L245).
+- **Descripción**: La subrutina `UserDepositaItem` y su ejecutora interna `UserDejaObj` no realizan comprobación alguna sobre los atributos o tipo del objeto (`ObjDataList(obji)`):
+  1. Permite depositar embarcaciones y navíos (`OBJTYPE_BARCO`), almacenando barcas y galeones como ítems estáticos en la bóveda.
+  2. Permite depositar armaduras y objetos faccionarios (pertenecientes a la Armada Real o a las Fuerzas del Caos), permitiendo transferirlos fuera del uso inmediato.
+  3. Permite depositar objetos de novato con flag `Newbie = 1`. Esta omisión habilitaba el exploit histórico mediante el cual los personajes recién creados resguardaban sus pertenencias de novato en la bóveda bancaria antes de alcanzar el nivel 13 o abandonar Newbie Dungeon, eludiendo la rutina de purga `QuitarNewbieObj` (`InvUsuario.bas:93`).
+- **Camino de Producción**: **Quirk / Exploit Histórico**.
+- **Estado en C++**: **Replicated (Strict Parity)**. Se preserva la ausencia total de validaciones restrictivas de tipo de ítem en `UserDepositaItem` y `UserDejaObj`, permitiendo el depósito de cualquier objeto presente en el inventario del usuario.
+- **Documentación Detallada**: [`20-modbanco.md`](20-modbanco.md#3-replicación-del-bug-32-ausencia-de-restricciones-de-almacenamiento), [`20-modbanco-breakdown.md`](20-modbanco-breakdown.md#fase-2-g2--retiro-y-depósito-de-objetos) y [`docs/audit/12c-modbanco-detalle.md`](../audit/12c-modbanco-detalle.md#55-restricciones-de-ítems-faccionarios-barcos-newbies).
 

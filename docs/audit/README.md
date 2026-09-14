@@ -37,3 +37,4 @@ Este directorio contiene la documentación de auditoría histórica del código 
 | [11a-modforum-detalle.md](11a-modforum-detalle.md) | Auditoría de `modForum.bas` (sistema de foros). | Área 11 | Detalle Foros / Comunicación | 2026-09-08 |
 | [12a-modulo-inventandobj-detalle.md](12a-modulo-inventandobj-detalle.md) | Auditoría de `Modulo_InventANDobj.bas` (inventario NPC, suelo y drops). | Área 12 | Detalle Inventario / Objetos | 2026-09-13 |
 | [12b-invusuario-detalle.md](12b-invusuario-detalle.md) | Auditoría de `InvUsuario.bas` (inventario usuario, equipamiento y exploits). | Área 12 | Detalle Inventario / Objetos | 2026-09-13 |
+| [12c-modbanco-detalle.md](12c-modbanco-detalle.md) | Auditoría de `modBanco.bas` (bóveda bancaria, transacciones y exploits). | Área 12 | Detalle Inventario / Objetos | 2026-09-13 |

@@ -374,13 +374,24 @@ Para cada módulo se aplica estrictamente la política de nombres definida en `d
     - **Módulo #26 (`Trabajo.bas`, Capa 7)**: Conectar `SetWorkRequestTargetHook` para la selección de objetivo al fundir minerales en fraguas.
     - **Módulo #34 (`Modulo_UsUaRiOs.bas`, Capa 9)**: Conectar `SetTilelibreHook`, `SetChangeUserCharHook`, `SetDarCuerpoDesnudoHook` y `SetNavegaHook`. Asimismo, invocar `QuitarNewbieObj` al perder el estado de novato y `TirarTodo` ante la muerte del jugador.
 
-#### 20. `modBanco`
+#### 20. `modBanco` — **✅ COMPLETADO (Autónomo)**
 - **Archivos Legacy**: `legacy/server/Codigo/modBanco.bas`
-- **Propósito**: Depósito y retiro de objetos y oro en la bóveda bancaria del personaje.
-- **Archivo C++ Propuesto**: `src/server/modBanco.hpp` / `src/server/modBanco.cpp`
-- **Dependencias**: `Declares`, `InvUsuario`, `modSendData`.
-- **Estimación**: **Mediano** (~350 líneas).
-- **Estrategia de Verificación**: Pruebas con cliente VB6 interactuando con el NPC Banquero.
+- **Propósito**: Depósito, retiro y sincronización de objetos en la bóveda bancaria del personaje (`IniciarDeposito`, `SendBanObj`, `UpdateBanUserInv`, `UpdateVentanaBanco`, `UserRetiraItem`, `UserReciveObj`, `QuitarBancoInvItem`, `UserDepositaItem`, `UserDejaObj`, `SendUserBovedaTxt`, `SendUserBovedaTxtFromChar`).
+- **Archivo C++ Implementado**: `src/server/modBanco.hpp` / `src/server/modBanco.cpp`
+- **Estado**: **Completado (Autónomo)** (Documentación técnica oficial en [`20-modbanco.md`](20-modbanco.md) y desglose por fases en [`20-modbanco-breakdown.md`](20-modbanco-breakdown.md)). El archivo fuente C++ está formalmente cerrado, 100% verificado y opera de forma completamente autónoma sin requerir inyección de hooks en runtime.
+- **Dependencias**: `Declares`, `InvUsuario`, `Protocol`, `FileIO`.
+- **Estimación**: **Mediano** (~300 líneas legacy / ~280 líneas C++).
+- **Estrategia de Verificación**: 21 casos de prueba unitaria y 489 aserciones doctest en `tests/test_modbanco.cpp` cubriendo las tres subsuites operativas (G1 Apertura/Sincronización, G2 Retiro/Depósito y G3 Inspección GM con hook en memoria).
+- **Aspectos Clave y Decisiones de Diseño**:
+  - *Modelo de Grilla Dispersa Fija (Sparse Grid)*: Preservación rigurosa de las 40 ranuras fijas e independientes (`MAX_BANCOINVENTORY_SLOTS = 40`) con indexación 1-based (1..40). En `QuitarBancoInvItem`, al llegar la cantidad a `<= 0` se limpia la ranura en su posición (`ObjIndex = 0, Amount = 0`) y se decrementa `NroItems`; bajo ningún concepto se compactan ni se desplazan las ranuras subsiguientes.
+  - *Replicación de Bug #31 (Item Dupe / Acreditación Previa al Débito)*: En `UserDejaObj` y `UserReciveObj`, se acredita en destino previamente al débito en origen. Prohibición estricta de ordenamiento transaccional o rollback automático.
+  - *Replicación de Bug #32 (Almacenamiento Irrestricto)*: Inexistencia de filtros restrictivos por tipo de ítem en `UserDepositaItem` y `UserDejaObj`, permitiendo resguardar en la bóveda barcos (`OBJTYPE_BARCO`), armaduras faccionarias y pertenencias de novatos (`Newbie = 1`).
+  - *Preservación Léxica y Semántica*: Retención del nombre histórico `UserReciveObj` y del identificador de parámetro `obj_index` (que representa la ranura o slot, no el código de objeto).
+  - *Desacoplamiento de E/S en Inspección GM*: Abstracción de lecturas síncronas de archivos `.chr` en `SendUserBovedaTxtFromChar` mediante `CharReaderHook` (`SetCharReaderHook`).
+- **Propagación Cruzada y Notas de Integración**:
+  - **Estado del Código C++**: Los archivos `src/server/modBanco.hpp` y `src/server/modBanco.cpp` están **formalmente cerrados y completos**; no requieren modificaciones internas futuras.
+  - **Integración con Protocolo (`Protocol.bas`, Módulo #16)**: Los handlers de paquetes de red `HandleBankStart`, `HandleBankDeposit` y `HandleBankExtractItem` conectan directamente con `modBanco::IniciarDeposito`, `modBanco::UserDepositaItem` y `modBanco::UserRetiraItem`.
+  - **Delimitación de Alcance (Oro Bancario y Desplazamiento de Ranuras)**: La lógica de extracción y depósito de saldo en oro (`UserList[user_index].Stats.Banco` en `HandleBankExtractGold` y `HandleBankDepositGold`) así como el intercambio manual de ranuras (`HandleMoveBank`) residen históricamente y se mantienen formalmente diferidos en `Protocol.bas`.
 
 #### 21. `Comercio` y `mdlCOmercioConUsuario`
 - **Archivos Legacy**: `legacy/server/Codigo/Comercio.bas`, `legacy/server/Codigo/mdlCOmercioConUsuario.bas`
@@ -637,7 +648,7 @@ Para cada módulo se aplica estrictamente la política de nombres definida en `d
 | **5** | `ModAreas.bas` | `src/server/ModAreas.hpp` | Mediano | 🚨 **CRÍTICO 2: Grilla de Visión Espacial** | **Completado (Aislado / Hooks en Capa 9)** (25 tests en `test_modareas.cpp`, ver [`17-modareas.md`](17-modareas.md) y [`17-modareas-breakdown.md`](17-modareas-breakdown.md)) |
 | **6** | `Modulo_InventANDobj.bas` | `src/server/Modulo_InventANDobj.hpp` | Mediano | Objetos Mapa / Inventario NPC | **Completado (Aislado / Hooks en Capas 6 y 9)** (5 tests / 192 aserciones en `test_modulo_inventandobj.cpp`, ver [`18-modulo-inventandobj.md`](18-modulo-inventandobj.md)) |
 | **6** | `InvUsuario.bas` | `src/server/InvUsuario.hpp` | Grande | Inventario Jugador / Suelo | **Completado (Aislado / Hooks en Capas 7 y 9)** (187 tests / 4170 aserciones en `test_invusuario.cpp`, ver [`19-invusuario.md`](19-invusuario.md)) |
-| **6** | `modBanco.bas` | `src/server/modBanco.hpp` | Mediano | Bóveda | NPC Banquero cliente VB6 |
+| **6** | `modBanco.bas` | `src/server/modBanco.hpp` | Mediano | Bóveda Bancaria (Grilla Dispersa 40 slots) | **Completado (Autónomo)** (21 tests / 489 aserciones en `test_modbanco.cpp`, ver [`20-modbanco.md`](20-modbanco.md) y [`20-modbanco-breakdown.md`](20-modbanco-breakdown.md)) |
 | **6** | `Comercio.bas` / `mdlCOmercio...` | `src/server/Comercio.hpp` | Mediano | Comercio NPC / User | Ventana comercio cliente VB6 |
 | **7** | `SistemaCombate.bas` | `src/server/SistemaCombate.hpp` | Grande | Fórmulas Combate | Ataque a NPC/User cliente VB6 |
 | **7** | `modHechizos.bas` | `src/server/modHechizos.hpp` | Grande | Magia y Hechizos | Casteo hechizos cliente VB6 |
