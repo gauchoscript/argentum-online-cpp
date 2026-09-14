@@ -66,6 +66,11 @@ Este documento describe la arquitectura, decisiones de diseño y comportamiento 
 - Para consultar los usuarios presentes en un mapa sin incurrir en dependencias circulares antes del porting completo de `ModAreas.bas`, `modSendData` accede a las estructuras centrales definidas en [`src/server/Declares.hpp`](../../src/server/Declares.hpp) (`ConnGroups`, `MapData`, `UserList`).
 - Todas las rutinas incorporan la validación determinista de límites mediante `is_valid_map_index(map)` (asegurando `1 <= map <= NumMaps`), previniendo desbordamientos de vector ante IDs de mapas inválidos.
 
+### 6. Saneamiento Léxico y Purga de Alias snake_case (Auditoría Capas 0 a 6)
+
+- Conforme a la regla de superficie exportada de [`docs/CONVENTIONS.md`](../CONVENTIONS.md), las funciones públicas deben mantener exactamente sus nombres en PascalCase heredados de VB6 (`SendData`, `AlertarFaccionarios`, `SendToUserArea`, etc.).
+- Durante la auditoría léxica de Capas 0 a 6, se eliminaron de forma definitiva los 33 alias inline en `snake_case` (`send_data`, `alertar_faccionarios`, y las 30 funciones `send_to_*`) que habían sido introducidos como adaptadores de compatibilidad pero no formaban parte de la API de producción ni eran consumidos por ningún test.
+
 ---
 
 ## Catálogo de Funciones Implementadas
@@ -74,41 +79,41 @@ Las funciones se encuentran bajo el espacio de nombres `ao::net::send_data`:
 
 ### 1. Tipado Fuerte y Helpers de Bitmasks
 - `enum class SendTarget : std::uint8_t`: Enumerador strongly-typed con 29 destinos válidos.
-- `area_pertenece_mask(int pos) noexcept -> int`: Bitmask para coordenada $X$ o $Y$ ($1..100$).
-- `area_recive_mask(int area_index) noexcept -> int`: Cono de visión de 3 áreas contiguas ($0..11$).
-- `is_valid_map_index(int map) noexcept -> bool`: Validación de cotas seguras contra `NumMaps`.
+- `AreaPerteneceMask(int pos) noexcept -> int`: Bitmask para coordenada $X$ o $Y$ ($1..100$).
+- `AreaReciveMask(int area_index) noexcept -> int`: Cono de visión de 3 áreas contiguas ($0..11$).
+- `IsValidMapIndex(int map) noexcept -> bool`: Validación de cotas seguras contra `NumMaps`.
 
 ### 2. Ruteo Geográfico y Espacial
-- `send_to_user_area(user_index, data)`: Despacha a todos los usuarios cuyas áreas de visión intersectan la posición del usuario emisor.
-- `send_to_user_area_but_index(user_index, data)`: Igual a `send_to_user_area`, pero excluyendo al emisor.
-- `send_to_dead_user_area(user_index, data)`: Despacha a usuarios vivos en el área y a los muertos que tengan el mapa en memoria.
-- `send_to_area_by_pos(map, area_x, area_y, data)`: Despacha a usuarios del mapa cuyas áreas intersectan las coordenadas dadas.
-- `send_to_map(map, data)`: Broadcast a todos los usuarios conectados en un mapa determinado.
-- `send_to_map_but_index(user_index, data)`: Broadcast al mapa del usuario, omitiendo al propio usuario emisor.
-- `send_to_npc_area(npc_index, data)`: Despacha a los usuarios que ven el área donde se ubica un NPC.
+- `SendToUserArea(user_index, data)`: Despacha a todos los usuarios cuyas áreas de visión intersectan la posición del usuario emisor.
+- `SendToUserAreaButIndex(user_index, data)`: Igual a `SendToUserArea`, pero excluyendo al emisor.
+- `SendToDeadUserArea(user_index, data)`: Despacha a usuarios vivos en el área y a los muertos que tengan el mapa en memoria.
+- `SendToAreaByPos(map, area_x, area_y, data)`: Despacha a usuarios del mapa cuyas áreas intersectan las coordenadas dadas.
+- `SendToMap(map, data)`: Broadcast a todos los usuarios conectados en un mapa determinado.
+- `SendToMapButIndex(user_index, data)`: Broadcast al mapa del usuario, omitiendo al propio usuario emisor.
+- `SendToNpcArea(npc_index, data)`: Despacha a los usuarios que ven el área donde se ubica un NPC.
 
 ### 3. Ruteo Social (Clanes y Parties)
-- `send_to_guild_members(guild_index, data)`: Transmite a todos los miembros online de un clan.
-- `send_to_dioses_y_clan(guild_index, data)`: Transmite a los miembros del clan y a todos los Game Masters con privilegio de Dioses.
-- `send_to_user_guild_area(user_index, data)`: Transmite únicamente a los miembros del mismo clan que se encuentren en el área visual del usuario.
-- `send_to_user_party_area(user_index, data)`: Transmite a los compañeros de grupo (*party*) presentes en el área visual del emisor.
+- `SendToGuildMembers(guild_index, data)`: Transmite a todos los miembros online de un clan.
+- `SendToDiosesYclan(guild_index, data)`: Transmite a los miembros del clan y a todos los Game Masters con privilegio de Dioses.
+- `SendToUserGuildArea(user_index, data)`: Transmite únicamente a los miembros del mismo clan que se encuentren en el área visual del usuario.
+- `SendToUserPartyArea(user_index, data)`: Transmite a los compañeros de grupo (*party*) presentes en el área visual del emisor.
 
 ### 4. Ruteo Jerárquico y Faccionario (con Parche Pre-Login)
-- `send_to_all(data)` / `send_to_all_but_index(user_index, data)`: Broadcast global a todos los usuarios logueados del servidor.
-- `send_to_admins(data)` / `send_to_higher_admins(data)`: Transmisión a miembros del staff y administradores de alto rango.
-- `send_to_consejo(data)` / `send_to_consejo_caos(data)`: Transmisión a los consejos faccionarios.
-- `send_to_roles_masters(data)`: Transmisión a los Roles Masters.
-- `send_to_ciudadanos(data)` / `send_to_criminales(data)`: Transmisión a ciudadanos y criminales.
-- `send_to_real(data)` / `send_to_caos(data)`: Transmisión a miembros de la Armada Real o Legión Oscura.
-- `send_to_ciudadanos_y_rms(data)`, `send_to_criminales_y_rms(data)`, `send_to_real_y_rms(data)`, `send_to_caos_y_rms(data)`: Canales combinados con soporte para Roles Masters.
-- `send_to_admins_but_consejeros_area(user_index, data)`: Difusión local a GMs en el área excluyendo consejeros.
-- `send_to_gms_area_but_rms_or_counselors(user_index, data)`: Difusión a administradores excluyendo RMs o consejeros.
-- `send_to_users_area_but_gms(user_index, data)`: Difusión a usuarios mortales en el área ignorando GMs.
-- `send_to_users_and_rms_and_counselors_area_but_gms(user_index, data)`: Difusión en el área para usuarios, consejeros y RMs, excluyendo GMs.
+- `SendToAll(data)` / `SendToAllButIndex(user_index, data)`: Broadcast global a todos los usuarios logueados del servidor.
+- `SendToAdmins(data)` / `SendToHigherAdmins(data)`: Transmisión a miembros del staff y administradores de alto rango.
+- `SendToConsejo(data)` / `SendToConsejoCaos(data)`: Transmisión a los consejos faccionarios.
+- `SendToRolesMasters(data)`: Transmisión a los Roles Masters.
+- `SendToCiudadanos(data)` / `SendToCriminales(data)`: Transmisión a ciudadanos y criminales.
+- `SendToReal(data)` / `SendToCaos(data)`: Transmisión a miembros de la Armada Real o Legión Oscura.
+- `SendToCiudadanosYRMs(data)`, `SendToCriminalesYRMs(data)`, `SendToRealYRMs(data)`, `SendToCaosYRMs(data)`: Canales combinados con soporte para Roles Masters.
+- `SendToAdminsButConsejerosArea(user_index, data)`: Difusión local a GMs en el área excluyendo consejeros.
+- `SendToGMsAreaButRmsOrCounselors(user_index, data)`: Difusión a administradores excluyendo RMs o consejeros.
+- `SendToUsersAreaButGMs(user_index, data)`: Difusión a usuarios mortales en el área ignorando GMs.
+- `SendToUsersAndRmsAndCounselorsAreaButGMs(user_index, data)`: Difusión en el área para usuarios, consejeros y RMs, excluyendo GMs.
 
 ### 5. Despachador Maestro y Funcionalidades Especiales
-- `send_data(route, index, data)`: Dispatcher centralizado que rutea la carga útil según la enumeración `SendTarget`.
-- `alertar_faccionarios(user_index)`: Determina la orientación cardinal del usuario atacado y emite una alerta direccional a sus compañeros de facción en el mapa.
+- `SendData(route, index, data)`: Dispatcher centralizado que rutea la carga útil según la enumeración `SendTarget`.
+- `AlertarFaccionarios(user_index)`: Determina la orientación cardinal del usuario atacado y emite una alerta direccional a sus compañeros de facción en el mapa.
 
 ---
 
@@ -116,11 +121,11 @@ Las funciones se encuentran bajo el espacio de nombres `ao::net::send_data`:
 
 La suite de pruebas exhaustiva en [`tests/test_modsenddata.cpp`](../../tests/test_modsenddata.cpp) cubre el 100% de los escenarios del módulo bajo el framework **doctest**:
 
-1. **Bitmasks y Validación**: Verificación de corrimientos de bits para `area_pertenece_mask` y `area_recive_mask`, y límites de mapas válidos e inválidos.
-2. **Ruteo Geográfico Zero-Copy**: Pruebas de difusión a áreas de mapa (`send_to_user_area`, `send_to_user_area_but_index`), verificando que los sockets receptores reciban los bytes idénticos sin mutación.
+1. **Bitmasks y Validación**: Verificación de corrimientos de bits para `AreaPerteneceMask` y `AreaReciveMask`, y límites de mapas válidos e inválidos.
+2. **Ruteo Geográfico Zero-Copy**: Pruebas de difusión a áreas de mapa (`SendToUserArea`, `SendToUserAreaButIndex`), verificando que los sockets receptores reciban los bytes idénticos sin mutación.
 3. **Mitigación del Bug #22 en Pre-Login**: Se configuraron usuarios con socket activo (`ConnID != -1`) pero bandera `flags.UserLogged = false`. Se verificó que ninguna difusión global ni faccionaria envíe bytes a usuarios no autenticados, y que al cambiar `UserLogged = true` el despacho opere normalmente.
 4. **Ruteo Social de Clanes y Parties**: Verificación de filtros por `GuildIndex` y miembros de party locales.
-5. **Dispatcher Maestro `send_data`**: Validación exhaustiva de las distintas ramas de `SendTarget`, incluyendo el manejo seguro de casos borde.
+5. **Dispatcher Maestro `SendData`**: Validación exhaustiva de las distintas ramas de `SendTarget`, incluyendo el manejo seguro de casos borde.
 
 ---
 

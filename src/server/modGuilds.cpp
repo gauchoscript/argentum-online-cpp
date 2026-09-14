@@ -688,7 +688,7 @@ std::vector<std::string> r_ListaDePropuestas(std::int16_t userIndex, RELACIONES_
 
     int16_t cant = s_guilds[gi]->CantidadPropuestas(tipo);
     for (int16_t i = 0; i < cant; ++i) {
-        int16_t otroG = s_guilds[gi]->r_Iterador_ProximaPropuesta(tipo);
+        int16_t otroG = s_guilds[gi]->Iterador_ProximaPropuesta(tipo);
         if (otroG > 0 && otroG <= CANTIDADDECLANES && s_guilds[otroG]) {
             res.push_back(s_guilds[otroG]->GuildName());
         }
@@ -716,7 +716,7 @@ std::int16_t Iterador_ProximoGM(std::int16_t guildIndex) {
 
 std::int16_t r_Iterador_ProximaPropuesta(std::int16_t guildIndex, RELACIONES_GUILD tipo) {
     if (guildIndex > 0 && guildIndex <= CANTIDADDECLANES && s_guilds[guildIndex]) {
-        return s_guilds[guildIndex]->r_Iterador_ProximaPropuesta(tipo);
+        return s_guilds[guildIndex]->Iterador_ProximaPropuesta(tipo);
     }
     return 0;
 }

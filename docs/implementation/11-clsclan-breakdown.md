@@ -160,7 +160,7 @@ graph TD
 - **Elementos**:
   - Estado bilateral: `p_Relaciones(1 To CANTIDADDECLANES)` (`GUERRA`, `PAZ`, `ALIADOS`).
   - Consultas: `CantidadEnemys`, `CantidadAllies`, `GetRelacion`, `SetRelacion`, `ProcesarFundacionDeOtroClan`.
-  - Propuestas de Paz y Alianza: `SetPropuesta`, `AnularPropuestas`, `GetPropuesta`, `HayPropuesta`, `CantidadPropuestas`, `r_Iterador_ProximaPropuesta`.
+  - Propuestas de Paz y Alianza: `SetPropuesta`, `AnularPropuestas`, `GetPropuesta`, `HayPropuesta`, `CantidadPropuestas`, `Iterador_ProximaPropuesta`.
   - Lógica diplomática en `modGuilds`: `r_DeclararGuerra`, `r_AceptarPropuestaDePaz`, `r_RechazarPropuestaDeAlianza`, `r_RechazarPropuestaDePaz`, `r_AceptarPropuestaDeAlianza`, `r_ClanGeneraPropuesta`, `r_VerPropuesta`, `r_ListaDePropuestas`.
 - **Formatos de Datos**:
   - `<GuildName>-relaciones.rel` con `[RELACIONES] <OtroGuildIndex>=<Estado>`.

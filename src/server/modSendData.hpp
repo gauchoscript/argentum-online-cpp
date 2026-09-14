@@ -177,43 +177,7 @@ inline void SendData(SendTarget route, int index, std::string_view data) {
  */
 void AlertarFaccionarios(int user_index);
 
-// ============================================================================
-// Sobrecargas y alias de compatibilidad con snake_case
-// ============================================================================
-inline void send_data(SendTarget route, int index, std::span<const std::uint8_t> data) { SendData(route, index, data); }
-inline void send_data(SendTarget route, int index, std::string_view data) { SendData(route, index, data); }
-inline void alertar_faccionarios(int user_index) { AlertarFaccionarios(user_index); }
-inline void send_to_user_area(int user_index, std::span<const std::uint8_t> data) { SendToUserArea(user_index, data); }
-inline void send_to_user_area_but_index(int user_index, std::span<const std::uint8_t> data) { SendToUserAreaButIndex(user_index, data); }
-inline void send_to_dead_user_area(int user_index, std::span<const std::uint8_t> data) { SendToDeadUserArea(user_index, data); }
-inline void send_to_area_by_pos(int map, int area_x, int area_y, std::span<const std::uint8_t> data) { SendToAreaByPos(map, area_x, area_y, data); }
-inline void send_to_map(int map, std::span<const std::uint8_t> data) { SendToMap(map, data); }
-inline void send_to_map_but_index(int user_index, std::span<const std::uint8_t> data) { SendToMapButIndex(user_index, data); }
-inline void send_to_npc_area(int npc_index, std::span<const std::uint8_t> data) { SendToNpcArea(npc_index, data); }
-inline void send_to_guild_members(int guild_index, std::span<const std::uint8_t> data) { SendToGuildMembers(guild_index, data); }
-inline void send_to_dioses_y_clan(int guild_index, std::span<const std::uint8_t> data) { SendToDiosesYclan(guild_index, data); }
-inline void send_to_user_guild_area(int user_index, std::span<const std::uint8_t> data) { SendToUserGuildArea(user_index, data); }
-inline void send_to_user_party_area(int user_index, std::span<const std::uint8_t> data) { SendToUserPartyArea(user_index, data); }
-inline void send_to_all(std::span<const std::uint8_t> data) { SendToAll(data); }
-inline void send_to_all_but_index(int user_index, std::span<const std::uint8_t> data) { SendToAllButIndex(user_index, data); }
-inline void send_to_admins(std::span<const std::uint8_t> data) { SendToAdmins(data); }
-inline void send_to_higher_admins(std::span<const std::uint8_t> data) { SendToHigherAdmins(data); }
-inline void send_to_consejo(std::span<const std::uint8_t> data) { SendToConsejo(data); }
-inline void send_to_consejo_caos(std::span<const std::uint8_t> data) { SendToConsejoCaos(data); }
-inline void send_to_roles_masters(std::span<const std::uint8_t> data) { SendToRolesMasters(data); }
-inline void send_to_ciudadanos(std::span<const std::uint8_t> data) { SendToCiudadanos(data); }
-inline void send_to_criminales(std::span<const std::uint8_t> data) { SendToCriminales(data); }
-inline void send_to_real(std::span<const std::uint8_t> data) { SendToReal(data); }
-inline void send_to_caos(std::span<const std::uint8_t> data) { SendToCaos(data); }
-inline void send_to_ciudadanos_y_rms(std::span<const std::uint8_t> data) { SendToCiudadanosYRMs(data); }
-inline void send_to_criminales_y_rms(std::span<const std::uint8_t> data) { SendToCriminalesYRMs(data); }
-inline void send_to_real_y_rms(std::span<const std::uint8_t> data) { SendToRealYRMs(data); }
-inline void send_to_caos_y_rms(std::span<const std::uint8_t> data) { SendToCaosYRMs(data); }
-inline void send_to_admins_but_consejeros_area(int user_index, std::span<const std::uint8_t> data) { SendToAdminsButConsejerosArea(user_index, data); }
-inline void send_to_gms_area_but_rms_or_counselors(int user_index, std::span<const std::uint8_t> data) { SendToGMsAreaButRmsOrCounselors(user_index, data); }
-inline void send_to_users_area_but_gms(int user_index, std::span<const std::uint8_t> data) { SendToUsersAreaButGMs(user_index, data); }
-inline void send_to_users_and_rms_and_counselors_area_but_gms(int user_index, std::span<const std::uint8_t> data) { SendToUsersAndRmsAndCounselorsAreaButGMs(user_index, data); }
-
 } // namespace ao::net::send_data
 
 #endif // MOD_SEND_DATA_HPP
+

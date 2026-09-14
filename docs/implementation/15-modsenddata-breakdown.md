@@ -1,4 +1,4 @@
-﻿---
+---
 area: protocolo-de-red
 source_files:
   - legacy/server/Codigo/modSendData.bas
@@ -55,6 +55,10 @@ Conforme a las convenciones de porting del proyecto ([`docs/CONVENTIONS.md`](../
 - `modSendData` (Capa 4) requiere iterar sobre los usuarios presentes en un mapa (`ConnGroups(Map)`) y evaluar las máscaras de visión (`AreasInfo`).
 - Para mantener la separación de capas sin romper la estructura modular, `modSendData` accederá a las estructuras ya definidas en `Declares.hpp` (`ConnGroups`, `AreaInfo`, `UserList`), asegurando comprobaciones seguras de cotas (`is_valid_map()`) y verificación estricta de `ConnIDValida` / `is_connected()`.
 
+### 1.6. Purga de Alias en `snake_case` (Auditoría Capas 0 a 6)
+- Siguiendo la regla de superficie exportada de [`docs/CONVENTIONS.md`](../CONVENTIONS.md), todas las funciones del módulo conservan sus firmas canónicas en PascalCase idénticas a VB6 (`SendData`, `AlertarFaccionarios`, `SendToUserArea`, etc.).
+- Los 33 alias inline temporales en `snake_case` (`send_data`, `alertar_faccionarios`, y las 30 variantes `send_to_*`) quedaron formalmente purgados de `src/server/modSendData.hpp` y desestimados de la API de producción.
+
 ---
 
 ## 2. Plan de Desglose en 5 Pasos Lógicos
@@ -93,13 +97,13 @@ graph TD
 
 #### Firmas a Implementar:
 ```cpp
-void send_to_user_area(int user_index, std::span<const uint8_t> data);
-void send_to_user_area_but_index(int user_index, std::span<const uint8_t> data);
-void send_to_dead_user_area(int user_index, std::span<const uint8_t> data);
-void send_to_area_by_pos(int map, int area_x, int area_y, std::span<const uint8_t> data);
-void send_to_map(int map, std::span<const uint8_t> data);
-void send_to_map_but_index(int user_index, std::span<const uint8_t> data);
-void send_to_npc_area(int npc_index, std::span<const uint8_t> data);
+void SendToUserArea(int user_index, std::span<const uint8_t> data);
+void SendToUserAreaButIndex(int user_index, std::span<const uint8_t> data);
+void SendToDeadUserArea(int user_index, std::span<const uint8_t> data);
+void SendToAreaByPos(int map, int area_x, int area_y, std::span<const uint8_t> data);
+void SendToMap(int map, std::span<const uint8_t> data);
+void SendToMapButIndex(int user_index, std::span<const uint8_t> data);
+void SendToNpcArea(int npc_index, std::span<const uint8_t> data);
 ```
 
 #### Reglas de Negocio:
@@ -114,8 +118,8 @@ void send_to_npc_area(int npc_index, std::span<const uint8_t> data);
        }
    }
    ```
-4. En `send_to_dead_user_area`: filtrar `UserList[temp_index].flags.Muerto == 1` o pertenencia al staff (`Admin`, `Dios`, `SemiDios`, `Consejero`).
-5. En `send_to_user_area_but_index` y `send_to_map_but_index`: verificar `temp_index != user_index`.
+4. En `SendToDeadUserArea`: filtrar `UserList[temp_index].flags.Muerto == 1` o pertenencia al staff (`Admin`, `Dios`, `SemiDios`, `Consejero`).
+5. En `SendToUserAreaButIndex` y `SendToMapButIndex`: verificar `temp_index != user_index`.
 
 ---
 
@@ -125,19 +129,19 @@ void send_to_npc_area(int npc_index, std::span<const uint8_t> data);
 
 #### Firmas a Implementar:
 ```cpp
-void send_to_guild_members(int guild_index, std::span<const uint8_t> data);
-void send_to_dioses_y_clan(int guild_index, std::span<const uint8_t> data);
-void send_to_user_guild_area(int user_index, std::span<const uint8_t> data);
-void send_to_user_party_area(int user_index, std::span<const uint8_t> data);
+void SendToGuildMembers(int guild_index, std::span<const uint8_t> data);
+void SendToDiosesYclan(int guild_index, std::span<const uint8_t> data);
+void SendToUserGuildArea(int user_index, std::span<const uint8_t> data);
+void SendToUserPartyArea(int user_index, std::span<const uint8_t> data);
 ```
 
 #### Reglas de Negocio:
-1. `send_to_guild_members`: iterar mediante `modGuilds::m_Iterador_ProximoUserIndex(guild_index)`. Enviar si `ConnID != -1` y el usuario está conectado.
-2. `send_to_dioses_y_clan`: iterar miembros del clan y adicionalmente Game Masters con `modGuilds::Iterador_ProximoGM(guild_index)`.
-3. `send_to_user_guild_area`:
+1. `SendToGuildMembers`: iterar mediante `modGuilds::m_Iterador_ProximoUserIndex(guild_index)`. Enviar si `ConnID != -1` y el usuario está conectado.
+2. `SendToDiosesYclan`: iterar miembros del clan y adicionalmente Game Masters con `modGuilds::Iterador_ProximoGM(guild_index)`.
+3. `SendToUserGuildArea`:
    - Si `UserList[user_index].GuildIndex == 0`, salir inmediatamente.
    - En el área local, reciben los miembros con mismo `GuildIndex` o administradores con rango `Dios` que no sean `RoleMaster`.
-4. `send_to_user_party_area`:
+4. `SendToUserPartyArea`:
    - Si `UserList[user_index].PartyIndex == 0`, salir inmediatamente.
    - En el área local, reciben únicamente quienes compartan el mismo `PartyIndex`.
 
@@ -150,27 +154,27 @@ void send_to_user_party_area(int user_index, std::span<const uint8_t> data);
 #### Firmas a Implementar:
 ```cpp
 // Canales Globales (1 To LastUser)
-void send_to_all(std::span<const uint8_t> data);
-void send_to_all_but_index(int user_index, std::span<const uint8_t> data);
-void send_to_admins(std::span<const uint8_t> data);
-void send_to_higher_admins(std::span<const uint8_t> data);
-void send_to_consejo(std::span<const uint8_t> data);
-void send_to_consejo_caos(std::span<const uint8_t> data);
-void send_to_roles_masters(std::span<const uint8_t> data);
-void send_to_ciudadanos(std::span<const uint8_t> data);
-void send_to_criminales(std::span<const uint8_t> data);
-void send_to_real(std::span<const uint8_t> data);
-void send_to_caos(std::span<const uint8_t> data);
-void send_to_ciudadanos_y_rms(std::span<const uint8_t> data);
-void send_to_criminales_y_rms(std::span<const uint8_t> data);
-void send_to_real_y_rms(std::span<const uint8_t> data);
-void send_to_caos_y_rms(std::span<const uint8_t> data);
+void SendToAll(std::span<const uint8_t> data);
+void SendToAllButIndex(int user_index, std::span<const uint8_t> data);
+void SendToAdmins(std::span<const uint8_t> data);
+void SendToHigherAdmins(std::span<const uint8_t> data);
+void SendToConsejo(std::span<const uint8_t> data);
+void SendToConsejoCaos(std::span<const uint8_t> data);
+void SendToRolesMasters(std::span<const uint8_t> data);
+void SendToCiudadanos(std::span<const uint8_t> data);
+void SendToCriminales(std::span<const uint8_t> data);
+void SendToReal(std::span<const uint8_t> data);
+void SendToCaos(std::span<const uint8_t> data);
+void SendToCiudadanosYRMs(std::span<const uint8_t> data);
+void SendToCriminalesYRMs(std::span<const uint8_t> data);
+void SendToRealYRMs(std::span<const uint8_t> data);
+void SendToCaosYRMs(std::span<const uint8_t> data);
 
 // Canales Locales por Área y Privilegios
-void send_to_admins_but_consejeros_area(int user_index, std::span<const uint8_t> data);
-void send_to_gms_area_but_rms_or_counselors(int user_index, std::span<const uint8_t> data);
-void send_to_users_area_but_gms(int user_index, std::span<const uint8_t> data);
-void send_to_users_and_rms_and_counselors_area_but_gms(int user_index, std::span<const uint8_t> data);
+void SendToAdminsButConsejerosArea(int user_index, std::span<const uint8_t> data);
+void SendToGMsAreaButRmsOrCounselors(int user_index, std::span<const uint8_t> data);
+void SendToUsersAreaButGMs(int user_index, std::span<const uint8_t> data);
+void SendToUsersAndRmsAndCounselorsAreaButGMs(int user_index, std::span<const uint8_t> data);
 ```
 
 #### Reglas de Negocio y Mitigación:
@@ -184,7 +188,7 @@ void send_to_users_and_rms_and_counselors_area_but_gms(int user_index, std::span
    - Criminales: `criminal(i)`.
    - Armada Real: `UserList[i].Faccion.ArmadaReal == 1`.
    - Fuerzas del Caos: `UserList[i].Faccion.FuerzasCaos == 1`.
-3. Staff exclusivo en `send_to_gms_area_but_rms_or_counselors`:
+3. Staff exclusivo en `SendToGMsAreaButRmsOrCounselors`:
    ```cpp
    const auto priv = UserList[temp_index].flags.Privilegios;
    if ((priv & ~PlayerType::User & ~PlayerType::Consejero & ~PlayerType::RoleMaster) == priv) { ... }
@@ -198,8 +202,8 @@ void send_to_users_and_rms_and_counselors_area_but_gms(int user_index, std::span
 
 #### Firmas a Implementar:
 ```cpp
-void send_data(SendTarget route, int index, std::span<const uint8_t> data);
-void alertar_faccionarios(int user_index);
+void SendData(SendTarget route, int index, std::span<const uint8_t> data);
+void AlertarFaccionarios(int user_index);
 ```
 
 #### Reglas de Negocio:

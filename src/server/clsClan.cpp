@@ -618,7 +618,7 @@ std::int16_t clsClan::Iterador_ProximoGM() {
     return p_GMsOnline[p_IteradorOnlineGMs++];
 }
 
-std::int16_t clsClan::r_Iterador_ProximaPropuesta(RELACIONES_GUILD tipo) {
+std::int16_t clsClan::Iterador_ProximaPropuesta(RELACIONES_GUILD tipo) {
     if (tipo == RELACIONES_GUILD::ALIADOS) {
         if (p_PropuestasDeAlianza.empty()) return 0;
         if (p_IteradorPropuesta >= p_PropuestasDeAlianza.size()) p_IteradorPropuesta = 0;

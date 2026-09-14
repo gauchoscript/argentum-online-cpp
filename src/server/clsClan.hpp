@@ -105,7 +105,7 @@ public:
     // Iteradores
     std::int16_t m_Iterador_ProximoUserIndex();
     std::int16_t Iterador_ProximoGM();
-    std::int16_t r_Iterador_ProximaPropuesta(RELACIONES_GUILD tipo);
+    std::int16_t Iterador_ProximaPropuesta(RELACIONES_GUILD tipo);
     void GMEscuchaClan(std::int16_t userIndex);
     void GMDejaDeEscucharClan(std::int16_t userIndex);
 
