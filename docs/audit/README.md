@@ -33,6 +33,7 @@ Este directorio contiene la documentación de auditoría histórica del código 
 | [02d-modsenddata-detalle.md](02d-modsenddata-detalle.md) | Auditoría de `modSendData.bas` (despacho, broadcast y áreas). | Área 02 | Detalle Protocolo / Red | 2026-09-12 |
 | [02e-protocol-detalle.md](02e-protocol-detalle.md) | Auditoría de `Protocol.bas` (despachador de entrada, serialización y GM). | Área 02 | Detalle Protocolo / Red | 2026-09-12 |
 | [03a-modareas-detalle.md](03a-modareas-detalle.md) | Auditoría de `ModAreas.bas` (gestión espacial, cuadrículas y visibilidad). | Área 03 | Detalle Movimiento / Espacial | 2026-09-13 |
+| [04a-sistemacombate-detalle.md](04a-sistemacombate-detalle.md) | Auditoría de `SistemaCombate.bas` (combate PvP/PvE, daño, evasión y frags). | Área 04 | Detalle Fórmulas / Combate | 2026-09-14 |
 | [06a-colaarray-dead-code.md](06a-colaarray-dead-code.md) | Auditoría de `cColaArray.cls` y exclusión por código muerto. | Área 06 | Exclusión (Código Muerto) | 2026-09-08 |
 | [11a-modforum-detalle.md](11a-modforum-detalle.md) | Auditoría de `modForum.bas` (sistema de foros). | Área 11 | Detalle Foros / Comunicación | 2026-09-08 |
 | [12a-modulo-inventandobj-detalle.md](12a-modulo-inventandobj-detalle.md) | Auditoría de `Modulo_InventANDobj.bas` (inventario NPC, suelo y drops). | Área 12 | Detalle Inventario / Objetos | 2026-09-13 |

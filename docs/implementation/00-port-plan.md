@@ -421,13 +421,29 @@ Para cada módulo se aplica estrictamente la política de nombres definida en `d
 
 ### Capa 7: Lógica de Combate, Magia, Facciones y Oficios
 
-#### 22. `SistemaCombate`
+#### 22. `SistemaCombate` — **✅ COMPLETADO (Aislado / Cableado Pendiente en Capas 7, 8, 9 y 11)**
 - **Archivos Legacy**: `legacy/server/Codigo/SistemaCombate.bas`
-- **Propósito**: Fórmulas matemáticas de combate: daño físico (`CalcularDaño`), evasión (`ProbabilidadGolpe`), ataques cuerpo a cuerpo (`UsuarioAtaca`, `NpcAtacaUsuario`) y defensa de armaduras.
-- **Archivo C++ Propuesto**: `src/server/SistemaCombate.hpp` / `src/server/SistemaCombate.cpp`
-- **Dependencias**: `Declares`, `Matematicas`, `InvUsuario`, `modSendData`, `ModAreas`.
-- **Estimación**: **Grande** (~2.100 líneas).
-- **Estrategia de Verificación**: Pruebas con cliente VB6 realizando ataques a criaturas y jugadores.
+- **Propósito**: Fórmulas matemáticas y orquestación de combate: cálculo de daño físico cuerpo a cuerpo, a distancia y wrestling (`CalcularDaño`, `NpcDaño`), resolución probabilística de acierto/evasión (`ProbExito`, `UserImpacto...`, `NpcImpacto...`), deducción de daño y absorción de cascos, armaduras y escudos (`UserDañoUser`, `UserDañoNpc`, `NpcDañoUser`, `NpcDañoNpc`), desgaste, envenenamiento (`UserEnvenena`), distribución de experiencia (`CalcularDarExp`), orquestadores de flujo (`UsuarioAtaca`, `UsuarioAtacaUsuario`, `UsuarioAtacadoPorUsuario`, `UsuarioAtacaNpc`, `NpcAtacaUser`, `NpcAtacaNpc`), matrices legales (`PuedeAtacar`, `PuedeAtacarNPC`) y control de mascotas (`MuereNpc`, `RestarCriaturasEntrenador`, `CheckPets`, `AllFollowAmo`, `AllMascotasAtacanUser`).
+- **Archivo C++ Implementado**: `src/server/SistemaCombate.hpp` / `src/server/SistemaCombate.cpp`
+- **Estado**: **Completado (Aislado / Cableado Pendiente en Capas 7, 8, 9 y 11)** (Documentación técnica oficial en [`22-sistemacombate.md`](22-sistemacombate.md) y desglose por fases en [`22-sistemacombate-breakdown.md`](22-sistemacombate-breakdown.md)). Los archivos fuentes C++ están formalmente cerrados y 100% verificados con tests unitarios.
+- **Dependencias**: `Declares`, `Matematicas`, `InvUsuario`, `modSendData`, `ModAreas`, `Protocol`, `FileIO`, `TCP`.
+- **Estimación**: **Grande** (~1.922 líneas legacy / ~1.678 líneas C++).
+- **Estrategia de Verificación**: 26 casos de prueba unitaria y 162 aserciones doctest en [`tests/test_sistemacombate.cpp`](../../tests/test_sistemacombate.cpp) cubriendo las 4 fases de implementación (G1 Fórmulas base/Evasión, G2 Daño bruto/RNG y Bug #37, G3 Absorciones/Desgaste y Criterios 7.1 y 7.2, G4 Orquestadores de flujo, Criterios 7.3 y 7.4 y mascotas).
+- **Aspectos Clave y Decisiones de Diseño**:
+  - *Replicación de Bug #37 (Omisión de Proyectil.MaxHIT en Bono por Fuerza)*: En `CalcularDaño` con arcos, `daño_max_arma` no suma `proyectil.MaxHIT`, preservando la cota original de VB6 al calcular el multiplicador de fuerza.
+  - *Peculiaridades de Dominio (Regla 7 de CONVENTIONS.md)*:
+    - **Criterio 7.1**: Espada Mata Dragones inflige letalidad instantánea (`MinHp + def`) y se destruye inmediatamente tras derrotar al `DRAGON`; inflige daño fijo en 1 contra cualquier otro objetivo.
+    - **Criterio 7.2**: Asimetría ZaMa en apuñalamiento: `DoApuñalar` recibe daño bruto pre-absorción en PvE vs daño neto post-absorción en PvP.
+    - **Criterio 7.3**: Legítima defensa (`flags.AtacablePor`) permite contraataque sin requerir desactivar seguro, exime de penalización de karma, omite incremento de `BandidoRep`, y en caso de defunción del agresor no registra frag (`StoreFragHook`) ni cuenta muerte penalizada (`ContarMuerteHook`).
+    - **Criterio 7.4**: Sigilo de GM invisible: ante ataque al aire fallido, `SND_SWING` se despacha exclusivamente en unicast al socket del administrador (`TCP::EnviarDatosASlot`), suprimiendo el broadcast a los clientes del área.
+  - *Paridad Aritmética Segura*: Preservación literal de la división flotante `/ 33.0` en `PoderEvasion` para evitar truncamiento entero a cero con Tactics < 33, y tipado estricto con `std::int32_t` con clamping inferior a 0 para prevenir subflujos en modificadores negativos.
+  - *Aislamiento por Hooks*: Desacoplamiento de dependencias de capas superiores mediante callbacks funcionales tipados (`QuitarObjetosHook`, `DoApuñalarHook`, `DoGolpeCriticoHook`, `DoAcuchillarHook`, `UserDieHook`, `MuereNpcHook`, `SubirSkillHook`, `CheckUserLevelHook`, `PartyExpHook`, `RefreshCharStatusHook`, `VolverCriminalHook`, `CancelExitHook`, `StoreFragHook`, `ContarMuerteHook`).
+- **Propagación Cruzada y Notas de Integración**:
+  - **Estado del Código C++**: Los archivos `src/server/SistemaCombate.hpp` y `src/server/SistemaCombate.cpp` están **formalmente cerrados y completos**; no requieren modificaciones internas futuras.
+  - **Módulo #23 (`modHechizos.bas`, Capa 7)**: Compartirá las validaciones de estados incapacitantes (parálisis/muerte), el límite espacial de alcance (`MAXDISTANCIAMAGIA = 18`) y los hooks comunes de daño y defunción.
+  - **Módulo #28 (`MODULO_NPCs.bas`, Capa 8) y Módulo #29 (`AI_NPC.bas`, Capa 8)**: Invocará `NpcAtacaUser` y `NpcAtacaNpc`, y conectará `MuereNpcHook` en `MuereNpc` para drops de criaturas y reaparición en mapa.
+  - **Módulo #32 (`clsParty` / `mdParty`, Capa 9)**: Conectar `PartyExpHook` para reparto proporcional de experiencia compartida en grupo.
+  - **Módulo #34 (`Modulo_UsUaRiOs.bas`, Capa 9)**: Conectar la implementación real de `UserDieHook`, `SubirSkillHook`, `CheckUserLevelHook`, `VolverCriminalHook` y `CancelExitHook`.
 
 #### 23. `modHechizos`
 - **Archivos Legacy**: `legacy/server/Codigo/modHechizos.bas`
@@ -666,7 +682,7 @@ Para cada módulo se aplica estrictamente la política de nombres definida en `d
 | **6** | `InvUsuario.bas` | `src/server/InvUsuario.hpp` | Grande | Inventario Jugador / Suelo | **Completado (Aislado / Hooks en Capas 7 y 9)** (187 tests / 4170 aserciones en `test_invusuario.cpp`, ver [`19-invusuario.md`](19-invusuario.md)) |
 | **6** | `modBanco.bas` | `src/server/modBanco.hpp` | Mediano | Bóveda Bancaria (Grilla Dispersa 40 slots) | **Completado (Autónomo)** (21 tests / 489 aserciones en `test_modbanco.cpp`, ver [`20-modbanco.md`](20-modbanco.md) y [`20-modbanco-breakdown.md`](20-modbanco-breakdown.md)) |
 | **6** | `Comercio.bas` / `mdlCOmercio...` | `src/server/Comercio.hpp` / `src/server/mdlCOmercioConUsuario.hpp` | Mediano | Comercio NPC / Comercio Seguro P2P | **Completado (Aislado / Hooks en Capas 7 y 9)** (19 tests / 121 aserciones en `test_comercio.cpp` y `test_comercio_usuario.cpp`, ver [`21-comercio.md`](21-comercio.md) y [`21-comercio-breakdown.md`](21-comercio-breakdown.md)) |
-| **7** | `SistemaCombate.bas` | `src/server/SistemaCombate.hpp` | Grande | Fórmulas Combate | Ataque a NPC/User cliente VB6 |
+| **7** | `SistemaCombate.bas` | `src/server/SistemaCombate.hpp` | Grande | Fórmulas y Flujo de Combate | **Completado (Aislado / Hooks en Capas 7, 8 y 9)** (26 tests / 162 aserciones en `test_sistemacombate.cpp`, ver [`22-sistemacombate.md`](22-sistemacombate.md) y [`22-sistemacombate-breakdown.md`](22-sistemacombate-breakdown.md)) |
 | **7** | `modHechizos.bas` | `src/server/modHechizos.hpp` | Grande | Magia y Hechizos | Casteo hechizos cliente VB6 |
 | **7** | `modInvisibles.bas` | `src/server/modInvisibles.hpp` | Chico | Invisibilidad | Cliente VB6 real |
 | **7** | `ModFacciones.bas` | `src/server/ModFacciones.hpp` | Mediano | Alineación | Facciones cliente VB6 |

@@ -124,7 +124,7 @@ Para mantener una estructura predecible y evitar colisiones numéricas entre vis
 
 ## Aprendizajes de FileIO — Reglas Proactivas de Porting (Learnings from FileIO)
 
-Durante el porteo del módulo `FileIO.bas`, se consolidaron seis patrones observados de manera recurrente. Estas directivas quedan establecidas como **reglas proactivas permanentes** para todos los módulos futuros (especialmente para módulos de gran envergadura como el próximo `Protocol.bas`):
+Durante el porteo del módulo `FileIO.bas`, se consolidaron siete patrones observados de manera recurrente. Estas directivas quedan establecidas como **reglas proactivas permanentes** para todos los módulos futuros (especialmente para módulos de gran envergadura como el próximo `Protocol.bas`):
 
 ### 1. Umbral de Desglose para Módulos Grandes (*Large Module Breakdown Threshold*)
 Todo módulo cuya estimación supere aproximadamente las **500-800 líneas**, o que esté marcado como **"Grande"** en [`00-port-plan.md`](implementation/00-port-plan.md), requiere obligatoriamente su propio archivo `<numero>-<modulo>-breakdown.md` en `docs/implementation/` (por ejemplo, `10-fileio-breakdown.md`, `11-clsclan-breakdown.md`, `14-tcp-breakdown.md`, `15-modsenddata-breakdown.md`).
@@ -158,6 +158,21 @@ En VB6 era habitual declarar variables en `Declares.bas` como globales por conve
 Descubrir datos de validación más sólidos y autoritativos (archivos reales de producción del juego original) para un módulo que previamente solo contaba con validación sobre datos sintéticos constituye en sí mismo un **evento de Propagación de Decisiones Cruzadas (*Cross-Module Decision Propagation*)**.
 - **Reapertura y revalidación**: Exige reabrir y revalidar el módulo previamente considerado "completado" contra los nuevos datos reales de producción, garantizando que el comportamiento histórico no se degrade.
 - **Actualización de estatus documental**: Debe actualizarse la documentación de implementación del módulo afectado para reflejar el nuevo estatus de verificación alcanzado, en lugar de limitarse a utilizar los fixtures únicamente para los módulos futuros.
+ 
+### 7. Taxonomía de Hallazgos: Defectos Técnicos vs. Peculiaridades de Dominio
+Queda prohibido clasificar mecánicas intencionales de diseño, balance o administración como bugs de software. Todo hallazgo en el código legacy debe categorizarse bajo el siguiente criterio:
+
+- **Defectos Técnicos y Quirks Aritméticos (`KNOWN-LEGACY-BUGS.md`)**:
+  Aplica únicamente a: desbordamientos aritméticos (overflow/underflow), errores de límite (*off-by-one*), asimetrías u omisiones involuntarias en fórmulas matemáticas, fugas de recursos/sockets, condiciones de carrera, exploits de duplicación/pérdida de estado y código muerto.
+  *Destino*: Registro obligatorio en `KNOWN-LEGACY-BUGS.md` con su estado (`Replicated`, `Excluded`, etc.).
+
+- **Peculiaridades de Dominio, Reglas de Balance y Mecánicas Históricas**:
+  Aplica a: reglas de juego deliberadas (karma, legítima defensa, estatus de facción), comportamientos específicos de ítems (ej. armas contra criaturas puntuales), parches históricos de balance (ej. ajustes PvE vs PvP) y excepciones administrativas de Game Masters.
+  *Destino*: NO ingresan al bug ledger. Su preservación se garantiza mediante:
+    1. Sección dedicada en el informe de auditoría: `### Peculiaridades de Dominio, Reglas de Balance y Mecánicas Históricas`.
+    2. Criterios de aceptación explícitos en el plan de desglose (`-breakdown.md`).
+    3. Comentarios explicativos *in-situ* en el código fuente C++ (`.cpp`).
+    4. Escenarios de prueba unitaria específicos en doctest.
 
 ## Documentation & Numbering Policy
 Numbering schemes across different doc folders may diverge when they serve different purposes, but any divergence must be stated explicitly near the top of the relevant index file, not left implicit.

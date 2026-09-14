@@ -36,8 +36,22 @@ class SoundMapInfo {};
 // Tipos auxiliares de módulos aun no porteados (AI_NPC, ModAreas, modGuilds, Queue, mdlCOmercioConUsuario)
 enum class TipoAI : std::int32_t {
     StaticNPC = 0,
-    NpcPathFinding = 1,
-    NPCMAmbula = 2
+    ESTATICO = 1,
+    MueveAlAzar = 2,
+    NPCMAmbula = 2,
+    NpcMaloAtacaUsersBuenos = 3,
+    NPCDEFENSA = 4,
+    GuardiasAtacanCriminales = 5,
+    NpcObjeto = 6,
+    SigueAmo = 8,
+    NpcAtacaNpc = 9,
+    NpcPathFinding = 10,
+    NpcPathfinding = 10,
+    SacerdotePretorianoAi = 20,
+    GuerreroPretorianoAi = 21,
+    MagoPretorianoAi = 22,
+    CazadorPretorianoAi = 23,
+    ReyPretoriano = 24
 };
 
 enum class ALINEACION_GUILD : std::int32_t {
