@@ -86,6 +86,7 @@ El porting o investigación de un módulo **NO se considera completo** hasta que
 3. **Propagación de Decisiones Cruzadas entre Módulos (*Cross-Module Decision Propagation*)**: Antes de dar por completado un módulo, verificá explícitamente: ¿algún hallazgo, decisión de diseño o descubrimiento de comportamiento realizado durante este trabajo afecta a OTRO módulo que aún no haya sido porteado?
 4. **Registro Centralizado en `KNOWN-LEGACY-BUGS.md` (*Master Bug Ledger Update*)**: Todo bug del legacy VB6, quirk, error de límite (*off-by-one*) o comportamiento anómalo recién descubierto —ya sea que se replique fielmente en C++, se difiera a un módulo futuro o resida en código muerto— debe quedar registrado obligatoriamente en [`docs/implementation/KNOWN-LEGACY-BUGS.md`](implementation/KNOWN-LEGACY-BUGS.md) antes de dar por finalizado el módulo.
 
+
 > [!IMPORTANT]
 > **Regla de Incompletitud Cruzada**: Una decisión que solo vive en la documentación del módulo donde fue descubierta, pero afecta a un módulo diferente, es una **decisión incompleta**. La propagación a la entrada del módulo afectado en `docs/implementation/00-port-plan.md` es **obligatoria, no opcional**.
 
@@ -95,6 +96,21 @@ El porting o investigación de un módulo **NO se considera completo** hasta que
 - **Resolución de dependencias**: Una dependencia que originalmente se asumía propia de un módulo cambia lo que un módulo futuro debe implementar (ej. el búfer global de `Queue.bas` convirtiéndose en un `std::queue` local dentro de `PathFinding`, una vez que `PathFinding` sea porteado).
 
 Si existe tal referencia cruzada, **debés agregar una nota explícita en la entrada del módulo AFECTADO en `docs/implementation/00-port-plan.md`**, citando el documento donde reside la fundamentación completa. No consideres terminado el trabajo de un módulo hasta que este paso de propagación haya sido verificado y completado explícitamente — ya que un colaborador futuro trabajando en el módulo afectado no tiene motivos para revisar la documentación del módulo de origen.
+
+### Protocolo de Commits de Cierre de Módulo (Tríada Atómica)
+El cierre formal de cada módulo debe confirmarse obligatoriamente en EXACTAMENTE tres commits separados con la siguiente política de scopes y cuerpos semánticos:
+
+1. **`feat(server): ...` (Implementación de Código)**:
+   - **Scope**: General (`server`), abarcando `src/server/<modulo>.*` y cabeceras base indispensables (`Declares.*`).
+   - **Cuerpo semántico**: Describe procedimientos portados, contratos de desacoplamiento introducidos, y los defectos o peculiaridades legacy preservados IDENTIFICÁNDOLOS SIEMPRE por su nombre funcional (ej. "omisión de daño de flecha en bono de fuerza", "duplicación por desborde en piso"), NUNCA únicamente por identificadores numéricos de la documentación.
+
+2. **`test(<modulo>): ...` (Pruebas Unitarias)**:
+   - **Scope**: Acotado estrictamente al módulo (`<modulo>`), abarcando `tests/test_<modulo>.cpp` y `CMakeLists.txt`.
+   - **Cuerpo semántico**: Describe las áreas probadas, los casos de borde o comportamientos anómalos validados por su nombre funcional, y el recuento global de tests y aserciones en verde.
+
+3. **`docs(<modulo>): ...` (Documentación y Cierre)**:
+   - **Scope**: Acotado estrictamente al módulo (`<modulo>`), abarcando documentación en `docs/implementation/`, `00-port-plan.md`, `KNOWN-LEGACY-BUGS.md` y `docs/audit/`.
+   - **Cuerpo semántico**: Indica el estado formal del módulo, contratos diferidos hacia capas pendientes y sincronización del ledger.
 
 ### Definición Formal de los Tres Estados de Cierre de Módulo (Module Closure States)
 
