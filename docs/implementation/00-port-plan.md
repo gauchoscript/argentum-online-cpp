@@ -445,13 +445,34 @@ Para cada módulo se aplica estrictamente la política de nombres definida en `d
   - **Módulo #32 (`clsParty` / `mdParty`, Capa 9)**: Conectar `PartyExpHook` para reparto proporcional de experiencia compartida en grupo.
   - **Módulo #34 (`Modulo_UsUaRiOs.bas`, Capa 9)**: Conectar la implementación real de `UserDieHook`, `SubirSkillHook`, `CheckUserLevelHook`, `VolverCriminalHook` y `CancelExitHook`.
 
-#### 23. `modHechizos`
+#### 23. `modHechizos` — **✅ COMPLETADO (Aislado / Cableado Pendiente en Capas 7, 8, 9 y 11)**
 - **Archivos Legacy**: `legacy/server/Codigo/modHechizos.bas`
-- **Propósito**: Sistema de magia: casteo de hechizos (`LanzarHechizo`), validación de objetivo, daño mágico, curación, parálisis, invisibilidad y convocaciones.
-- **Archivo C++ Propuesto**: `src/server/modHechizos.hpp` / `src/server/modHechizos.cpp`
-- **Dependencias**: `Declares`, `SistemaCombate`, `InvUsuario`, `modSendData`, `ModAreas`.
-- **Estimación**: **Grande** (~2.200 líneas).
-- **Estrategia de Verificación**: Pruebas con cliente VB6 (lanzamiento de hechizos y efectos en pantalla).
+- **Propósito**: Sistema integral de magia y hechizos: gestión del libro arcano (`TieneHechizo`, `AgregarHechizo`, `ChangeUserHechizo`, `DesplazarHechizo`, `UpdateUserHechizos`), ciclo de casteo (`PuedeLanzar`, `DecirPalabrasMagicas`, `LanzarHechizo`, `HandleHechizoUsuario`, `HandleHechizoNPC`, `HandleHechizoTerreno`), fórmulas de daño mágico y curación escaladas por nivel (`HechizoPropUsuario`, `HechizoPropNPC`), control de estados alterados (veneno, parálisis, inmovilización, ceguera, estupidez, invisibilidad, mimetismo físico y metamorfosis), convocación de criaturas y mascotas (`HechizoEstadoUsuario`, `HechizoEstadoNPC`, `HechizoTerrenoEstado`, `HechizoInvocacion`), matriz de asistencia legal y moralidad (`CanSupportUser`, `DisNobAuBan`), y magia de criaturas hostiles y entrenadas (`NpcLanzaSpellSobreUser`, `NpcLanzaSpellSobreNpc`).
+- **Archivo C++ Implementado**: `src/server/modHechizos.hpp` / `src/server/modHechizos.cpp`
+- **Estado**: **Completado (Aislado / Cableado Pendiente en Capas 7, 8, 9 y 11)** (Documentación técnica oficial en [`23-modhechizos.md`](23-modhechizos.md) y desglose por fases en [`23-modhechizos-breakdown.md`](23-modhechizos-breakdown.md)). Los archivos fuentes C++ están formalmente cerrados y 100% verificados con tests unitarios.
+- **Dependencias**: `Declares`, `Matematicas`, `TCP`, `modSendData`, `Protocol`, `FileIO`.
+- **Estimación**: **Grande** (~2.090 líneas legacy / ~2.164 líneas C++).
+- **Estrategia de Verificación**: 25 casos de prueba unitaria y 241 aserciones doctest en `tests/test_modhechizos.cpp` cubriendo las 4 fases de implementación (G1 Gestión de libro, palabras mágicas y validación preliminar; G2 Efectos cuantitativos, báculos/laúdes y Bug #38; G3 Estados alterados, metamorfosis, invocaciones y Bugs #39 y #40; G4 Orquestación de casteo, soporte moral, penalizaciones y magia de NPCs con Quirks 7.1, 7.2 y 7.3).
+- **Aspectos Clave y Decisiones de Diseño**:
+  - *Replicación de Bug #38 (Omisión de RandomNumber en Maná y Estamina)*: En `HechizoPropUsuario`, las ramas `SubeMana` y `SubeSta` no ejecutan `RandomNumber`, aplicando el valor residual acumulado en la variable local `daño` (modificando 0 puntos en hechizos puros de maná/energía o arrastrando el remanente de HP/atributos).
+  - *Replicación de Bug #39 (Muerte Asimétrica en Resurrección)*: En `HechizoEstadoUsuario`, si el coste vital de revivir agota la vida del lanzador (`MinHp <= 0`), se ejecuta `UserDie(UserIndex)` y `HechizoCasteado = False`, pero al omitirse `Exit Sub`, el flujo continúa y ejecuta `RevivirUsuario(TargetIndex)` con éxito.
+  - *Replicación de Bug #40 (Colisión de Contadores Ceguera vs Estupidez)*: En `HechizoEstadoUsuario`, tanto ceguera como estupidez sobrescriben la misma variable `.Counters.Ceguera` (`IntervaloParalizado / 3` vs `IntervaloParalizado`).
+  - *Peculiaridades de Dominio (Regla 7 de CONVENTIONS.md)*:
+    - **Quirk 7.1**: Mensaje invertido de daño al curar NPC a Usuario en `NpcLanzaSpellSobreUser` (`"{npc.name} te ha quitado {daño} puntos de vida."`).
+    - **Quirk 7.2**: Asignación de `IntervaloInvisible` al temporizador de estupidez de criaturas en `NpcLanzaSpellSobreUser` (`.Counters.Ceguera = IntervaloInvisible`).
+    - **Quirk 7.3**: Validación de distancia evaluada exclusivamente sobre el eje vertical Y en `LanzarHechizo` (`std::abs(target_pos.Y - user.Pos.Y) <= RANGO_VISION_Y`, con `RANGO_VISION_Y = 6`), ignorando cualquier separación en X.
+    - **Quirk 7.4**: Bonificaciones de coste de maná para Druidas con Flauta Élfica (50% en mimetismo, 30% en invocaciones regulares, 10% en magia general excepto Apocalipsis) y activación de `.flags.Ignorado = true`.
+    - **Quirk 7.5**: Multiplicadores canónicos de báculo (Mago desarmado 0.7x vs equipado (Bonus+70)/100) y bardo (1.04x con laúd o flauta élfica).
+  - *Aislamiento por Callbacks*: Desacoplamiento total mediante la estructura `SpellsCallbacks` con miembros en PascalCase (`UserDie`, `RevivirUsuario`, `MuereNpc`, `PuedeAtacar`, `PuedeAtacarNPC`, `UsuarioAtacadoPorUsuario`, `NpcAtacado`, `TriggerZonaPelea`, `CalcularDarExp`, `Criminal`, `EsArmada`, `EsCaos`, `VolverCriminal`, `RestarCriminalidad`, `ExpulsarFaccionReal`, `RefreshCharStatus`, `SpawnNpc`, `FollowAmo`, `WarpMascota`, `FarthestPet`, `FreeMascotaIndex`, `QuitarUserInvItem`, `SubirSkill`, `StoreFrag`, `ContarMuerte`, `ActStats`, `SetInvisible`, `ChangeUserChar`, `GetWeaponAnim`, `CanSupportUser`, `DisNobAuBan`).
+- **Propagación Cruzada y Contratos de Consumo**:
+  - **Estado del Código C++**: Los archivos `src/server/modHechizos.hpp` y `src/server/modHechizos.cpp` están **formalmente cerrados y completos**; no requieren modificaciones internas futuras.
+  - **Módulo #24 (`modInvisibles.bas`, Capa 7)**: Sincronización de visibilidad (`SetInvisible`) y desocultamiento de personajes no administradores al pronunciar palabras mágicas (`DecirPalabrasMagicas`).
+  - **Módulo #25 (`ModFacciones.bas`, Capa 7)**: Enlace de consultas de alineación (`EsArmada`, `EsCaos`, `Criminal`), penalizaciones de karma/bandido en `DisNobAuBan` y expulsión de facción real (`ExpulsarFaccionReal`).
+  - **Módulo #28 (`MODULO_NPCs.bas`, Capa 8)**: Generación de criaturas aliadas (`SpawnNpc`), sincronización de mascotas (`FollowAmo`, `WarpMascota`, `FreeMascotaIndex`) y notificación de decesos con crédito de amo (`MuereNpc`).
+  - **Módulo #29 (`AI_NPC.bas`, Capa 8)**: Invocación de la magia de criaturas hostiles hacia jugadores (`NpcLanzaSpellSobreUser`) y entre criaturas (`NpcLanzaSpellSobreNpc`).
+  - **Módulo #32 (`Acciones.bas`, Capa 8)**: Cableado del procesamiento de clics de casteo sobre objetivos válidos hacia `LanzarHechizo`.
+  - **Módulo #34 (`Modulo_UsUaRiOs.bas`, Capa 9)**: Conexión del ciclo vital del jugador (`UserDie`, `RevivirUsuario`), consumo de atributos (maná, energía, hambre, sed) y progreso de habilidades (`SubirSkill`).
+  - **Protocolo de Red (`Protocol.bas`, Módulo #16, Capa 7)**: Cableado de `HandleCastSpell` y los stubs de paquetes mágicos hacia `LanzarHechizo` e `InfoHechizo`.
 
 #### 24. `modInvisibles`
 - **Archivos Legacy**: `legacy/server/Codigo/modInvisibles.bas`
@@ -683,7 +704,7 @@ Para cada módulo se aplica estrictamente la política de nombres definida en `d
 | **6** | `modBanco.bas` | `src/server/modBanco.hpp` | Mediano | Bóveda Bancaria (Grilla Dispersa 40 slots) | **Completado (Autónomo)** (21 tests / 489 aserciones en `test_modbanco.cpp`, ver [`20-modbanco.md`](20-modbanco.md) y [`20-modbanco-breakdown.md`](20-modbanco-breakdown.md)) |
 | **6** | `Comercio.bas` / `mdlCOmercio...` | `src/server/Comercio.hpp` / `src/server/mdlCOmercioConUsuario.hpp` | Mediano | Comercio NPC / Comercio Seguro P2P | **Completado (Aislado / Hooks en Capas 7 y 9)** (19 tests / 121 aserciones en `test_comercio.cpp` y `test_comercio_usuario.cpp`, ver [`21-comercio.md`](21-comercio.md) y [`21-comercio-breakdown.md`](21-comercio-breakdown.md)) |
 | **7** | `SistemaCombate.bas` | `src/server/SistemaCombate.hpp` | Grande | Fórmulas y Flujo de Combate | **Completado (Aislado / Hooks en Capas 7, 8 y 9)** (26 tests / 162 aserciones en `test_sistemacombate.cpp`, ver [`22-sistemacombate.md`](22-sistemacombate.md) y [`22-sistemacombate-breakdown.md`](22-sistemacombate-breakdown.md)) |
-| **7** | `modHechizos.bas` | `src/server/modHechizos.hpp` | Grande | Magia y Hechizos | Casteo hechizos cliente VB6 |
+| **7** | `modHechizos.bas` | `src/server/modHechizos.hpp` | Grande | Magia y Hechizos | **Completado (Aislado / Hooks en Capas 7, 8, 9 y 11)** (25 tests / 241 aserciones en `test_modhechizos.cpp`, ver [`23-modhechizos.md`](23-modhechizos.md) y [`23-modhechizos-breakdown.md`](23-modhechizos-breakdown.md)) |
 | **7** | `modInvisibles.bas` | `src/server/modInvisibles.hpp` | Chico | Invisibilidad | Cliente VB6 real |
 | **7** | `ModFacciones.bas` | `src/server/ModFacciones.hpp` | Mediano | Alineación | Facciones cliente VB6 |
 | **7** | `Trabajo.bas` | `src/server/Trabajo.hpp` | Grande | Oficios y Recolección | Minar/talar cliente VB6 |
