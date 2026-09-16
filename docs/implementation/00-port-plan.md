@@ -474,13 +474,13 @@ Para cada módulo se aplica estrictamente la política de nombres definida en `d
   - **Módulo #34 (`Modulo_UsUaRiOs.bas`, Capa 9)**: Conexión del ciclo vital del jugador (`UserDie`, `RevivirUsuario`), consumo de atributos (maná, energía, hambre, sed) y progreso de habilidades (`SubirSkill`).
   - **Protocolo de Red (`Protocol.bas`, Módulo #16, Capa 7)**: Cableado de `HandleCastSpell` y los stubs de paquetes mágicos hacia `LanzarHechizo` e `InfoHechizo`.
 
-#### 24. `modInvisibles`
+#### 24. modInvisibles (EXCLUIDO – Código Muerto)
 - **Archivos Legacy**: `legacy/server/Codigo/modInvisibles.bas`
-- **Propósito**: Control de estados de invisibilidad y ocultamiento de personajes.
-- **Archivo C++ Propuesto**: `src/server/modInvisibles.hpp` / `src/server/modInvisibles.cpp`
-- **Dependencias**: `Declares`, `modSendData`.
-- **Estimación**: **Chico** (~50 líneas).
-- **Estrategia de Verificación**: Pruebas con cliente VB6.
+- **Diagnóstico de Auditoría**: **100% código muerto y borrador trunco en VB6** (cero invocaciones activas en el proyecto y rama `#Else` incompilable bajo `Option Explicit` por variable no definida `Modo`).
+- **Decisión de Porting**: **EXCLUIDO.** No se generará ningún archivo C++ equivalente (`src/server/modInvisibles.hpp` / `src/server/modInvisibles.cpp`).
+- **Informe de auditoría**: [`docs/audit/14b-invisibles-detalle.md`](../audit/14b-invisibles-detalle.md)
+- **Nota de Propagación**: La visibilidad real y los contadores se gestionan mediante `SetInvisible` en `Modulo_UsUaRiOs.bas` y los contadores en `modNuevoTimer.bas`.
+- **Registro de Bug**: Entrada #41 en [`docs/implementation/KNOWN-LEGACY-BUGS.md`](KNOWN-LEGACY-BUGS.md).
 
 #### 25. `ModFacciones`
 - **Archivos Legacy**: `legacy/server/Codigo/ModFacciones.bas`
@@ -705,7 +705,7 @@ Para cada módulo se aplica estrictamente la política de nombres definida en `d
 | **6** | `Comercio.bas` / `mdlCOmercio...` | `src/server/Comercio.hpp` / `src/server/mdlCOmercioConUsuario.hpp` | Mediano | Comercio NPC / Comercio Seguro P2P | **Completado (Aislado / Hooks en Capas 7 y 9)** (19 tests / 121 aserciones en `test_comercio.cpp` y `test_comercio_usuario.cpp`, ver [`21-comercio.md`](21-comercio.md) y [`21-comercio-breakdown.md`](21-comercio-breakdown.md)) |
 | **7** | `SistemaCombate.bas` | `src/server/SistemaCombate.hpp` | Grande | Fórmulas y Flujo de Combate | **Completado (Aislado / Hooks en Capas 7, 8 y 9)** (26 tests / 162 aserciones en `test_sistemacombate.cpp`, ver [`22-sistemacombate.md`](22-sistemacombate.md) y [`22-sistemacombate-breakdown.md`](22-sistemacombate-breakdown.md)) |
 | **7** | `modHechizos.bas` | `src/server/modHechizos.hpp` | Grande | Magia y Hechizos | **Completado (Aislado / Hooks en Capas 7, 8, 9 y 11)** (25 tests / 241 aserciones en `test_modhechizos.cpp`, ver [`23-modhechizos.md`](23-modhechizos.md) y [`23-modhechizos-breakdown.md`](23-modhechizos-breakdown.md)) |
-| **7** | `modInvisibles.bas` | `src/server/modInvisibles.hpp` | Chico | Invisibilidad | Cliente VB6 real |
+| **7** | `modInvisibles.bas` | *Ninguno (Excluido)* | Chico | **Excluido (Código Muerto)** | Documentado en [`14b-invisibles-detalle.md`](../audit/14b-invisibles-detalle.md) |
 | **7** | `ModFacciones.bas` | `src/server/ModFacciones.hpp` | Mediano | Alineación | Facciones cliente VB6 |
 | **7** | `Trabajo.bas` | `src/server/Trabajo.hpp` | Grande | Oficios y Recolección | Minar/talar cliente VB6 |
 | **8** | `PathFinding.bas` | `src/server/PathFinding.hpp` | Mediano | Pathfinding A* | doctest + Cliente VB6 |
