@@ -2491,4 +2491,15 @@ void DoBackUp() {
     haciendoBK = false;
 }
 
+void LogEjercitoReal(const std::string& text) {
+    std::string logFile = getLogFile("EjercitoReal.log");
+    appendLogLine(logFile, text);
+}
+
+void LogEjercitoCaos(const std::string& text) {
+    std::string logFile = getLogFile("EjercitoCaos.log");
+    appendLogLine(logFile, text);
+}
+
 } // namespace FileIO
+

@@ -269,6 +269,16 @@ void LogBanFromName(const std::string& bannedName, int16_t userIndex, const std:
  */
 void Ban(const std::string& bannedName, const std::string& baneador, const std::string& motivo);
 
+/**
+ * @brief Registra evento de alta en las tropas reales.
+ */
+void LogEjercitoReal(const std::string& text);
+
+/**
+ * @brief Registra evento de alta en la legión oscura.
+ */
+void LogEjercitoCaos(const std::string& text);
+
 
 // ============================================================================
 // GRUPO 6: Sistema de Respaldos de Mundo (World Backup System)
