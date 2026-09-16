@@ -42,6 +42,7 @@ add_library(server_core STATIC
     src/server/ModFacciones.cpp
     src/server/Trabajo.cpp
     src/server/PathFinding.cpp
+    src/server/MODULO_NPCs.cpp
 )
 target_include_directories(server_core PUBLIC src)
 target_link_libraries(server_core PUBLIC asio::asio)
@@ -91,6 +92,7 @@ add_executable(unit_tests
     tests/test_modfacciones.cpp
     tests/test_trabajo.cpp
     tests/test_pathfinding.cpp
+    tests/test_modulo_npcs.cpp
 )
 target_include_directories(unit_tests PRIVATE src)
 target_link_libraries(unit_tests PRIVATE server_core doctest::doctest)
