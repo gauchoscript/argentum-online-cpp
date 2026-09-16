@@ -497,13 +497,14 @@ Para cada módulo se aplica estrictamente la política de nombres definida en `d
     - **Quirk 7.3**: Mensaje específico de rebelión en Caos si `Reenlistadas == 200`.
   - *Cableado de Callbacks por Defecto*: `InitDefaultFactionCallbacks()` conecta `MeterItemEnInventario` (`InvUsuario`), `TirarItemAlPiso` (`Modulo_InventANDobj`), `Desequipar` (`InvUsuario`), `GetGuildAlignment` (`modGuilds`), `LogEjercitoReal` y `LogEjercitoCaos` (`FileIO`).
 
-#### 26. `Trabajo` *(Falta auditoría detallada)*
+#### 26. `Trabajo` (COMPLETADO — Aislado / Cableado Pendiente)
 - **Archivos Legacy**: `legacy/server/Codigo/Trabajo.bas`
 - **Propósito**: Sistema de oficios y recolección: herrería, carpintería, minería, pesca y tala de árboles.
 - **Archivo C++ Propuesto**: `src/server/Trabajo.hpp` / `src/server/Trabajo.cpp`
-- **Dependencias**: `Declares`, `InvUsuario`, `Modulo_InventANDobj`, `modSendData`, `Matematicas`.
-- **Estimación**: **Grande** (~2.300 líneas).
-- **Estrategia de Verificación**: Pruebas con cliente VB6 (talar, minar, pescar y construir ítems).
+- **Estado**: **Completado (Aislado / Cableado Pendiente)** (Ver [`26-trabajo.md`](26-trabajo.md) y [`26-trabajo-breakdown.md`](26-trabajo-breakdown.md)).
+- **Dependencias**: `Declares`, `InvUsuario`, `Modulo_InventANDobj`, `FileIO`, `Matematicas`, `SistemaCombate`.
+- **Estimación**: **Grande** (~2.300 líneas, 49 rutinas desglosadas en 5 grupos lógicos G1 a G5).
+- **Estrategia de Verificación**: **Pruebas unitarias doctest en `tests/test_trabajo.cpp` (320 tests / 5.486 aserciones)**. Cobertura de recolección (tala, minería, pesca), fundición, manufactura, combate/robo/golpe crítico (Bug #42) y estados/fogatas.
 
 ---
 
@@ -710,7 +711,7 @@ Para cada módulo se aplica estrictamente la política de nombres definida en `d
 | **7** | `modHechizos.bas` | `src/server/modHechizos.hpp` | Grande | Magia y Hechizos | **Completado (Aislado / Hooks en Capas 7, 8, 9 y 11)** (25 tests / 241 aserciones en `test_modhechizos.cpp`, ver [`23-modhechizos.md`](23-modhechizos.md) y [`23-modhechizos-breakdown.md`](23-modhechizos-breakdown.md)) |
 | **7** | `modInvisibles.bas` | *Ninguno (Excluido)* | Chico | **Excluido (Código Muerto)** | Documentado en [`14b-invisibles-detalle.md`](../audit/14b-invisibles-detalle.md) |
 | **7** | `ModFacciones.bas` | `src/server/ModFacciones.hpp` | Mediano | Alineación y Jerarquías | **Completado (Aislado / Cableado Pendiente en Capa 9)** (7 tests / 149 aserciones en `test_modfacciones.cpp`, ver [`25-modfacciones.md`](25-modfacciones.md) y [`25-modfacciones-breakdown.md`](25-modfacciones-breakdown.md)) |
-| **7** | `Trabajo.bas` | `src/server/Trabajo.hpp` | Grande | Oficios y Recolección | Minar/talar cliente VB6 |
+| **7** | `Trabajo.bas` | `src/server/Trabajo.hpp` | Grande | Oficios y Recolección | **Completado (Aislado / Cableado Pendiente)** (320 tests / 5.486 aserciones en `test_trabajo.cpp`, ver [`26-trabajo.md`](26-trabajo.md) y [`26-trabajo-breakdown.md`](26-trabajo-breakdown.md)) |
 | **8** | `PathFinding.bas` | `src/server/PathFinding.hpp` | Mediano | Pathfinding A* | doctest + Cliente VB6 |
 | **8** | `MODULO_NPCs.bas` | `src/server/MODULO_NPCs.hpp` | Grande | Spawn / Muerte NPC | Spawn criaturas cliente VB6 |
 | **8** | `AI_NPC.bas` | `src/server/AI_NPC.hpp` | Grande | IA Criaturas | Persecución NPC cliente VB6 |

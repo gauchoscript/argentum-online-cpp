@@ -59,6 +59,7 @@ De acuerdo con la convención del proyecto ([`docs/CONVENTIONS.md`](../CONVENTIO
 | **39** | `modHechizos` | `modHechizos.bas:1104-1120` | Fuga de flujo de ejecución y asimetría de coste en muerte por resurrección (`HechizoEstadoUsuario`) | **Activo / Asimetría Transaccional** | **Replicated (Strict Parity)**<br>[`src/server/modHechizos.cpp:468-477`](src/server/modHechizos.cpp#L468-L477)<br>Test: [`test_modhechizos.cpp:190`](tests/test_modhechizos.cpp#L190) | [Entrada #39](#entrada-39--modhechizos-fuga-de-flujo-de-ejecución-y-asimetría-de-coste-en-muerte-por-resurrección-hechizoestadousuario)<br>Detalle: [`23-modhechizos.md`](23-modhechizos.md#2-replicación-del-bug-39-fuga-de-flujo-en-muerte-por-resurrección) |
 | **40** | `modHechizos` | `modHechizos.bas:1139, 1159` | Colisión y sobrescritura mutua de contadores temporales entre Ceguera y Estupidez (`HechizoEstadoUsuario`) | **Activo / Colisión de Estados** | **Replicated (Strict Parity)**<br>[`src/server/modHechizos.cpp:498, 513`](src/server/modHechizos.cpp#L498)<br>Test: [`test_modhechizos.cpp:210`](tests/test_modhechizos.cpp#L210) | [Entrada #40](#entrada-40--modhechizos-colisión-de-contadores-temporales-entre-ceguera-y-estupidez-hechizoestadousuario)<br>Detalle: [`23-modhechizos.md`](23-modhechizos.md#3-replicación-del-bug-40-colisión-de-temporizadores-cegueraestupidez) |
 | **41** | `modInvisibles` | `modInvisibles.bas:1-41`<br>`SERVER.VBP:45` | Módulo huérfano y rutina `PonerInvisible` sin invocaciones en el juego; rama `#Else` no compilable por variable no definida `Modo` | **Muerto / Huérfano** | **Excluded (dead code, not ported)** | [Entrada #41](#entrada-41--modinvisibles-módulo-huérfano-y-rutina-ponerinvisible-sin-invocaciones)<br>Detalle: [`docs/audit/14b-invisibles-detalle.md`](../audit/14b-invisibles-detalle.md) |
+| **42** | `Trabajo` | `Trabajo.bas:1891` | Reducción del daño al 75% (`daño * 0.75`) en tirada exitosa de `DoGolpeCritico` en lugar de incrementarlo | **Quirk / Asimetría** | **Replicated (Strict Parity)**<br>[`src/server/Trabajo.cpp:1516`](src/server/Trabajo.cpp#L1516)<br>Test: [`test_trabajo.cpp`](tests/test_trabajo.cpp) | [`26-trabajo.md`](26-trabajo.md#31-replicación-del-bug-42-en-dogolpecritico)<br>Detalle: [`../audit/12e-trabajo-detalle.md`](../audit/12e-trabajo-detalle.md#41-quirk-prominente-en-dogolpecritico-reducción-de-daño) |
 
 
 ---
@@ -529,3 +530,13 @@ A continuación se documentan en detalle todas las entradas del registro maestro
 - **Camino de Producción**: **Muerto / Huérfano**. En el flujo real de producción, la visibilidad de los personajes se gestiona mediante la rutina `SetInvisible` en `Modulo_UsUaRiOs.bas` y sus contadores en `modNuevoTimer.bas`.
 - **Estado en C++**: **Excluded (dead code, not ported)**. Módulo excluido del port a C++ siguiendo el precedente de `clsAntiMassClon` y `cColaArray`.
 - **Documentación Detallada**: [`docs/audit/14b-invisibles-detalle.md`](../audit/14b-invisibles-detalle.md).
+
+---
+
+### Entrada #42 — `Trabajo`: Reducción del Daño al 75% en Golpe Crítico (`DoGolpeCritico`)
+- **Cita Legacy**: `legacy/server/Codigo/Trabajo.bas:1891`.
+- **Descripción**: En `DoGolpeCritico`, al resultar exitosa la probabilidad de asestar un golpe crítico, la rutina realiza `daño = static_cast<std::int16_t>(daño * 0.75)`, reduciendo el impacto en un 25% en lugar de bonificarlo o multiplicarlo positivamente.
+- **Camino de Producción**: **Quirk / Asimetría**. Invocado durante la resolución de ataques con armas que posibilitan golpe crítico.
+- **Estado en C++**: **Replicated (Strict Parity)**. Replicado idénticamente en `src/server/Trabajo.cpp` (`DoGolpeCritico`), aplicando el factor `0.75` sobre el daño recibido. Verificado y cubierto en `tests/test_trabajo.cpp`.
+- **Documentación Detallada**: [`26-trabajo.md`](26-trabajo.md#31-replicación-del-bug-42-en-dogolpecritico), [`26-trabajo-breakdown.md`](26-trabajo-breakdown.md#fase-4-g4--combate-sigiloso-hurto-y-domación) y [`docs/audit/12e-trabajo-detalle.md`](../audit/12e-trabajo-detalle.md#41-quirk-prominente-en-dogolpecritico-reducción-de-daño).
+

@@ -40,6 +40,7 @@ Este directorio contiene la documentación de auditoría histórica del código 
 | [12b-invusuario-detalle.md](12b-invusuario-detalle.md) | Auditoría de `InvUsuario.bas` (inventario usuario, equipamiento y exploits). | Área 12 | Detalle Inventario / Objetos | 2026-09-13 |
 | [12c-modbanco-detalle.md](12c-modbanco-detalle.md) | Auditoría de `modBanco.bas` (bóveda bancaria, transacciones y exploits). | Área 12 | Detalle Inventario / Objetos | 2026-09-13 |
 | [12d-comercio-detalle.md](12d-comercio-detalle.md) | Auditoría de `Comercio.bas` y `mdlCOmercioConUsuario.bas` (comercio NPC y P2P seguro). | Área 12 | Detalle Inventario / Comercio | 2026-09-14 |
+| [12e-trabajo-detalle.md](12e-trabajo-detalle.md) | Auditoría de `Trabajo.bas` (oficios de recolección, manufactura, combate y habilidades). | Área 12 | Detalle Oficios / Habilidades | 2026-09-16 |
 | [14a-hechizos-detalle.md](14a-hechizos-detalle.md) | Auditoría de `modHechizos.bas` (magia, conjuros y estados alterados). | Área 14 | Detalle Magia / Hechizos | 2026-09-15 |
 | [14b-invisibles-detalle.md](14b-invisibles-detalle.md) | Auditoría de `modInvisibles.bas` y exclusión por código muerto. | Área 14 | Exclusión (Código Muerto) | 2026-09-16 |
 | [15b-facciones-detalle.md](15b-facciones-detalle.md) | Auditoría de `ModFacciones.bas` (facciones Armada Real y Legión Oscura, jerarquías y expulsión). | Área 15 | Detalle Entidad / Estado | 2026-09-16 |
