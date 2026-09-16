@@ -40,6 +40,7 @@ add_library(server_core STATIC
     src/server/SistemaCombate.cpp
     src/server/modHechizos.cpp
     src/server/ModFacciones.cpp
+    src/server/Trabajo.cpp
 )
 target_include_directories(server_core PUBLIC src)
 target_link_libraries(server_core PUBLIC asio::asio)
@@ -87,6 +88,7 @@ add_executable(unit_tests
     tests/test_sistemacombate.cpp
     tests/test_modhechizos.cpp
     tests/test_modfacciones.cpp
+    tests/test_trabajo.cpp
 )
 target_include_directories(unit_tests PRIVATE src)
 target_link_libraries(unit_tests PRIVATE server_core doctest::doctest)
