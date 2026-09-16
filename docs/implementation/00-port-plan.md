@@ -521,13 +521,18 @@ Para cada módulo se aplica estrictamente la política de nombres definida en `d
 - **Estrategia de Verificación**: **Pruebas unitarias doctest en `tests/test_pathfinding.cpp` (12 test cases / 5.560 aserciones)**. Cobertura de validaciones, transitabilidad, reseteo parcial, secuencia determinista N-S-O-E, evasión de obstáculos y replicación 1:1 de los Bugs #43, #44 y #45.
 
 
-#### 28. `MODULO_NPCs`
+#### 28. `MODULO_NPCs` — **✅ COMPLETADO (Aislado / Cableado Pendiente)**
 - **Archivos Legacy**: `legacy/server/Codigo/MODULO_NPCs.bas`
-- **Propósito**: Ciclo de vida de NPCs: spawn de criaturas, muerte (`MuereNpc`), dropeo de botín y otorgamiento de experiencia (`GiveEXP`).
-- **Archivo C++ Propuesto**: `src/server/MODULO_NPCs.hpp` / `src/server/MODULO_NPCs.cpp`
+- **Propósito**: Ciclo de vida de NPCs: spawn de criaturas, movimiento, desalojo de caspers, muerte (`MuereNpc`), dropeo de botín, otorgamiento de experiencia, gestión de mascotas y rutinas de seguimiento (`DoFollow`, `FollowAmo`).
+- **Archivo C++ Implementado**: `src/server/MODULO_NPCs.hpp` / `src/server/MODULO_NPCs.cpp`
+- **Documentación de Desglose e Implementación**: [`docs/implementation/28-modulo-npcs-breakdown.md`](28-modulo-npcs-breakdown.md) y [`docs/implementation/28-modulo-npcs.md`](28-modulo-npcs.md).
 - **Dependencias**: `Declares`, `FileIO`, `Modulo_InventANDobj`, `ModAreas`, `modSendData`, `Matematicas`.
 - **Estimación**: **Grande** (~1.000 líneas).
-- **Estrategia de Verificación**: Pruebas con cliente VB6 (aparición y muerte de NPCs).
+- **Estrategia de Verificación**: **Pruebas unitarias doctest en `tests/test_modulo_npcs.cpp` (21 test cases / 5.648 aserciones en la suite global sin fallos)**. Cobertura completa de G1 a G5 (resets, instanciación espacial, desplazamiento y permuta de caspers en `MoveNPCChar`, deceso pretoriano `8 To 90`, cota 32.000 frags, Bug #27 inerte, mascotas y seguimiento).
+- **Contratos Salientes y Puntos de Cableado para Capas Superiores**:
+  - `AI_NPC` / `modNuevoTimer`: Invocación periódica de `MoveNPCChar` y rutinas de movimiento de la IA de criaturas.
+  - `Modulo_UsUaRiOs` / `SistemaCombate`: Invocación de `MuereNpc` al infligir el golpe de gracia a un NPC.
+  - `Protocol` / `Acciones`: Conexión de `DoFollow` y `FollowAmo` al procesar comandos `/DOMAR` y `/ACOMPAÑAR`.
 - **Nota de Auditoría / Propagación Cruzada (Carga y Guardado de NPCs en Mapas)**:
   En el archivo binario `.inf`, el registro de NPC persiste el número de plantilla/tipo (`NpcNumber`, ej. 502, 536). En el legacy (`FileIO.bas:1410-1434`), `CargarMapa` lee temporalmente dicho número e invoca `OpenNPC(.NpcIndex)` para instanciar el NPC en el arreglo `Npclist(1 To MAXNPCS)`, asignando `Orig` y `Pos` y llamando a `MakeNPCChar`. Al serializar el mapa (`FileIO.bas:518-520`), `GrabarMapa` recupera y escribe el número de plantilla original mediante `Npclist(.NpcIndex).Numero`.
   En la Capa 2 / 3 (`FileIO.cpp`), para mantener el módulo desacoplado antes de la migración de `MODULO_NPCs`, se almacena directamente el número en `MapData[...].NpcIndex` y se replica en `Npclist`. Al implementar `MODULO_NPCs`, se debe conectar `OpenNPC` con la deserialización de mapas asegurando la correspondencia exacta entre el índice de runtime de `Npclist` y el número de plantilla en disco. Ver [`docs/implementation/10-fileio-mapas.md`](10-fileio-mapas.md).
@@ -715,7 +720,7 @@ Para cada módulo se aplica estrictamente la política de nombres definida en `d
 | **7** | `ModFacciones.bas` | `src/server/ModFacciones.hpp` | Mediano | Alineación y Jerarquías | **Completado (Aislado / Cableado Pendiente en Capa 9)** (7 tests / 149 aserciones en `test_modfacciones.cpp`, ver [`25-modfacciones.md`](25-modfacciones.md) y [`25-modfacciones-breakdown.md`](25-modfacciones-breakdown.md)) |
 | **7** | `Trabajo.bas` | `src/server/Trabajo.hpp` | Grande | Oficios y Recolección | **Completado (Aislado / Cableado Pendiente)** (320 tests / 5.486 aserciones en `test_trabajo.cpp`, ver [`26-trabajo.md`](26-trabajo.md) y [`26-trabajo-breakdown.md`](26-trabajo-breakdown.md)) |
 | **8** | `PathFinding.bas` (`Queue.bas`) | `src/server/PathFinding.hpp` | Mediano | Navegación BFS IA Criaturas | **Completado (Autónomo)** (12 tests / 5.560 aserciones en `test_pathfinding.cpp`, ver [`27-pathfinding.md`](27-pathfinding.md) y [`27-pathfinding-breakdown.md`](27-pathfinding-breakdown.md)) |
-| **8** | `MODULO_NPCs.bas` | `src/server/MODULO_NPCs.hpp` | Grande | Spawn / Muerte NPC | Spawn criaturas cliente VB6 |
+| **8** | `MODULO_NPCs.bas` | `src/server/MODULO_NPCs.hpp` | Grande | Spawn / Muerte NPC | **Completado (Aislado / Cableado Pendiente)** (21 tests / 5.648 aserciones en `test_modulo_npcs.cpp`, ver [`28-modulo-npcs.md`](28-modulo-npcs.md) y [`28-modulo-npcs-breakdown.md`](28-modulo-npcs-breakdown.md)) |
 
 | **8** | `AI_NPC.bas` | `src/server/AI_NPC.hpp` | Grande | IA Criaturas | Persecución NPC cliente VB6 |
 | **8** | `praetorians.bas` | `src/server/praetorians.hpp` | Grande | Guardias Ciudad | Interacción guardias cliente VB6 |
