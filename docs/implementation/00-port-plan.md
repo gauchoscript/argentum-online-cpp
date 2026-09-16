@@ -482,17 +482,20 @@ Para cada módulo se aplica estrictamente la política de nombres definida en `d
 - **Nota de Propagación**: La visibilidad real y los contadores se gestionan mediante `SetInvisible` en `Modulo_UsUaRiOs.bas` y los contadores en `modNuevoTimer.bas`.
 - **Registro de Bug**: Entrada #41 en [`docs/implementation/KNOWN-LEGACY-BUGS.md`](KNOWN-LEGACY-BUGS.md).
 
-#### 25. `ModFacciones`
+#### 25. `ModFacciones` — ✅ COMPLETADO (Aislado / Cableado Pendiente en Capa 9)
 - **Archivos Legacy**: `legacy/server/Codigo/ModFacciones.bas`
-- **Propósito**: Sistema de alineación y facciones (Ejército Real vs Fuerzas del Caos), estado de criminal o ciudadano, jerarquías y puntos de facción.
-- **Archivo C++ Propuesto**: `src/server/ModFacciones.hpp` / `src/server/ModFacciones.cpp`
-- **Dependencias**: `Declares`, `modSendData`, `FileIO`.
-- **Estimación**: **Mediano** (~800 líneas).
-- **Estrategia de Verificación**: Pruebas con cliente VB6 (cambio de status criminal y jerarquías).
-- **Nota de Auditoría / Propagación Cruzada (Variables de Vestimentas, Armaduras Faccionarias y Recompensas de Facción)**:
-  1. **Túnicas e Ítems Faccionarios (Grupo 3 FileIO)**: Las 24 variables globales de ítems de armaduras y túnicas faccionarias declaradas originalmente en `ModFacciones.bas:34-58` (`ArmaduraImperial1..3`, `TunicaMagoImperial`, `TunicaMagoImperialEnanos`, `ArmaduraCaos1..3`, `TunicaMagoCaos`, `TunicaMagoCaosEnanos`, `VestimentaImperialHumano`, `VestimentaImperialEnano`, `TunicaConspicuaHumano`, `TunicaConspicuaEnano`, `ArmaduraNobilisimaHumano`, `ArmaduraNobilisimaEnano`, `ArmaduraGranSacerdote`, `VestimentaLegionHumano`, `VestimentaLegionEnano`, `TunicaLobregaHumano`, `TunicaLobregaEnano`, `TunicaEgregiaHumano`, `TunicaEgregiaEnano`, `SacerdoteDemoniaco`) son pobladas desde `Server.ini` durante el arranque por `FileIO.cpp` (`LoadSini()`).
-  2. **Defensas de Armaduras Faccionarias y Recompensas por Rango (Grupo 5 FileIO)**: La estructura `tFaccionArmaduras`, la enumeración `eTipoDefArmors`, la constante `NUM_RANGOS_FACCION` (15), el arreglo 2D/3D `ArmadurasFaccion(1 To NUMCLASES, 1 To NUMRAZAS)` y el arreglo de experiencia `RecompensaFacciones(NUM_RANGOS_FACCION)` declarados originalmente en `ModFacciones.bas:63,72-81` son poblados desde `Dat/ArmadurasFaccionarias.dat` (`LoadArmadurasFaccion()`) y `Dat/Balance.dat` (`LoadBalance()`) por `FileIO.cpp`.
-  Todas estas variables ya se encuentran declaradas e instanciadas en `Declares.hpp` / `Declares.cpp`. Al portar `ModFacciones`, deben consumirse desde `Declares.hpp` sin volver a declararlas. Ver [`10-fileio-configuracion-servidor.md`](10-fileio-configuracion-servidor.md) y [`10-fileio-tablas-datos.md`](10-fileio-tablas-datos.md).
+- **Propósito**: Sistema de alineación y facciones (Ejército Real vs Fuerzas del Caos), jerarquías, promociones, recompensas y enrolamiento.
+- **Archivo C++ Implementado**: `src/server/ModFacciones.hpp` / `src/server/ModFacciones.cpp`
+- **Informe de auditoría**: [`docs/audit/15b-facciones-detalle.md`](../audit/15b-facciones-detalle.md)
+- **Especificación técnica y Breakdown**: [`docs/implementation/25-modfacciones.md`](25-modfacciones.md) y [`docs/implementation/25-modfacciones-breakdown.md`](25-modfacciones-breakdown.md)
+- **Pruebas Unitarias**: `tests/test_modfacciones.cpp` (7 test cases / 149 aserciones pasadas en `doctest`).
+- **Resumen de Implementación**:
+  - *Redondeo de VB6 en GetArmourAmount*: Implementado con `std::nearbyint` para paridad half-to-even exacta.
+  - *Peculiaridades de Dominio (Regla 7 de CONVENTIONS.md)*:
+    - **Quirk 7.1**: Bloqueo irreversible de enrolamiento en Caos si `RecibioExpInicialReal == 1`.
+    - **Quirk 7.2**: No se pierden los ítems faccionarios del inventario al ser expulsado (solo se desequipan armadura y escudo faccionarios si están en uso).
+    - **Quirk 7.3**: Mensaje específico de rebelión en Caos si `Reenlistadas == 200`.
+  - *Cableado de Callbacks por Defecto*: `InitDefaultFactionCallbacks()` conecta `MeterItemEnInventario` (`InvUsuario`), `TirarItemAlPiso` (`Modulo_InventANDobj`), `Desequipar` (`InvUsuario`), `GetGuildAlignment` (`modGuilds`), `LogEjercitoReal` y `LogEjercitoCaos` (`FileIO`).
 
 #### 26. `Trabajo` *(Falta auditoría detallada)*
 - **Archivos Legacy**: `legacy/server/Codigo/Trabajo.bas`
@@ -706,7 +709,7 @@ Para cada módulo se aplica estrictamente la política de nombres definida en `d
 | **7** | `SistemaCombate.bas` | `src/server/SistemaCombate.hpp` | Grande | Fórmulas y Flujo de Combate | **Completado (Aislado / Hooks en Capas 7, 8 y 9)** (26 tests / 162 aserciones en `test_sistemacombate.cpp`, ver [`22-sistemacombate.md`](22-sistemacombate.md) y [`22-sistemacombate-breakdown.md`](22-sistemacombate-breakdown.md)) |
 | **7** | `modHechizos.bas` | `src/server/modHechizos.hpp` | Grande | Magia y Hechizos | **Completado (Aislado / Hooks en Capas 7, 8, 9 y 11)** (25 tests / 241 aserciones en `test_modhechizos.cpp`, ver [`23-modhechizos.md`](23-modhechizos.md) y [`23-modhechizos-breakdown.md`](23-modhechizos-breakdown.md)) |
 | **7** | `modInvisibles.bas` | *Ninguno (Excluido)* | Chico | **Excluido (Código Muerto)** | Documentado en [`14b-invisibles-detalle.md`](../audit/14b-invisibles-detalle.md) |
-| **7** | `ModFacciones.bas` | `src/server/ModFacciones.hpp` | Mediano | Alineación | Facciones cliente VB6 |
+| **7** | `ModFacciones.bas` | `src/server/ModFacciones.hpp` | Mediano | Alineación y Jerarquías | **Completado (Aislado / Cableado Pendiente en Capa 9)** (7 tests / 149 aserciones en `test_modfacciones.cpp`, ver [`25-modfacciones.md`](25-modfacciones.md) y [`25-modfacciones-breakdown.md`](25-modfacciones-breakdown.md)) |
 | **7** | `Trabajo.bas` | `src/server/Trabajo.hpp` | Grande | Oficios y Recolección | Minar/talar cliente VB6 |
 | **8** | `PathFinding.bas` | `src/server/PathFinding.hpp` | Mediano | Pathfinding A* | doctest + Cliente VB6 |
 | **8** | `MODULO_NPCs.bas` | `src/server/MODULO_NPCs.hpp` | Grande | Spawn / Muerte NPC | Spawn criaturas cliente VB6 |

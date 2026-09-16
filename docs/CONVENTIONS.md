@@ -102,15 +102,16 @@ El cierre formal de cada módulo debe confirmarse obligatoriamente en EXACTAMENT
 
 1. **`feat(server): ...` (Implementación de Código)**:
    - **Scope**: General (`server`), abarcando `src/server/<modulo>.*` y cabeceras base indispensables (`Declares.*`).
-   - **Cuerpo semántico**: Describe procedimientos portados, contratos de desacoplamiento introducidos, y los defectos o peculiaridades legacy preservados IDENTIFICÁNDOLOS SIEMPRE por su nombre funcional (ej. "omisión de daño de flecha en bono de fuerza", "duplicación por desborde en piso"), NUNCA únicamente por identificadores numéricos de la documentación.
+   - **Cuerpo semántico**: Describe procedimientos portados, contratos de desacoplamiento introducidos, y los defectos o peculiaridades legacy preservados.
+   - **Prohibición de referencias documentales**: Queda estrictamente prohibido referenciar tanto bugs como peculiaridades por identificadores numéricos o códigos de documentación (prohibido escribir "Bug #XX", "Quirk X.Y", "Criterio N"). Toda anomalía o regla debe identificarse SIEMPRE por su comportamiento funcional de dominio (ej. "omisión de daño de flecha en bono de fuerza", "bloqueo irreversible de Caos por experiencia real previa", "desequipamiento sin purga de mochila al expulsar").
 
 2. **`test(<modulo>): ...` (Pruebas Unitarias)**:
    - **Scope**: Acotado estrictamente al módulo (`<modulo>`), abarcando `tests/test_<modulo>.cpp` y `CMakeLists.txt`.
-   - **Cuerpo semántico**: Describe las áreas probadas, los casos de borde o comportamientos anómalos validados por su nombre funcional, y el recuento global de tests y aserciones en verde.
+   - **Cuerpo semántico**: Describe las áreas probadas, los casos de borde evaluados y la verificación de defectos y peculiaridades históricas, nombrándolos por su comportamiento de juego probado y no por etiquetas documentales. Concluye con el recuento global de tests y aserciones en verde.
 
 3. **`docs(<modulo>): ...` (Documentación y Cierre)**:
    - **Scope**: Acotado estrictamente al módulo (`<modulo>`), abarcando documentación en `docs/implementation/`, `00-port-plan.md`, `KNOWN-LEGACY-BUGS.md` y `docs/audit/`.
-   - **Cuerpo semántico**: Indica el estado formal del módulo, contratos diferidos hacia capas pendientes y sincronización del ledger.
+   - **Cuerpo semántico**: Indica el estado formal del módulo, contratos diferidos hacia capas pendientes y sincronización de bugs en el ledger. Si el módulo incluye peculiaridades de dominio, se consigna que fueron documentadas en sus respectivas secciones técnicas sin ingresar al bug ledger (Regla 7), nombrándolas por su mecánica funcional.
 
 ### Definición Formal de los Tres Estados de Cierre de Módulo (Module Closure States)
 
