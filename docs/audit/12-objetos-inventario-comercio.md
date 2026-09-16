@@ -53,5 +53,5 @@ El subsistema de objetos e inventario gobierna la economía material del mundo p
 | :--- | :--- | :--- |
 | `Modulo_InventANDobj.bas` | Inventario de NPCs, drops probabilísticos y despacho `TirarItemAlPiso`. | [`12a-modulo-inventandobj-detalle.md`](12a-modulo-inventandobj-detalle.md) |
 | `InvUsuario.bas` | Manipulación de `UserList.Invent`, mutaciones en mapa y equipamiento. | [`12b-invusuario-detalle.md`](12b-invusuario-detalle.md) |
-| `Comercio.bas` | Lógica de compra y venta entre usuarios y mercaderes NPC. | Futura auditoría `12c-comercio-detalle.md` |
-| `Trabajo.bas` | Habilidades de recolección y fabricación de objetos. | Futura auditoría `12d-trabajo-detalle.md` |
+| `Comercio.bas` | Lógica de compra y venta entre usuarios y mercaderes NPC. | [`12d-comercio-detalle.md`](12d-comercio-detalle.md) |
+| `Trabajo.bas` | Habilidades de recolección y fabricación de objetos. | [`12e-trabajo-detalle.md`](12e-trabajo-detalle.md) |
