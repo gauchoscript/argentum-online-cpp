@@ -510,14 +510,16 @@ Para cada módulo se aplica estrictamente la política de nombres definida en `d
 
 ### Capa 8: Inteligencia Artificial y Gestión de NPCs
 
-#### 27. `PathFinding`
-- **Archivos Legacy**: `legacy/server/Codigo/PathFinding.bas`
+#### 27. `PathFinding` (COMPLETADO — Autónomo)
+- **Archivos Legacy**: `legacy/server/Codigo/PathFinding.bas`, `legacy/server/Codigo/Queue.bas`
 - **Propósito**: Algoritmos de búsqueda de caminos (BFS) para movimiento de NPCs esquivando obstáculos en la grilla.
-- **Archivo C++ Propuesto**: `src/server/PathFinding.hpp` / `src/server/PathFinding.cpp`
+- **Archivo C++ Implementado**: `src/server/PathFinding.hpp` / `src/server/PathFinding.cpp`
+- **Estado**: **Completado (Autónomo)** (Especificación técnica oficial en [`27-pathfinding.md`](27-pathfinding.md), plan de desglose en [`27-pathfinding-breakdown.md`](27-pathfinding-breakdown.md) e informe de auditoría en [`docs/audit/08a-pathfinding-detalle.md`](../audit/08a-pathfinding-detalle.md)).
 - **Dependencias**: `Declares`.
-- **Nota de Migración (`Queue.bas`)**: Al portar este módulo, la funcionalidad de `Queue.bas` (de la cual depende `PathFinding.bas`) ya quedó resuelta en la auditoría de Capa 0: no debe crearse una estructura ni módulo global/estático `Queue`. Debe implementarse como un `std::queue<tVertice>` local circunscrito al ámbito de la función `SeekPath`, en consonancia con el modelo de ejecución monohilo monobúsqueda confirmado en [`docs/implementation/04-modcola-queue-colaarray.md`](04-modcola-queue-colaarray.md). La estructura plana `tVertice` ya reside en `Declares.hpp`.
+- **Nota de Migración (`Queue.bas`)**: La cola de `Queue.bas` quedó resuelta de forma transitoria como `std::queue<tVertice>` local circunscrita al ámbito de `SeekPath`.
 - **Estimación**: **Mediano** (~300 líneas).
-- **Estrategia de Verificación**: Pruebas unitarias en C++ con **doctest** y pruebas con cliente VB6.
+- **Estrategia de Verificación**: **Pruebas unitarias doctest en `tests/test_pathfinding.cpp` (12 test cases / 5.560 aserciones)**. Cobertura de validaciones, transitabilidad, reseteo parcial, secuencia determinista N-S-O-E, evasión de obstáculos y replicación 1:1 de los Bugs #43, #44 y #45.
+
 
 #### 28. `MODULO_NPCs`
 - **Archivos Legacy**: `legacy/server/Codigo/MODULO_NPCs.bas`
@@ -712,8 +714,9 @@ Para cada módulo se aplica estrictamente la política de nombres definida en `d
 | **7** | `modInvisibles.bas` | *Ninguno (Excluido)* | Chico | **Excluido (Código Muerto)** | Documentado en [`14b-invisibles-detalle.md`](../audit/14b-invisibles-detalle.md) |
 | **7** | `ModFacciones.bas` | `src/server/ModFacciones.hpp` | Mediano | Alineación y Jerarquías | **Completado (Aislado / Cableado Pendiente en Capa 9)** (7 tests / 149 aserciones en `test_modfacciones.cpp`, ver [`25-modfacciones.md`](25-modfacciones.md) y [`25-modfacciones-breakdown.md`](25-modfacciones-breakdown.md)) |
 | **7** | `Trabajo.bas` | `src/server/Trabajo.hpp` | Grande | Oficios y Recolección | **Completado (Aislado / Cableado Pendiente)** (320 tests / 5.486 aserciones en `test_trabajo.cpp`, ver [`26-trabajo.md`](26-trabajo.md) y [`26-trabajo-breakdown.md`](26-trabajo-breakdown.md)) |
-| **8** | `PathFinding.bas` | `src/server/PathFinding.hpp` | Mediano | Pathfinding A* | doctest + Cliente VB6 |
+| **8** | `PathFinding.bas` (`Queue.bas`) | `src/server/PathFinding.hpp` | Mediano | Navegación BFS IA Criaturas | **Completado (Autónomo)** (12 tests / 5.560 aserciones en `test_pathfinding.cpp`, ver [`27-pathfinding.md`](27-pathfinding.md) y [`27-pathfinding-breakdown.md`](27-pathfinding-breakdown.md)) |
 | **8** | `MODULO_NPCs.bas` | `src/server/MODULO_NPCs.hpp` | Grande | Spawn / Muerte NPC | Spawn criaturas cliente VB6 |
+
 | **8** | `AI_NPC.bas` | `src/server/AI_NPC.hpp` | Grande | IA Criaturas | Persecución NPC cliente VB6 |
 | **8** | `praetorians.bas` | `src/server/praetorians.hpp` | Grande | Guardias Ciudad | Interacción guardias cliente VB6 |
 | **9** | `Characters.bas` | `src/server/Characters.hpp` | Chico | Respawn / Posición | Resucitar cliente VB6 |

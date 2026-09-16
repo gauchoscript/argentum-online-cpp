@@ -540,3 +540,32 @@ A continuación se documentan en detalle todas las entradas del registro maestro
 - **Estado en C++**: **Replicated (Strict Parity)**. Replicado idénticamente en `src/server/Trabajo.cpp` (`DoGolpeCritico`), aplicando el factor `0.75` sobre el daño recibido. Verificado y cubierto en `tests/test_trabajo.cpp`.
 - **Documentación Detallada**: [`26-trabajo.md`](26-trabajo.md#31-replicación-del-bug-42-en-dogolpecritico), [`26-trabajo-breakdown.md`](26-trabajo-breakdown.md#fase-4-g4--combate-sigiloso-hurto-y-domación) y [`docs/audit/12e-trabajo-detalle.md`](../audit/12e-trabajo-detalle.md#41-quirk-prominente-en-dogolpecritico-reducción-de-daño).
 
+---
+
+### Entrada #43 — `PathFinding`: Variable `steps` Inoperante sin Incrementar en el Bucle Principal BFS (`SeekPath`)
+- **Cita Legacy**: [`legacy/server/Codigo/PathFinding.bas:217-237`](../../legacy/server/Codigo/PathFinding.bas#L217-L237).
+- **Descripción**: La variable local `steps` se inicializa en `0` antes del bucle BFS y dentro del bucle `Do While (Not IsEmpty)` la condición `If steps > MaxSteps Then Exit Do` evalúa dicha variable. Sin embargo, no existe ninguna instrucción `steps = steps + 1` dentro del loop. Por ende, `steps` permanece estancada en `0` y la cota `MaxSteps` nunca logra interrumpir el recorrido BFS por iteraciones. El corte ocurre únicamente si la cola se vacía (`IsEmpty`), si se alcanza la meta `tar_npc_pos` o por desbordamiento de la cola de 1000 elementos (`MAXELEM`).
+- **Camino de Producción**: **Activo / Bug de Bucle**.
+- **Estado en C++**: **Replicated (Strict Parity)**. Replicado en [`src/server/PathFinding.cpp:177`](../../src/server/PathFinding.cpp#L177) dentro de `SeekPath`, manteniendo `steps` constante en `0`. Probado en [`tests/test_pathfinding.cpp:281`](../../tests/test_pathfinding.cpp#L281).
+- **Documentación Detallada**: [`27-pathfinding.md`](27-pathfinding.md#3-bugs-históricos-replicados-11), [`27-pathfinding-breakdown.md`](27-pathfinding-breakdown.md) y [`docs/audit/08a-pathfinding-detalle.md`](../audit/08a-pathfinding-detalle.md#2-variable-steps-sin-incrementar-bug-en-bucle-principal).
+
+---
+
+### Entrada #44 — `PathFinding`: Limpieza Incompleta de Matriz Global `TmpArray` (`InitializeTable`)
+- **Cita Legacy**: [`legacy/server/Codigo/PathFinding.bas:212-220`](../../legacy/server/Codigo/PathFinding.bas#L212-L220).
+- **Descripción**: La rutina `InitializeTable` restablece los campos de `TmpArray` a sus valores por defecto (`Known = False`, `DistV = MAXINT`, `PrevV = (0,0)`) limitando la iteración exclusivamente al sub-cuadrante de `[S.Y - MaxSteps, S.Y + MaxSteps]` y `[S.X - MaxSteps, S.X + MaxSteps]`. Si en una búsqueda BFS previa el algoritmo visitó nodos fuera de esa ventana o si se ejecuta una consulta con otra coordenada inicial, la matriz conserva distancias y punteros `PrevV` obsoletos de llamadas anteriores, pudiendo provocar corrupciones de camino o bucles en la reconstrucción.
+- **Camino de Producción**: **Activo / Side-Effect de Estado Global**.
+- **Estado en C++**: **Replicated (Strict Parity)**. Replicado en [`src/server/PathFinding.cpp:52`](../../src/server/PathFinding.cpp#L52) dentro de `InitializeTable`. Probado en [`tests/test_pathfinding.cpp:115`](../../tests/test_pathfinding.cpp#L115).
+- **Documentación Detallada**: [`27-pathfinding.md`](27-pathfinding.md#3-bugs-históricos-replicados-11), [`27-pathfinding-breakdown.md`](27-pathfinding-breakdown.md) y [`docs/audit/08a-pathfinding-detalle.md`](../audit/08a-pathfinding-detalle.md#3-limpieza-incompleta-de-tmparray-efecto-colateral-de-sub-grilla).
+
+---
+
+### Entrada #45 — `PathFinding`: Asimetría e Inversión Histórica de Coordenadas $X \leftrightarrow Y$
+- **Cita Legacy**: [`legacy/server/Codigo/PathFinding.bas:1-19, 221-222`](../../legacy/server/Codigo/PathFinding.bas#L1-L19) y [`legacy/server/Codigo/AI_NPC.bas:990-991, 1030-1031`](../../legacy/server/Codigo/AI_NPC.bas#L990-L991).
+- **Descripción**: Debido a la convención histórica del autor frente a ORE/AO (`MapData(Map, X, Y)` vs `TmpArray(Y, X)`), `PathFinding.bas` indexa internamente la primera dimensión como `Y` (fila) y la segunda como `X` (columna). Tanto en `SeekPath` como en los puntos de llamada en `AI_NPC.bas`, se intercambian manualmente `X` e `Y` al setear `Target` (`Target.X = Pos.Y`, `Target.Y = Pos.X`), al inicializar la búsqueda (`cur_npc_pos.X = Pos.Y`, `cur_npc_pos.Y = Pos.X`) y al leer el arreglo devuelto (`tmpPos.X = Path(i).Y`, `tmpPos.Y = Path(i).X`).
+- **Camino de Producción**: **Activo / Quirk de Arquitectura**.
+- **Estado en C++**: **Replicated (Strict Parity)**. Replicado en [`src/server/PathFinding.cpp:144, 169`](../../src/server/PathFinding.cpp#L144) dentro de `SeekPath` y `MakePath`. Probado en [`tests/test_pathfinding.cpp:202`](../../tests/test_pathfinding.cpp#L202).
+- **Documentación Detallada**: [`27-pathfinding.md`](27-pathfinding.md#3-bugs-históricos-replicados-11), [`27-pathfinding-breakdown.md`](27-pathfinding-breakdown.md) y [`docs/audit/08a-pathfinding-detalle.md`](../audit/08a-pathfinding-detalle.md#1-inversión-histórica-de-coordenadas-x---y).
+
+
+

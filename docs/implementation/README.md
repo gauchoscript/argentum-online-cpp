@@ -31,4 +31,6 @@ Este directorio realiza el seguimiento de las decisiones de diseño, especificac
 | 12 | [`12-securityip.md`](12-securityip.md) | SecurityIp (`SecurityIp.bas`) | 4 | `partial` |
 | 14 | [`14-tcp.md`](14-tcp.md) / [`14-tcp-breakdown.md`](14-tcp-breakdown.md) | TCP (`TCP.bas`, `wskapiAO.bas`, `wsksock.bas`) | 4 | `completed` |
 | 15 | [`15-modsenddata.md`](15-modsenddata.md) / [`15-modsenddata-breakdown.md`](15-modsenddata-breakdown.md) | modSendData (`modSendData.bas`) | 4 | `completed` |
+| 27 | [`27-pathfinding-breakdown.md`](27-pathfinding-breakdown.md) | PathFinding (`PathFinding.bas`) y Queue (`Queue.bas`) | 8 | `in-progress` |
+
 
