@@ -1,4 +1,4 @@
-﻿#ifndef PROTOCOL_HPP
+#ifndef PROTOCOL_HPP
 #define PROTOCOL_HPP
 
 #include <cstdint>
@@ -419,7 +419,7 @@ void WriteWorkRequestTarget(std::int16_t UserIndex, eSkill Skill);
 void WriteChangeInventorySlot(std::int16_t UserIndex, std::uint8_t Slot);
 void WriteAddSlots(std::int16_t UserIndex, eMochilas Mochila);
 void WriteChangeBankSlot(std::int16_t UserIndex, std::uint8_t Slot);
-void WriteChangeSpellSlot(std::int16_t UserIndex, std::int16_t Slot);
+void WriteChangeSpellSlot(std::int16_t UserIndex, std::uint8_t Slot);
 void WriteAttributes(std::int16_t UserIndex);
 void WriteBlacksmithWeapons(std::int16_t UserIndex);
 void WriteBlacksmithArmors(std::int16_t UserIndex);
