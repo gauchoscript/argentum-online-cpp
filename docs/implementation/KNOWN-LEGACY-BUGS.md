@@ -560,12 +560,12 @@ A continuación se documentan en detalle todas las entradas del registro maestro
 
 ---
 
-### Entrada #45 — `PathFinding`: Asimetría e Inversión Histórica de Coordenadas $X \leftrightarrow Y$
-- **Cita Legacy**: [`legacy/server/Codigo/PathFinding.bas:1-19, 221-222`](../../legacy/server/Codigo/PathFinding.bas#L1-L19) y [`legacy/server/Codigo/AI_NPC.bas:990-991, 1030-1031`](../../legacy/server/Codigo/AI_NPC.bas#L990-L991).
+### Entrada #45 — `PathFinding` / `AI_NPC`: Asimetría e Inversión Histórica de Coordenadas $X \leftrightarrow Y$
+- **Cita Legacy**: [`legacy/server/Codigo/PathFinding.bas:1-19, 221-222`](../../legacy/server/Codigo/PathFinding.bas#L1-L19) y [`legacy/server/Codigo/AI_NPC.bas:986-987, 1033-1034`](../../legacy/server/Codigo/AI_NPC.bas#L986-L987).
 - **Descripción**: Debido a la convención histórica del autor frente a ORE/AO (`MapData(Map, X, Y)` vs `TmpArray(Y, X)`), `PathFinding.bas` indexa internamente la primera dimensión como `Y` (fila) y la segunda como `X` (columna). Tanto en `SeekPath` como en los puntos de llamada en `AI_NPC.bas`, se intercambian manualmente `X` e `Y` al setear `Target` (`Target.X = Pos.Y`, `Target.Y = Pos.X`), al inicializar la búsqueda (`cur_npc_pos.X = Pos.Y`, `cur_npc_pos.Y = Pos.X`) y al leer el arreglo devuelto (`tmpPos.X = Path(i).Y`, `tmpPos.Y = Path(i).X`).
 - **Camino de Producción**: **Activo / Quirk de Arquitectura**.
-- **Estado en C++**: **Replicated (Strict Parity)**. Replicado en [`src/server/PathFinding.cpp:144, 169`](../../src/server/PathFinding.cpp#L144) dentro de `SeekPath` y `MakePath`. Probado en [`tests/test_pathfinding.cpp:202`](../../tests/test_pathfinding.cpp#L202).
-- **Documentación Detallada**: [`27-pathfinding.md`](27-pathfinding.md#3-bugs-históricos-replicados-11), [`27-pathfinding-breakdown.md`](27-pathfinding-breakdown.md) y [`docs/audit/08a-pathfinding-detalle.md`](../audit/08a-pathfinding-detalle.md#1-inversión-histórica-de-coordenadas-x---y).
+- **Estado en C++**: **Replicated (Strict Parity)**. Replicado en `src/server/PathFinding.cpp:144, 169` (`SeekPath` / `MakePath`) y en los puntos de consumo de `src/server/AI_NPC.cpp` (`PathFindingAI` L223-224 y `FollowPath` L195-196). Verificado en `tests/test_pathfinding.cpp:202` y `tests/test_ai_npc.cpp:115-135`.
+- **Documentación Detallada**: [`27-pathfinding.md`](27-pathfinding.md#3-bugs-históricos-replicados-11), [`29-ai-npc.md`](29-ai-npc.md#4-quirks-históricos-y-reglas-de-dominio-replicadas), [`29-ai-npc-breakdown.md`](29-ai-npc-breakdown.md) y [`docs/audit/08a-pathfinding-detalle.md`](../audit/08a-pathfinding-detalle.md#1-inversión-histórica-de-coordenadas-x---y).
 
 
 

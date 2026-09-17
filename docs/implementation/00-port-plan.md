@@ -538,13 +538,18 @@ Para cada módulo se aplica estrictamente la política de nombres definida en `d
   En la Capa 2 / 3 (`FileIO.cpp`), para mantener el módulo desacoplado antes de la migración de `MODULO_NPCs`, se almacena directamente el número en `MapData[...].NpcIndex` y se replica en `Npclist`. Al implementar `MODULO_NPCs`, se debe conectar `OpenNPC` con la deserialización de mapas asegurando la correspondencia exacta entre el índice de runtime de `Npclist` y el número de plantilla en disco. Ver [`docs/implementation/10-fileio-mapas.md`](10-fileio-mapas.md).
 
 
-#### 29. `AI_NPC`
+#### 29. `AI_NPC` — **✅ COMPLETADO (Aislado / Cableado Pendiente)**
 - **Archivos Legacy**: `legacy/server/Codigo/AI_NPC.bas`
-- **Propósito**: Inteligencia Artificial de NPCs (`NPC_AI` ejecutado periódicamente): persecución de jugadores, agresión, huida y ataque.
-- **Archivo C++ Propuesto**: `src/server/AI_NPC.hpp` / `src/server/AI_NPC.cpp`
+- **Propósito**: Inteligencia Artificial de NPCs (`NPC_AI` ejecutado periódicamente): persecución de jugadores, escaneo de visión $8 \times 6$, agresión, huida y ataque mágico/físico.
+- **Archivo C++ Implementado**: `src/server/AI_NPC.hpp` / `src/server/AI_NPC.cpp`
+- **Documentación de Auditoría, Desglose e Implementación**: [`docs/audit/13b-ainpc-detalle.md`](../audit/13b-ainpc-detalle.md), [`docs/implementation/29-ai-npc-breakdown.md`](29-ai-npc-breakdown.md) y [`docs/implementation/29-ai-npc.md`](29-ai-npc.md).
 - **Dependencias**: `Declares`, `MODULO_NPCs`, `PathFinding`, `SistemaCombate`, `modHechizos`, `ModAreas`.
 - **Estimación**: **Grande** (~1.200 líneas).
-- **Estrategia de Verificación**: Pruebas con cliente VB6 observando comportamiento de agresión y persecución de NPCs.
+- **Estrategia de Verificación**: **Pruebas unitarias doctest en `tests/test_ai_npc.cpp` (13 test cases / 35 aserciones en la suite de IA y 360 test cases / 5.704 aserciones globales en verde)**. Cobertura de las Fases 1 a 4 (escaneo direccional, magia de criaturas, paridad `UserNear`, Bug #45 de inversión $X \leftrightarrow Y$, exclusión de Elemental de Agua 92, frenesí Elemental de Fuego 93 vs Dragón 13, seguro de mascota y recuperador destructivo de excepciones `NPCAI`).
+- **Contratos Salientes y Puntos de Cableado para Capas Superiores**:
+  - `modNuevoTimer.bas` / `GameLogic.bas`: Invocación periódica de `NPCAI(npc_index)` desde el timer de IA (`tNPCAI`).
+  - `SistemaCombate.bas`: Invocación de `NpcAtacaUser` y `NpcAtacaNpc` al resolver agresiones.
+  - `Modulo_UsUaRiOs.bas` / `Protocol.bas`: Sincronización de alineación criminal y seguro de mascotas para interacción con ciudadanos.
 
 #### 30. `praetorians` *(Falta auditoría detallada)*
 - **Archivos Legacy**: `legacy/server/Codigo/praetorians.bas`
@@ -722,7 +727,7 @@ Para cada módulo se aplica estrictamente la política de nombres definida en `d
 | **8** | `PathFinding.bas` (`Queue.bas`) | `src/server/PathFinding.hpp` | Mediano | Navegación BFS IA Criaturas | **Completado (Autónomo)** (12 tests / 5.560 aserciones en `test_pathfinding.cpp`, ver [`27-pathfinding.md`](27-pathfinding.md) y [`27-pathfinding-breakdown.md`](27-pathfinding-breakdown.md)) |
 | **8** | `MODULO_NPCs.bas` | `src/server/MODULO_NPCs.hpp` | Grande | Spawn / Muerte NPC | **Completado (Aislado / Cableado Pendiente)** (21 tests / 5.648 aserciones en `test_modulo_npcs.cpp`, ver [`28-modulo-npcs.md`](28-modulo-npcs.md) y [`28-modulo-npcs-breakdown.md`](28-modulo-npcs-breakdown.md)) |
 
-| **8** | `AI_NPC.bas` | `src/server/AI_NPC.hpp` | Grande | IA Criaturas | Persecución NPC cliente VB6 |
+| **8** | `AI_NPC.bas` | `src/server/AI_NPC.hpp` | Grande | IA Criaturas | **Completado (Aislado / Cableado Pendiente)** (13 tests / 35 aserciones en `test_ai_npc.cpp`, ver [`29-ai-npc.md`](29-ai-npc.md) y [`29-ai-npc-breakdown.md`](29-ai-npc-breakdown.md)) |
 | **8** | `praetorians.bas` | `src/server/praetorians.hpp` | Grande | Guardias Ciudad | Interacción guardias cliente VB6 |
 | **9** | `Characters.bas` | `src/server/Characters.hpp` | Chico | Respawn / Posición | Resucitar cliente VB6 |
 | **9** | `clsParty` / `mdParty` | `src/server/clsParty.hpp` | Mediano | Grupos / Party | Party 2+ clientes VB6 |
