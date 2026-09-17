@@ -551,14 +551,21 @@ Para cada módulo se aplica estrictamente la política de nombres definida en `d
   - `SistemaCombate.bas`: Invocación de `NpcAtacaUser` y `NpcAtacaNpc` al resolver agresiones.
   - `Modulo_UsUaRiOs.bas` / `Protocol.bas`: Sincronización de alineación criminal y seguro de mascotas para interacción con ciudadanos.
 
-#### 30. `praetorians` *(Falta auditoría detallada)*
+#### 30. `praetorians` — **✅ COMPLETADO (Aislado / Cableado Pendiente)**
 - **Archivos Legacy**: `legacy/server/Codigo/praetorians.bas`
-- **Propósito**: IA de guardias pretorianos y defensores de ciudades contra criminales.
-- **Archivo C++ Propuesto**: `src/server/praetorians.hpp` / `src/server/praetorians.cpp`
-- **Dependencias**: `Declares`, `AI_NPC`, `MODULO_NPCs`, `ModFacciones`.
+- **Propósito**: Inteligencia Artificial táctica de la fortaleza pretoriana (`MAPA_PRETORIANO`): 5 roles militarizados (Rey, Guerrero, Cazador, Mago y Clérigo), patrulla por waypoints en alcobas, auxilio aliado en cascada, disipación de invisibilidad, inmolación kamikaze del mago e instanciación del clan pretoriano.
+- **Archivo C++ Implementado**: `src/server/praetorians.hpp` / `src/server/praetorians.cpp`
+- **Documentación de Auditoría, Desglose e Implementación**: [`docs/audit/13c-praetorians-detalle.md`](../audit/13c-praetorians-detalle.md), [`docs/implementation/30-praetorians-breakdown.md`](30-praetorians-breakdown.md) y [`docs/implementation/30-praetorians.md`](30-praetorians.md).
+- **Dependencias**: `Declares`, `MODULO_NPCs`, `AI_NPC`, `modSendData`.
 - **Estimación**: **Grande** (~2.100 líneas).
-- **Estrategia de Verificación**: Pruebas con cliente VB6 interactuando con guardias de ciudad.
-- **Nota de Auditoría / Propagación Cruzada (`MAPA_PRETORIANO`)**: La constante/variable global `MAPA_PRETORIANO` (declarada originalmente en `praetorians.bas:40` para identificar el mapa de la fortaleza de los guardias pretorianos) es cargada desde `Server.ini` (`MapaPretoriano`) por `FileIO.cpp` (`LoadSini()`). Ya fue declarada e instanciada en `Declares.hpp` / `Declares.cpp`. Al portar `praetorians`, reutilizar `MAPA_PRETORIANO` desde `Declares.hpp` sin volver a declararla. Ver [`docs/implementation/10-fileio-configuracion-servidor.md`](10-fileio-configuracion-servidor.md).
+- **Estrategia de Verificación**: **Pruebas unitarias doctest en `tests/test_praetorians.cpp` (15 test cases / 5.766 aserciones en la suite global sin fallos)**. Cobertura completa de G1 a G4 (navegación voraz, waypoints 1..8 en `ArmourEqpSlot`, cascada del clérigo, inmolación kamikaze en `BarcoSlot`, disipación de invisibilidad y spawn de formación de 8 unidades con `pretorianosVivos = 7`).
+- **Cierre Formal de la Capa 8 (Inteligencia Artificial y Gestión de NPCs)**: Con la finalización de `praetorians`, los 4 módulos de la Capa 8 (`PathFinding`, `MODULO_NPCs`, `AI_NPC` y `praetorians`) quedan 100% migrados y verificados inductivamente.
+- **Contratos Salientes y Puntos de Cableado para Capas Superiores**:
+  - `SistemaCombate` (Módulo #22): regla de invulnerabilidad del Rey Pretoriano condicionada a `pretorianosVivos > 0`.
+  - `MODULO_NPCs` (Módulo #28): enlace de decremento de `pretorianosVivos` y detonación de migración/respawn en `MuereNpc`.
+  - `AI_NPC` (Módulo #29): derivación de la IA pretoriana desde `ExecutiveNPCAI` según `esPretoriano`.
+  - `modNuevoTimer` (Capa 11): cableado del ciclo periódico de ejecución de IA para los pretorianos activos.
+  - `Modulo_UsUaRiOs` (Capa 9): conexión de flags de usuario (`flags.invisible`, `flags.Oculto`, `flags.Muerto`).
 
 ---
 
@@ -728,7 +735,7 @@ Para cada módulo se aplica estrictamente la política de nombres definida en `d
 | **8** | `MODULO_NPCs.bas` | `src/server/MODULO_NPCs.hpp` | Grande | Spawn / Muerte NPC | **Completado (Aislado / Cableado Pendiente)** (21 tests / 5.648 aserciones en `test_modulo_npcs.cpp`, ver [`28-modulo-npcs.md`](28-modulo-npcs.md) y [`28-modulo-npcs-breakdown.md`](28-modulo-npcs-breakdown.md)) |
 
 | **8** | `AI_NPC.bas` | `src/server/AI_NPC.hpp` | Grande | IA Criaturas | **Completado (Aislado / Cableado Pendiente)** (13 tests / 35 aserciones en `test_ai_npc.cpp`, ver [`29-ai-npc.md`](29-ai-npc.md) y [`29-ai-npc-breakdown.md`](29-ai-npc-breakdown.md)) |
-| **8** | `praetorians.bas` | `src/server/praetorians.hpp` | Grande | Guardias Ciudad | Interacción guardias cliente VB6 |
+| **8** | `praetorians.bas` | `src/server/praetorians.hpp` | Grande | IA Fortaleza Pretoriana | **Completado (Aislado / Cableado Pendiente)** (15 tests / 5.766 aserciones en `test_praetorians.cpp`, ver [`30-praetorians.md`](30-praetorians.md) y [`30-praetorians-breakdown.md`](30-praetorians-breakdown.md)) |
 | **9** | `Characters.bas` | `src/server/Characters.hpp` | Chico | Respawn / Posición | Resucitar cliente VB6 |
 | **9** | `clsParty` / `mdParty` | `src/server/clsParty.hpp` | Mediano | Grupos / Party | Party 2+ clientes VB6 |
 | **9** | `Acciones.bas` | `src/server/Acciones.hpp` | Mediano | Clics en Mundo | Interacción mapa cliente VB6 |

@@ -47,4 +47,5 @@ Este directorio contiene la documentación de auditoría histórica del código 
 | [08a-pathfinding-detalle.md](08a-pathfinding-detalle.md) | Auditoría de `PathFinding.bas` y `Queue.bas` (búsqueda BFS, orden determinista y quirks). | Área 08 | Detalle NPCs / Búsqueda de Caminos | 2026-09-16 |
 | [13a-modulonpcs-detalle.md](13a-modulonpcs-detalle.md) | Auditoría de `MODULO_NPCs.bas` (ciclo de vida, grilla espacial, red y quirks). | Área 13 | Detalle Criaturas / NPCs | 2026-09-17 |
 | [13b-ainpc-detalle.md](13b-ainpc-detalle.md) | Auditoría de `AI_NPC.bas` (toma de decisiones, blancado, combate e IA de criaturas). | Área 13 | Detalle Criaturas / IA | 2026-09-17 |
+| [13c-praetorians-detalle.md](13c-praetorians-detalle.md) | Auditoría de `praetorians.bas` (IA cooperativa de escuadrón pretoriano, roles, soporte mutuo y alcobas). | Área 13 | Detalle Criaturas / IA Pretoriana | 2026-09-17 |
 
