@@ -1189,6 +1189,8 @@ struct NPCStats {
     std::int16_t Alineacion{0};
     std::int16_t MaxHp{0};
     std::int16_t MinHp{0};
+    std::int16_t MaxMAN{0};
+    std::int16_t MinMAN{0};
     std::int16_t MaxHIT{0};
     std::int16_t MinHIT{0};
     std::int16_t def{0};
