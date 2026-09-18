@@ -1,4 +1,4 @@
-# Plan de Desglose Modular — Módulo #31: Sistema de Party (`clsParty` y `mdParty`)
+# Plan de Desglose Modular — Módulo #32: Sistema de Party (`clsParty` y `mdParty`)
 
 > **Estado**: Planificación Documental Completada  
 > **Área**: Capa 9 (Sesión del Jugador, Parties y Posicionamiento)  
@@ -11,7 +11,7 @@
 
 ## 1. Resumen Ejecutivo y Alcance del Módulo
 
-El Módulo #31 administra el sistema de grupos tácticos (*Party*) de Argentum Online 0.13.0, gobernando la fundación de partidas, la validación de admisiones (distancia espacial y compatibilidad faccionaria), el chat interno de grupo, la transferencia de liderazgo, el reparto equitativo ponderado de experiencia por nivel y la disolución segura del grupo.
+El Módulo #32 administra el sistema de grupos tácticos (*Party*) de Argentum Online 0.13.0, gobernando la fundación de partidas, la validación de admisiones (distancia espacial y compatibilidad faccionaria), el chat interno de grupo, la transferencia de liderazgo, el reparto equitativo ponderado de experiencia por nivel y la disolución segura del grupo.
 
 La transliteración a C++20 se compone de dos pares de archivos en `src/server/`:
 - `clsParty.hpp` / `clsParty.cpp`: Clase de objeto que encapsula el estado interno del grupo (hasta 5 integrantes en slots dispersos/compactados, líder, suma ponderada de niveles y experiencia acumulada).

@@ -1,4 +1,4 @@
-# Módulo #31 — Sistema de Party (`mdParty.bas` y `clsParty.cls`)
+# Módulo #32 — Sistema de Party (`mdParty.bas` y `clsParty.cls`)
 
 ## Estado del Módulo
 `Completado (Aislado / Cableado Pendiente en Capa 9)`
@@ -77,5 +77,5 @@ La suite de pruebas `[Party_G1]` a `[Party_G4]` en `tests/test_party.cpp` cubre 
 ## Documentos Relacionados
 
 - Auditoría Técnica: `docs/audit/11b-party-detalle.md` (subordinado a `docs/audit/11-foros-y-comunicacion.md`).
-- Plan de Desglose Modular: `docs/implementation/31-party-breakdown.md`.
+- Plan de Desglose Modular: `docs/implementation/32-party-breakdown.md`.
 - Registro de Bugs Legacy: Entrada #46 en `docs/implementation/KNOWN-LEGACY-BUGS.md`.

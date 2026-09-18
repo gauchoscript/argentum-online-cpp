@@ -1,4 +1,4 @@
-# Auditoría Técnica Detallada — Módulo #31: `mdParty.bas` y `clsParty.cls`
+# Auditoría Técnica Detallada — Módulo #32: `mdParty.bas` y `clsParty.cls`
 
 > **Estado**: Completado  
 > **Área**: Capa 9 (Sistemas Sociales, Foros y Party)  

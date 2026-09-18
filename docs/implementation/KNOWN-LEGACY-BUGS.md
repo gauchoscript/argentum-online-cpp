@@ -581,7 +581,7 @@ A continuación se documentan en detalle todas las entradas del registro maestro
 - **Descripción**: Dentro del bucle `For j = PARTY_MAXMEMBERS To 1 Step -1` en `SaleMiembro` cuando se disuelve la party por salida del líder, la rutina descuenta de la suma ponderada de niveles la potencia del nivel del líder (`UserList(UserIndex).Stats.ELV ^ ExponenteNivelParty`) en cada iteración del bucle, en lugar de restar la potencia correspondiente al nivel de cada integrante iterado (`UserList(p_members(j).UserIndex).Stats.ELV`).
 - **Camino de Producción**: **Activo / Bug de Disolución**.
 - **Estado en C++**: **Replicated (Strict Parity)**. Preservado para paridad comportamental estricta.
-- **Documentación Detallada**: [`docs/audit/11b-party-detalle.md`](../audit/11b-party-detalle.md#61-bug-1-inconsistencia-de-parámetros-en-salemiembro-durante-disolución), [`31-party.md`](31-party.md), [`src/server/clsParty.cpp`](../../src/server/clsParty.cpp) y test `G3_SaleMiembro_Lider_Disolucion` en [`tests/test_party.cpp`](../../tests/test_party.cpp).
+- **Documentación Detallada**: [`docs/audit/11b-party-detalle.md`](../audit/11b-party-detalle.md#61-bug-1-inconsistencia-de-parámetros-en-salemiembro-durante-disolución), [`32-party.md`](32-party.md), [`src/server/clsParty.cpp`](../../src/server/clsParty.cpp) y test `G3_SaleMiembro_Lider_Disolucion` en [`tests/test_party.cpp`](../../tests/test_party.cpp).
 
 
 

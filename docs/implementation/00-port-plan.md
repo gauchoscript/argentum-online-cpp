@@ -580,11 +580,11 @@ Para cada módulo se aplica estrictamente la política de nombres definida en `d
 - **Estimación**: **Chico** (54 líneas). Exento de desglose por fases.
 - **Estrategia de Verificación**: Pruebas unitarias doctest en `tests/test_characters.cpp` (4 test cases / 11 aserciones pasadas).
 
-#### 31. `clsParty` y `mdParty` — **Completado (Aislado / Cableado Pendiente en Capa 9)**
+#### 32. `clsParty` y `mdParty` — **✅ COMPLETADO (Aislado / Cableado Pendiente en Capa 9)**
 - **Archivos Legacy**: `legacy/server/Codigo/clsParty.cls`, `legacy/server/Codigo/mdParty.bas`
 - **Propósito**: Sistema de grupos / party: creación de grupo, invitaciones, reparto equitativo de experiencia y canal de chat privado.
 - **Archivo C++ Implementado**: `src/server/clsParty.hpp` / `src/server/clsParty.cpp`, `src/server/mdParty.hpp` / `src/server/mdParty.cpp`
-- **Estado**: **Completado (Aislado / Cableado Pendiente en Capa 9)** (Ver [`31-party.md`](31-party.md), plan de desglose en [`31-party-breakdown.md`](31-party-breakdown.md) e informe de auditoría en [`docs/audit/11b-party-detalle.md`](../audit/11b-party-detalle.md)).
+- **Estado**: **Completado (Aislado / Cableado Pendiente en Capa 9)** (Ver [`32-party.md`](32-party.md), plan de desglose en [`32-party-breakdown.md`](32-party-breakdown.md) e informe de auditoría en [`docs/audit/11b-party-detalle.md`](../audit/11b-party-detalle.md)).
 - **Dependencias**: `Declares`, `FileIO`, `Matematicas`, `Protocol`.
 - **Estimación**: **Mediano** (~900 líneas combinadas).
 - **Estrategia de Verificación**: Pruebas unitarias doctest en [`tests/test_party.cpp`](../../tests/test_party.cpp) (Fases G1 a G4) y pruebas con múltiples clientes en party.
@@ -740,7 +740,7 @@ Para cada módulo se aplica estrictamente la política de nombres definida en `d
 | **8** | `AI_NPC.bas` | `src/server/AI_NPC.hpp` | Grande | IA Criaturas | **Completado (Aislado / Cableado Pendiente)** (13 tests / 35 aserciones en `test_ai_npc.cpp`, ver [`29-ai-npc.md`](29-ai-npc.md) y [`29-ai-npc-breakdown.md`](29-ai-npc-breakdown.md)) |
 | **8** | `praetorians.bas` | `src/server/praetorians.hpp` | Grande | IA Fortaleza Pretoriana | **Completado (Aislado / Cableado Pendiente)** (15 tests / 5.766 aserciones en `test_praetorians.cpp`, ver [`30-praetorians.md`](30-praetorians.md) y [`30-praetorians-breakdown.md`](30-praetorians-breakdown.md)) |
 | **9** | `Characters.bas` | `src/server/Characters.hpp` | Chico | Mapeo Bidireccional `CharIndex` $\leftrightarrow$ `UserIndex` | **Completado (Autónomo)** (4 tests / 11 aserciones en `test_characters.cpp`, ver [`31-characters.md`](31-characters.md)) |
-| **9** | `clsParty` / `mdParty` | `src/server/clsParty.hpp` | Mediano | Grupos / Party | Party 2+ clientes VB6 |
+| **9** | `clsParty` / `mdParty` | `src/server/clsParty.hpp` | Mediano | Grupos / Party | **Completado (Aislado / Cableado Pendiente en Capa 9)** (doctest `tests/test_party.cpp`, Fases G1 a G4, ver [`32-party.md`](32-party.md)) |
 | **9** | `Acciones.bas` | `src/server/Acciones.hpp` | Mediano | Clics en Mundo | Interacción mapa cliente VB6 |
 | **9** | `Modulo_UsUaRiOs.bas` | `src/server/Modulo_UsUaRiOs.hpp` | Grande | Ciclo Vida Jugador | Gameplay continuo cliente VB6 |
 | **10** | `Admin.bas` | `src/server/Admin.hpp` | Mediano | Comandos GM | Comandos `/telep` cliente VB6 |
