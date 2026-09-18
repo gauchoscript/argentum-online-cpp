@@ -47,6 +47,7 @@ add_library(server_core STATIC
     src/server/praetorians.cpp
     src/server/clsParty.cpp
     src/server/mdParty.cpp
+    src/server/Acciones.cpp
     src/server/Characters.cpp
 )
 target_include_directories(server_core PUBLIC src)
@@ -101,6 +102,7 @@ add_executable(unit_tests
     tests/test_ai_npc.cpp
     tests/test_praetorians.cpp
     tests/test_party.cpp
+    tests/test_acciones.cpp
     tests/test_characters.cpp
 )
 
