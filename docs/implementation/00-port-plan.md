@@ -594,11 +594,11 @@ Para cada módulo se aplica estrictamente la política de nombres definida en `d
 #### 33. `Acciones`
 - **Archivos Legacy**: `legacy/server/Codigo/Acciones.bas`
 - **Propósito**: Procesamiento de interacciones del usuario en el mundo: clics en objetos, carteles, puertas, NPCs y disparadores (`triggers`).
-- **Archivo C++ Propuesto**: `src/server/Acciones.hpp` / `src/server/Acciones.cpp`
+- **Archivo C++ Implementado**: `src/server/Acciones.hpp` / `src/server/Acciones.cpp`
+- **Estado**: **Completado** (Verificación mediante suite doctest en [`tests/test_acciones.cpp`](../../tests/test_acciones.cpp)).
 - **Dependencias**: `Declares`, `InvUsuario`, `MODULO_NPCs`, `Comercio`, `modBanco`, `modSendData`, `ModAreas`.
-- **Estimación**: **Mediano** (~400 líneas).
-- **Estrategia de Verificación**: Pruebas con cliente VB6 interactuando con el mapa.
-- **Nota de Auditoría / Migración (`cGarbage` / Supervivencia)**: Al portar la habilidad de Supervivencia (`CrearFuego`), acordate de incluir la lógica de instanciación y encolado de `cGarbage` en `TrashCollector` al encender una fogata (must include integration test coverage for TrashCollector/cGarbage cleanup behavior when this module is ported — see docs/audit/01a-clsdicc-cgarbage.md and docs/implementation/05-cgarbage.md).
+- **Estrategia de Verificación**: Pruebas unitarias doctest en `tests/test_acciones.cpp` cubriendo las 5 rutinas y los escenarios de borde (Bugs #47, #48 y #49).
+- **Nota de Auditoría / Migración (`cGarbage` / Supervivencia)**: Instanciación e integración de `cGarbage` en `TrashCollector` verificada en `AccionParaRamita`.
 
 #### 34. `Modulo_UsUaRiOs`
 - **Archivos Legacy**: `legacy/server/Codigo/Modulo_UsUaRiOs.bas`
