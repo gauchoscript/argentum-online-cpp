@@ -49,6 +49,7 @@ add_library(server_core STATIC
     src/server/mdParty.cpp
     src/server/Acciones.cpp
     src/server/Characters.cpp
+    src/server/Modulo_UsUaRiOs.cpp
 )
 target_include_directories(server_core PUBLIC src)
 target_link_libraries(server_core PUBLIC asio::asio)
@@ -104,6 +105,7 @@ add_executable(unit_tests
     tests/test_party.cpp
     tests/test_acciones.cpp
     tests/test_characters.cpp
+    tests/test_modulo_usuarios.cpp
 )
 
 target_include_directories(unit_tests PRIVATE src)
