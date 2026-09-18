@@ -47,6 +47,7 @@ El subsistema de foros y comunicación gestiona la interacción social asincrón
 | Módulo Legacy | Responsabilidad Principal | Informe de Detalle |
 | :--- | :--- | :--- |
 | `modForum.bas` | Lógica de foros en memoria, persistencia `.for` y serialización de mensajes. | [`11a-modforum-detalle.md`](11a-modforum-detalle.md) |
-| `Party.bas` | Creación de grupos, coordinación de integrantes y distribución de experiencia. | Futura auditoría `11b-party-detalle.md` |
+| `mdParty.bas` / `clsParty.cls` | Creación de grupos, coordinación de integrantes y distribución de experiencia. | [`11b-party-detalle.md`](11b-party-detalle.md) |
+
 | `Acciones.bas` | Detección de doble clic en carteles de foro y disparo del formulario. | Transversal |
 | `Protocol.bas` | Manejadores de red para paquetes de foros y mensajería de chat. | [`02e-protocol-detalle.md`](02e-protocol-detalle.md) |

@@ -579,14 +579,16 @@ Para cada módulo se aplica estrictamente la política de nombres definida en `d
 - **Estimación**: **Chico** (~70 líneas).
 - **Estrategia de Verificación**: Pruebas con cliente VB6.
 
-#### 32. `clsParty` y `mdParty`
+#### 31. `clsParty` y `mdParty` — **Completado (Aislado / Cableado Pendiente en Capa 9)**
 - **Archivos Legacy**: `legacy/server/Codigo/clsParty.cls`, `legacy/server/Codigo/mdParty.bas`
 - **Propósito**: Sistema de grupos / party: creación de grupo, invitaciones, reparto equitativo de experiencia y canal de chat privado.
-- **Archivo C++ Propuesto**: `src/server/clsParty.hpp` / `src/server/clsParty.cpp`, `src/server/mdParty.hpp` / `src/server/mdParty.cpp`
-- **Dependencias**: `Declares`, `modSendData`, `Matematicas`.
+- **Archivo C++ Implementado**: `src/server/clsParty.hpp` / `src/server/clsParty.cpp`, `src/server/mdParty.hpp` / `src/server/mdParty.cpp`
+- **Estado**: **Completado (Aislado / Cableado Pendiente en Capa 9)** (Ver [`31-party.md`](31-party.md), plan de desglose en [`31-party-breakdown.md`](31-party-breakdown.md) e informe de auditoría en [`docs/audit/11b-party-detalle.md`](../audit/11b-party-detalle.md)).
+- **Dependencias**: `Declares`, `FileIO`, `Matematicas`, `Protocol`.
 - **Estimación**: **Mediano** (~900 líneas combinadas).
-- **Estrategia de Verificación**: Pruebas con múltiples clientes VB6 en party.
-- **Nota de Auditoría / Propagación Cruzada (Variable de Balance ExponenteNivelParty)**: La variable `ExponenteNivelParty` declarada originalmente en `mdParty.bas:67` (`Public ExponenteNivelParty As Single`) es poblada desde `Dat/Balance.dat` por `FileIO.cpp` (`LoadBalance()`). Ya se encuentra declarada e instanciada en `Declares.hpp` / `Declares.cpp`. Al portar `mdParty`, debe consumirse desde `Declares.hpp` sin volver a declararla. Ver [`10-fileio-tablas-datos.md`](10-fileio-tablas-datos.md).
+- **Estrategia de Verificación**: Pruebas unitarias doctest en [`tests/test_party.cpp`](../../tests/test_party.cpp) (Fases G1 a G4) y pruebas con múltiples clientes en party.
+- **Nota de Auditoría / Propagación Cruzada (Variable de Balance ExponenteNivelParty)**: La variable `ExponenteNivelParty` declarada originalmente en `mdParty.bas:67` (`Public ExponenteNivelParty As Single`) es poblada desde `Dat/Balance.dat` por `FileIO.cpp` (`LoadBalance()`). Consumida desde `Declares.hpp`. Ver [`10-fileio-tablas-datos.md`](10-fileio-tablas-datos.md).
+
 
 #### 33. `Acciones`
 - **Archivos Legacy**: `legacy/server/Codigo/Acciones.bas`

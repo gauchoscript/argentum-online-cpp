@@ -60,6 +60,13 @@ De acuerdo con la convención del proyecto ([`docs/CONVENTIONS.md`](../CONVENTIO
 | **40** | `modHechizos` | `modHechizos.bas:1139, 1159` | Colisión y sobrescritura mutua de contadores temporales entre Ceguera y Estupidez (`HechizoEstadoUsuario`) | **Activo / Colisión de Estados** | **Replicated (Strict Parity)**<br>[`src/server/modHechizos.cpp:498, 513`](src/server/modHechizos.cpp#L498)<br>Test: [`test_modhechizos.cpp:210`](tests/test_modhechizos.cpp#L210) | [Entrada #40](#entrada-40--modhechizos-colisión-de-contadores-temporales-entre-ceguera-y-estupidez-hechizoestadousuario)<br>Detalle: [`23-modhechizos.md`](23-modhechizos.md#3-replicación-del-bug-40-colisión-de-temporizadores-cegueraestupidez) |
 | **41** | `modInvisibles` | `modInvisibles.bas:1-41`<br>`SERVER.VBP:45` | Módulo huérfano y rutina `PonerInvisible` sin invocaciones en el juego; rama `#Else` no compilable por variable no definida `Modo` | **Muerto / Huérfano** | **Excluded (dead code, not ported)** | [Entrada #41](#entrada-41--modinvisibles-módulo-huérfano-y-rutina-ponerinvisible-sin-invocaciones)<br>Detalle: [`docs/audit/14b-invisibles-detalle.md`](../audit/14b-invisibles-detalle.md) |
 | **42** | `Trabajo` | `Trabajo.bas:1891` | Reducción del daño al 75% (`daño * 0.75`) en tirada exitosa de `DoGolpeCritico` en lugar de incrementarlo | **Quirk / Asimetría** | **Replicated (Strict Parity)**<br>[`src/server/Trabajo.cpp:1516`](src/server/Trabajo.cpp#L1516)<br>Test: [`test_trabajo.cpp`](tests/test_trabajo.cpp) | [`26-trabajo.md`](26-trabajo.md#31-replicación-del-bug-42-en-dogolpecritico)<br>Detalle: [`../audit/12e-trabajo-detalle.md`](../audit/12e-trabajo-detalle.md#41-quirk-prominente-en-dogolpecritico-reducción-de-daño) |
+| **43** | `PathFinding` | `PathFinding.bas:217-237` | Variable `steps` inoperante sin incrementar en el bucle principal BFS (`SeekPath`) | **Activo / Bug de Bucle** | **Replicated (Strict Parity)** | [Entrada #43](#entrada-43--pathfinding-variable-steps-inoperante-sin-incrementar-en-el-bucle-principal-bfs-seekpath) |
+| **44** | `PathFinding` | `PathFinding.bas:212-220` | Limpieza incompleta de matriz global `TmpArray` (`InitializeTable`) limitando reseteo a sub-grilla | **Activo / Side-Effect** | **Replicated (Strict Parity)** | [Entrada #44](#entrada-44--pathfinding-limpieza-incompleta-de-matriz-global-tmparray-initializetable) |
+| **45** | `PathFinding` / `AI_NPC` | `PathFinding.bas:1-19`<br>`AI_NPC.bas:986` | Inversión histórica de coordenadas $X \leftrightarrow Y$ en la grilla interna del pathfinding | **Activo / Quirk Arquitectura** | **Replicated (Strict Parity)** | [Entrada #45](#entrada-45--pathfinding--ai_npc-asimetría-e-inversión-histórica-de-coordenadas-x--y) |
+| **46** | `clsParty` / `mdParty` | `clsParty.cls:248` | Sustracción errónea del nivel del líder (`UserIndex`) en lugar del nivel de cada integrante en la suma ponderada durante la disolución | **Activo / Bug de Disolución** | **Replicated (Strict Parity)** | [Entrada #46](#entrada-46--clsparty--mdparty-sustracción-errónea-del-nivel-del-líder-en-lugar-de-cada-integrante-durante-la-disolución) |
+
+
+
 
 
 ---
@@ -566,6 +573,16 @@ A continuación se documentan en detalle todas las entradas del registro maestro
 - **Camino de Producción**: **Activo / Quirk de Arquitectura**.
 - **Estado en C++**: **Replicated (Strict Parity)**. Replicado en `src/server/PathFinding.cpp:144, 169` (`SeekPath` / `MakePath`) y en los puntos de consumo de `src/server/AI_NPC.cpp` (`PathFindingAI` L223-224 y `FollowPath` L195-196). Verificado en `tests/test_pathfinding.cpp:202` y `tests/test_ai_npc.cpp:115-135`.
 - **Documentación Detallada**: [`27-pathfinding.md`](27-pathfinding.md#3-bugs-históricos-replicados-11), [`29-ai-npc.md`](29-ai-npc.md#4-quirks-históricos-y-reglas-de-dominio-replicadas), [`29-ai-npc-breakdown.md`](29-ai-npc-breakdown.md) y [`docs/audit/08a-pathfinding-detalle.md`](../audit/08a-pathfinding-detalle.md#1-inversión-histórica-de-coordenadas-x---y).
+
+---
+
+### Entrada #46 — `clsParty` / `mdParty`: Sustracción Errónea del Nivel del Líder en Lugar de Cada Integrante Durante la Disolución (`clsParty.cls:248`)
+- **Cita Legacy**: `legacy/server/Codigo/clsParty.cls:248`.
+- **Descripción**: Dentro del bucle `For j = PARTY_MAXMEMBERS To 1 Step -1` en `SaleMiembro` cuando se disuelve la party por salida del líder, la rutina descuenta de la suma ponderada de niveles la potencia del nivel del líder (`UserList(UserIndex).Stats.ELV ^ ExponenteNivelParty`) en cada iteración del bucle, en lugar de restar la potencia correspondiente al nivel de cada integrante iterado (`UserList(p_members(j).UserIndex).Stats.ELV`).
+- **Camino de Producción**: **Activo / Bug de Disolución**.
+- **Estado en C++**: **Replicated (Strict Parity)**. Preservado para paridad comportamental estricta.
+- **Documentación Detallada**: [`docs/audit/11b-party-detalle.md`](../audit/11b-party-detalle.md#61-bug-1-inconsistencia-de-parámetros-en-salemiembro-durante-disolución), [`31-party.md`](31-party.md), [`src/server/clsParty.cpp`](../../src/server/clsParty.cpp) y test `G3_SaleMiembro_Lider_Disolucion` en [`tests/test_party.cpp`](../../tests/test_party.cpp).
+
 
 
 
