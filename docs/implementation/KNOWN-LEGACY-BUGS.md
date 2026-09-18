@@ -67,6 +67,10 @@ De acuerdo con la convención del proyecto ([`docs/CONVENTIONS.md`](../CONVENTIO
 | **47** | `Acciones` | `Acciones.bas:225, 245` | Desbordamiento/Acceso fuera de límites al mutar la celda `(X - 1, Y)` en `AccionParaPuerta` cuando `X = 1` | **Activo / Out-of-bounds** | **Mitigated (Bounds Check)**<br>`if (x > 1)` | [`33-acciones.md`](33-acciones.md#3-registro-de-quirks-y-prevención-de-ub) |
 | **48** | `Acciones` | `Acciones.bas:316` | Expresión `And .Stats.UserSkills(Supervivencia)` evaluada como Boolean forzando `Suerte = 1` (100% éxito) si skill $\ge 10$ | **Activo / Quirk Aritmético** | **Replicated (Strict Parity)** | [`33-acciones.md`](33-acciones.md#3-registro-de-quirks-y-prevención-de-ub) |
 | **49** | `Acciones` | `Acciones.bas:66, 130` | Asignación incondicional e inmediata de `TargetNPC` / `TargetObj` en click sobre celda previo a validación de estado o distancia | **Activo / Targeting Side-Effect** | **Replicated (Strict Parity)** | [`33-acciones.md`](33-acciones.md#3-registro-de-quirks-y-prevención-de-ub) |
+| **50** | `Modulo_UsUaRiOs` | `Modulo_UsUaRiOs.bas:496-506` | Desbordamiento aritmético por coerción implícita `Double` -> `Long` en `CheckUserLevel` (`.Stats.ELU = .Stats.ELU * 1.4`) | **Activo / Riesgo UB** | **Replicated (Strict Parity)** | [`34-modulo-usuarios.md`](34-modulo-usuarios.md#3-registro-de-bugs-y-quirks-históricos-replicados-50-a-53) |
+| **51** | `Modulo_UsUaRiOs` | `Modulo_UsUaRiOs.bas:1622-1625` | Underflow y desincronización de `MapInfo(OldMap).NumUsers` en `WarpUserChar` corregido defensivamente (`< 0 => = 0`) | **Activo / Quirk Defensivo** | **Replicated (Strict Parity)** | [`34-modulo-usuarios.md`](34-modulo-usuarios.md#3-registro-de-bugs-y-quirks-históricos-replicados-50-a-53) |
+| **52** | `Modulo_UsUaRiOs` | `Modulo_UsUaRiOs.bas:1904-1926` | Retención anómala de slot por `CancelExit` ante desconexión abrupta de socket durante `/salir` | **Activo / Quirk de Sesión** | **Replicated (Strict Parity)** | [`34-modulo-usuarios.md`](34-modulo-usuarios.md#3-registro-de-bugs-y-quirks-históricos-replicados-50-a-53) |
+| **53** | `Modulo_UsUaRiOs` | `Modulo_UsUaRiOs.bas:742-763` | Desincronización de coordenadas cliente-servidor al mover un Admin invisible sobre la celda de un casper | **Activo / Quirk Espacial** | **Replicated (Strict Parity)** | [`34-modulo-usuarios.md`](34-modulo-usuarios.md#3-registro-de-bugs-y-quirks-históricos-replicados-50-a-53) |
 
 
 
@@ -585,6 +589,43 @@ A continuación se documentan en detalle todas las entradas del registro maestro
 - **Camino de Producción**: **Activo / Bug de Disolución**.
 - **Estado en C++**: **Replicated (Strict Parity)**. Preservado para paridad comportamental estricta.
 - **Documentación Detallada**: [`docs/audit/11b-party-detalle.md`](../audit/11b-party-detalle.md#61-bug-1-inconsistencia-de-parámetros-en-salemiembro-durante-disolución), [`32-party.md`](32-party.md), [`src/server/clsParty.cpp`](../../src/server/clsParty.cpp) y test `G3_SaleMiembro_Lider_Disolucion` en [`tests/test_party.cpp`](../../tests/test_party.cpp).
+
+---
+
+### Entrada #50 — `Modulo_UsUaRiOs`: Desbordamiento Aritmético por Coerción Implícita en `CheckUserLevel`
+- **Cita Legacy**: [`legacy/server/Codigo/Modulo_UsUaRiOs.bas:496-506`](../../legacy/server/Codigo/Modulo_UsUaRiOs.bas#L496-L506).
+- **Descripción**: En la rutina `CheckUserLevel`, la actualización del umbral de experiencia para el siguiente nivel ejecuta `.Stats.ELU = .Stats.ELU * 1.4` (o factores `1.35`, `1.3`, `1.225`, `1.25`). La multiplicación se realiza en punto flotante (`Double`) y luego se coerciona a un entero con signo `Long` de 32 bits. Si un personaje alcanza un nivel o acumula experiencia anómala donde `ELU` excede `2.147.483.647` (`INT32_MAX`), en VB6 genera `Error 6: Overflow`. En C++, la conversión de flotante fuera de rango a tipo entero produce comportamiento indefinido (Undefined Behavior).
+- **Camino de Producción**: **Activo / Riesgo UB**.
+- **Estado en C++**: **Replicated (Typed Exception: `Modulo_UsUaRiOs::ELUOverflowException`)**. El cálculo se promueve a `std::int64_t`. Si `next_elu > std::numeric_limits<std::int32_t>::max()`, se lanza la excepción `Modulo_UsUaRiOs::ELUOverflowException`. Esto preserva exactamente el comportamiento del Error 6 de VB6 (desencadenando una excepción segura en lugar de mutar silenciosamente las reglas de juego con clamping).
+- **Documentación Detallada**: [`../audit/15d-usuarios-detalle.md`](../audit/15d-usuarios-detalle.md#41-defectos-técnicos-destinados-a-known-legacy-bugsmd) y [`34-modulo-usuarios-breakdown.md`](34-modulo-usuarios-breakdown.md).
+
+---
+
+### Entrada #51 — `Modulo_UsUaRiOs`: Underflow y Desincronización de `MapInfo(OldMap).NumUsers` en `WarpUserChar`
+- **Cita Legacy**: [`legacy/server/Codigo/Modulo_UsUaRiOs.bas:1622-1625`](../../legacy/server/Codigo/Modulo_UsUaRiOs.bas#L1622-L1625).
+- **Descripción**: En `WarpUserChar`, al reducir en 1 la cantidad de usuarios presentes en el mapa de origen (`MapInfo(OldMap).NumUsers = MapInfo(OldMap).NumUsers - 1`), si el contador poblacional registraba `0` por desincronizaciones de red o desconexiones no contabilizadas, el valor cae a `-1`. El código legacy VB6 incluye la guarda defensiva `If MapInfo(OldMap).NumUsers < 0 Then MapInfo(OldMap).NumUsers = 0`.
+- **Camino de Producción**: **Activo / Quirk Defensivo**.
+- **Estado en C++**: **Replicated (Strict Parity)**. Se preserva idénticamente el condicional defensivo en C++ para asegurar resistencia ante desincronizaciones de contadores poblacionales por mapa.
+- **Documentación Detallada**: [`../audit/15d-usuarios-detalle.md`](../audit/15d-usuarios-detalle.md#41-defectos-técnicos-destinados-a-known-legacy-bugsmd) y [`34-modulo-usuarios-breakdown.md`](34-modulo-usuarios-breakdown.md).
+
+---
+
+### Entrada #52 — `Modulo_UsUaRiOs`: Retención Anómala de Slot por `CancelExit` ante Desconexión Abrupta
+- **Cita Legacy**: [`legacy/server/Codigo/Modulo_UsUaRiOs.bas:1904-1926`](../../legacy/server/Codigo/Modulo_UsUaRiOs.bas#L1904-L1926).
+- **Descripción**: Al ejecutar `/salir`, el usuario activa la secuencia de salida diferida de 10 segundos (`.Counters.Saliendo = True`). Si la conexión de socket se interrumpe abruptamente (`ConnIDValida = False`) antes de culminar la cuenta y se invoca `CancelExit`, la rutina ingresa en la rama `Else` reasignando `.Counters.Salir = IntervaloCerrarConexion` en lugar de liberar inmediatamente la ranura de memoria en `UserList`. Esto mantiene el personaje fantasma flotando en el mapa durante 10 segundos adicionales sin socket activo.
+- **Camino de Producción**: **Activo / Quirk de Sesión**.
+- **Estado en C++**: **Replicated (Strict Parity)**. Se replica exactamente la lógica de la rama `Else` en `CancelExit` para mantener la retención de slot especificada por el legacy.
+- **Documentación Detallada**: [`../audit/15d-usuarios-detalle.md`](../audit/15d-usuarios-detalle.md#41-defectos-técnicos-destinados-a-known-legacy-bugsmd) y [`34-modulo-usuarios-breakdown.md`](34-modulo-usuarios-breakdown.md).
+
+---
+
+### Entrada #53 — `Modulo_UsUaRiOs`: Desincronización de Coordenadas al Mover Admin Invisible Sobre Casper
+- **Cita Legacy**: [`legacy/server/Codigo/Modulo_UsUaRiOs.bas:742-763`](../../legacy/server/Codigo/Modulo_UsUaRiOs.bas#L742-L763).
+- **Descripción**: Durante `MoveUserChar`, la instrucción `If Not (UserList(UserIndex).flags.AdminInvisible = 1)` prohíbe que un Administrador invisible empuje o intercambie celda con un personaje muerto (*casper*). Sin embargo, el movimiento físico del Admin sobre la grilla continúa ejecutándose sin transmitir el paquete `PrepareMessageCharacterMove`, generando una desincronización de coordenadas entre la vista gráfica del cliente del GM y la grilla lógica del servidor.
+- **Camino de Producción**: **Activo / Quirk Espacial**.
+- **Estado en C++**: **Replicated (Strict Parity)**. Se replica la omisión del mensaje de movimiento en red bajo la condición de Admin invisible sobre casper.
+- **Documentación Detallada**: [`../audit/15d-usuarios-detalle.md`](../audit/15d-usuarios-detalle.md#41-defectos-técnicos-destinados-a-known-legacy-bugsmd) y [`34-modulo-usuarios-breakdown.md`](34-modulo-usuarios-breakdown.md).
+
 
 
 

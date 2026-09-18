@@ -600,13 +600,15 @@ Para cada módulo se aplica estrictamente la política de nombres definida en `d
 - **Estrategia de Verificación**: Pruebas unitarias doctest en `tests/test_acciones.cpp` cubriendo las 5 rutinas y los escenarios de borde (Bugs #47, #48 y #49).
 - **Nota de Auditoría / Migración (`cGarbage` / Supervivencia)**: Instanciación e integración de `cGarbage` en `TrashCollector` verificada en `AccionParaRamita`.
 
-#### 34. `Modulo_UsUaRiOs`
+#### 34. `Modulo_UsUaRiOs` — **✅ COMPLETADO (Aislado / Hooks en Capas 6, 7 y 8)**
 - **Archivos Legacy**: `legacy/server/Codigo/Modulo_UsUaRiOs.bas`
-- **Propósito**: Orquestación del ciclo de vida del jugador: conexión/desconexión (`Cerrar_Usuario`), subida de nivel, ganancia de exp (`GiveEXP`), ticks de regeneración de HP/Maná (`RegenerarHP`, `RegenerarMana`) y validación de movimiento (`MoveUser`).
-- **Archivo C++ Propuesto**: `src/server/Modulo_UsUaRiOs.hpp` / `src/server/Modulo_UsUaRiOs.cpp`
-- **Dependencias**: `Declares`, `FileIO`, `Protocol`, `TCP`, `modSendData`, `SistemaCombate`, `InvUsuario`, `ModAreas`, `ModFacciones`.
-- **Estimación**: **Grande** (~2.600 líneas).
-- **Estrategia de Verificación**: Pruebas integrales de flujo de juego con cliente VB6 real.
+- **Propósito**: Orquestación del ciclo de vida del jugador: conexión/desconexión (`Cerrar_Usuario`), subida de nivel, cinemática, transporte espacial, estados, mascotas e inventario.
+- **Archivo C++ Implementado**: `src/server/Modulo_UsUaRiOs.hpp` / `src/server/Modulo_UsUaRiOs.cpp`
+- **Estado**: **Completado** (Especificación técnica oficial en [`34-modulo-usuarios.md`](34-modulo-usuarios.md), plan de desglose en [`34-modulo-usuarios-breakdown.md`](34-modulo-usuarios-breakdown.md) e informe de auditoría en [`docs/audit/15d-usuarios-detalle.md`](../audit/15d-usuarios-detalle.md)).
+- **Dependencias**: `Declares`, `FileIO`, `Protocol`, `TCP`, `modSendData`, `SistemaCombate`, `InvUsuario`, `ModAreas`, `ModFacciones`, `mdParty`, `modGuilds`.
+- **Estimación**: **Grande** (~2.600 líneas, 57 rutinas desglosadas en 5 grupos lógicos G1 a G5).
+- **Estrategia de Verificación**: **Pruebas unitarias doctest en `tests/test_modulo_usuarios.cpp` (438 tests / 5.964 aserciones globales en verde)**. Cobertura completa de G1 a G5 y réplica estricta de los Bugs #50, #51, #52 y #53.
+- **Cierre Formal de la Capa 9 (Sesión del Jugador, Parties y Posicionamiento)**: Con la finalización de `Modulo_UsUaRiOs`, los 4 módulos de la Capa 9 (`Characters`, `clsParty`/`mdParty`, `Acciones` y `Modulo_UsUaRiOs`) quedan 100% migrados y verificados.
 
 ---
 
@@ -742,7 +744,7 @@ Para cada módulo se aplica estrictamente la política de nombres definida en `d
 | **9** | `Characters.bas` | `src/server/Characters.hpp` | Chico | Mapeo Bidireccional `CharIndex` $\leftrightarrow$ `UserIndex` | **Completado (Autónomo)** (4 tests / 11 aserciones en `test_characters.cpp`, ver [`31-characters.md`](31-characters.md)) |
 | **9** | `clsParty` / `mdParty` | `src/server/clsParty.hpp` | Mediano | Grupos / Party | **Completado (Aislado / Cableado Pendiente en Capa 9)** (doctest `tests/test_party.cpp`, Fases G1 a G4, ver [`32-party.md`](32-party.md)) |
 | **9** | `Acciones.bas` | `src/server/Acciones.hpp` | Mediano | Clics en Mundo | Interacción mapa cliente VB6 |
-| **9** | `Modulo_UsUaRiOs.bas` | `src/server/Modulo_UsUaRiOs.hpp` | Grande | Ciclo Vida Jugador | Gameplay continuo cliente VB6 |
+| **9** | `Modulo_UsUaRiOs.bas` | `src/server/Modulo_UsUaRiOs.hpp` | Grande | Ciclo Vida Jugador / Estados | **Completado (Aislado / Hooks)** (438 tests / 5964 aserciones en `test_modulo_usuarios.cpp`, ver [`34-modulo-usuarios.md`](34-modulo-usuarios.md)) |
 | **10** | `Admin.bas` | `src/server/Admin.hpp` | Mediano | Comandos GM | Comandos `/telep` cliente VB6 |
 | **10** | `modCentinela.bas` | `src/server/modCentinela.hpp` | Mediano | Anti-Bot | Prompt Centinela cliente VB6 |
 | **10** | `modForum.bas` | `src/server/modForum.hpp` | Mediano | Foros Juego | Leer/escribir foro cliente VB6 |

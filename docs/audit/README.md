@@ -77,6 +77,7 @@ Este directorio contiene la documentación de auditoría histórica del código 
 | [14b-invisibles-detalle.md](14b-invisibles-detalle.md) | Auditoría de `modInvisibles.bas` y exclusión por código muerto. | Área 14 | Exclusión (Código Muerto) | 2026-09-16 |
 | [15b-facciones-detalle.md](15b-facciones-detalle.md) | Auditoría de `ModFacciones.bas` (facciones Armada Real y Legión Oscura, jerarquías y expulsión). | Área 15 | Detalle Entidad / Estado | 2026-09-16 |
 | [15c-acciones-detalle.md](15c-acciones-detalle.md) | Auditoría de `Acciones.bas` (interacciones sobre grilla, NPCs, puertas, foros y fogatas). | Área 15 | Detalle Entidad / Estado | 2026-09-18 |
+| [15d-usuarios-detalle.md](15d-usuarios-detalle.md) | Auditoría de `Modulo_UsUaRiOs.bas` (ciclo de vida, sesión, nivel, exp, warp, caspers y quirks). | Área 15 | Detalle Entidad / Estado | 2026-09-18 |
 | [08a-pathfinding-detalle.md](08a-pathfinding-detalle.md) | Auditoría de `PathFinding.bas` y `Queue.bas` (búsqueda BFS, orden determinista y quirks). | Área 08 | Detalle NPCs / Búsqueda de Caminos | 2026-09-16 |
 | [13a-modulonpcs-detalle.md](13a-modulonpcs-detalle.md) | Auditoría de `MODULO_NPCs.bas` (ciclo de vida, grilla espacial, red y quirks). | Área 13 | Detalle Criaturas / NPCs | 2026-09-17 |
 | [13b-ainpc-detalle.md](13b-ainpc-detalle.md) | Auditoría de `AI_NPC.bas` (toma de decisiones, blancado, combate e IA de criaturas). | Área 13 | Detalle Criaturas / IA | 2026-09-17 |

@@ -53,7 +53,7 @@ La entidad de usuario constituye el modelo de datos principal alrededor del cual
 
 | Módulo Legacy | Responsabilidad Principal | Informe de Detalle |
 | :--- | :--- | :--- |
-| `Modulo_UsUaRiOs.bas` | Ciclo de vida del usuario, conexión, desconexión, muerte, resurrección y progresión. | Futura auditoría `15a-modulo-usuarios-detalle.md` |
+| `Modulo_UsUaRiOs.bas` | Ciclo de vida del usuario, conexión, desconexión, muerte, resurrección y progresión. | [`15d-usuarios-detalle.md`](15d-usuarios-detalle.md) |
 | `Declares.bas` | Declaración de la estructura `User`, `UserFlags`, `UserStats` y constantes asociadas. | [`01-estructura-del-proyecto.md`](01-estructura-del-proyecto.md) |
 | `TCP.bas` | Manejo de sockets de red y mapeo entre socket y `UserIndex`. | [`02c-tcp-detalle.md`](02c-tcp-detalle.md) |
 | `Clases.dat` | Tabla de configuración de clases, vida por nivel y modificadores de daño. | [`06-formatos-de-datos.md`](06-formatos-de-datos.md) |
