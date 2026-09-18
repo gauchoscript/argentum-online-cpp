@@ -22,14 +22,8 @@ class clsAntiDoS {};
 // clsAntiMassClon excluido por tratarse de código muerto (ver docs/audit/02b-antimassclon-detalle.md)
 class cCola {};
 constexpr std::uint8_t PARTY_MAXMEMBERS = 5;
-class clsParty {
-public:
-    virtual ~clsParty() = default;
-    virtual bool EsPartyLeader(std::int16_t /*userIndex*/) const { return false; }
-    virtual void ObtenerMiembrosOnline(std::span<std::int16_t> /*members*/) const {}
-    virtual double MiExperiencia(std::int16_t /*userIndex*/) const { return 0.0; }
-    virtual std::int32_t ObtenerExperienciaTotal() const { return 0; }
-};
+class clsParty;
+
 class ConsultasPopulares {};
 class SoundMapInfo {};
 
@@ -1415,7 +1409,8 @@ extern std::vector<std::string> MD5s;
 extern std::unique_ptr<clsAntiDoS> aDos;
 // aClon (clsAntiMassClon) excluido por tratarse de código muerto (ver docs/audit/02b-antimassclon-detalle.md)
 
-extern std::array<std::unique_ptr<clsParty>, MAX_PARTIES + 1> Parties;
+extern std::array<std::shared_ptr<clsParty>, MAX_PARTIES + 1> Parties;
+
 extern std::array<ModClase, NUMCLASES + 1> ModClaseList;
 extern std::array<ModRaza, NUMRAZAS + 1> ModRazaList;
 extern std::array<double, NUMCLASES + 1> ModVida;

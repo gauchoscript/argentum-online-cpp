@@ -1,6 +1,8 @@
+
 #include "Protocol.hpp"
 #include "clsByteQueue.hpp"
 #include "Declares.hpp"
+#include "clsParty.hpp"
 #include "TCP.hpp"
 #include <cmath>
 #include <algorithm>
@@ -1927,9 +1929,9 @@ void WriteShowPartyForm(std::int16_t UserIndex) {
 
     std::string tmp;
     if (party) {
-        std::array<std::int16_t, PARTY_MAXMEMBERS + 1> members{};
+        std::array<std::int16_t, ModParty::PARTY_MAXMEMBERS> members{};
         party->ObtenerMiembrosOnline(members);
-        for (std::size_t i = 1; i <= PARTY_MAXMEMBERS; ++i) {
+        for (std::size_t i = 0; i < ModParty::PARTY_MAXMEMBERS; ++i) {
             const auto mIdx = members[i];
             if (mIdx > 0 && static_cast<std::size_t>(mIdx) < UserList.size()) {
                 if (!tmp.empty()) tmp += SEPARATOR;

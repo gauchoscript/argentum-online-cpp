@@ -67,7 +67,7 @@ std::vector<std::string> MD5s;
 std::unique_ptr<clsAntiDoS> aDos;
 // aClon (clsAntiMassClon) excluido por tratarse de código muerto (ver docs/audit/02b-antimassclon-detalle.md)
 
-std::array<std::unique_ptr<clsParty>, MAX_PARTIES + 1> Parties;
+std::array<std::shared_ptr<clsParty>, MAX_PARTIES + 1> Parties;
 std::array<ModClase, NUMCLASES + 1> ModClaseList{};
 std::array<ModRaza, NUMRAZAS + 1> ModRazaList{};
 std::array<double, NUMCLASES + 1> ModVida{};
